@@ -489,3 +489,59 @@ body {
 .text-length-hint { font-size: 10px; color: #9A9290; text-align: right; margin: 4px 0 12px; }
 .modal-btn-row { display: flex; gap: 8px; }
 .half-btn { flex: 1; height: 38px; font-size: 12px; }
+
+/* 移动端沉浸式自适应优化：朋友在手机微信/浏览器中打开时全屏沉浸显示 */
+@media (max-width: 600px) {
+  body {
+    background-color: var(--bg-page);
+  }
+  .top-sim-bar {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .sim-brand {
+    font-size: 13px;
+  }
+  .sim-title {
+    font-size: 13px;
+  }
+  .sim-controls {
+    width: 100%;
+    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .sim-group {
+    font-size: 11px;
+    flex: 1 1 45%;
+  }
+  .sim-select {
+    width: 100%;
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+  .sim-action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .device-stage {
+    padding: 0;
+    width: 100%;
+    height: auto;
+    flex: 1;
+  }
+  .device-frame {
+    width: 100%;
+    min-height: calc(100vh - 100px);
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .device-notch {
+    display: none;
+  }
+  .app-viewport {
+    padding-top: 0;
+  }
+}
