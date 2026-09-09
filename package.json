@@ -1,0 +1,21 @@
+{
+  "name": "pawscars",
+  "version": "1.0.0",
+  "description": "Pawscars (毛孩奥斯卡) 微信小程序与云开发评选系统",
+  "main": "miniprogram/app.js",
+  "scripts": {
+    "test": "node tests/bracket.test.js && node tests/e2e_simulation.js",
+    "test:unit": "node tests/bracket.test.js",
+    "test:e2e": "node tests/e2e_simulation.js",
+    "preview": "python3 -m http.server 3000 -d preview"
+  },
+  "keywords": [
+    "pawscars",
+    "wechat-miniprogram",
+    "cloudbase",
+    "pet-awards",
+    "macaron-ui"
+  ],
+  "author": "Google DeepMind / Antigravity",
+  "license": "MIT"
+}

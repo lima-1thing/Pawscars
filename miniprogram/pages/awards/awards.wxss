@@ -1,0 +1,308 @@
+.awards-page-container {
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  display: flex;
+  flex-direction: column;
+}
+
+.awards-scroll {
+  flex: 1;
+  padding: 12px 20px 40px;
+  box-sizing: border-box;
+}
+
+/* 门类胶囊切换栏 */
+.cat-tabs-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+
+.tab-pill {
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: #F1EFE8;
+  color: #7A7270;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab-pill-active {
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 领奖台区域 */
+.podium-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.podium-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 0 10px;
+  width: 100%;
+}
+
+.podium-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.slot-silver {
+  margin-bottom: 0px;
+}
+
+.slot-gold {
+  margin-bottom: 20px; /* 冠军上浮突出 */
+}
+
+.slot-bronze {
+  margin-bottom: 0px;
+}
+
+/* 徽标 */
+.trophy-badge, .medal-badge {
+  font-size: 22px;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.trophy-badge {
+  font-size: 28px;
+}
+
+/* 卡片边框与尺寸 */
+.podium-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #FFFDF8;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.card-gold {
+  width: 96px;
+  height: 96px;
+  border: 3px solid #FAC775;
+}
+
+.card-silver {
+  width: 68px;
+  height: 68px;
+  border: 2px solid #C0C0C0;
+}
+
+.card-bronze {
+  width: 62px;
+  height: 62px;
+  border: 2px solid #CD7F32;
+}
+
+.podium-pet-photo {
+  width: 100%;
+  height: 100%;
+}
+
+.podium-watermark {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  font-size: 8px;
+  font-weight: bold;
+  color: #4A3E3D;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.pet-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #38242A;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.champion-name {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.rank-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+.tag-gold { background: #FAC775; color: #5C4A02; }
+.tag-silver { background: #E5E5E5; color: #4F4F4F; }
+.tag-bronze { background: #F2D2B6; color: #6E3F1A; }
+
+.cert-btn-wrap {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 14px;
+}
+
+.full-cert-btn {
+  width: 100%;
+  height: 44px;
+  font-size: 14px;
+}
+
+.awards-divider {
+  width: 100%;
+  height: 1px;
+  background: #ECE7DE;
+  margin: 16px 0 20px;
+}
+
+/* 贺词墙 */
+.congrats-wall-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.wall-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.wall-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2B2625;
+}
+
+.wall-count {
+  font-size: 12px;
+  color: #8C8482;
+  margin-left: 6px;
+}
+
+.wall-rule-tip {
+  font-size: 11px;
+  color: #A39B99;
+}
+
+.congrats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.congrats-card {
+  background: #F4F2EC;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.congrats-content {
+  font-size: 13px;
+  color: #38242A;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.congrats-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.congrats-sender {
+  font-size: 10px;
+  font-weight: 600;
+  color: #7A7270;
+}
+
+.congrats-time {
+  font-size: 9px;
+  color: #B5ACA9;
+}
+
+.send-congrats-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.send-congrats-btn {
+  width: 100%;
+  max-width: 300px;
+  height: 40px;
+}
+
+/* 发送贺词弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.send-modal-card {
+  width: 100%;
+  max-width: 320px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.send-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #38242A;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.congrats-textarea {
+  width: 100%;
+  height: 80px;
+  background: #F7F5F0;
+  border: 1px solid #EBE6DC;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.text-length-hint {
+  font-size: 10px;
+  color: #9A9290;
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+
+.modal-btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+.half-btn {
+  flex: 1;
+  height: 40px;
+  font-size: 13px;
+}

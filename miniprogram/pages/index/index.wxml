@@ -1,0 +1,142 @@
+<view class="home-screen">
+  <!-- 顶部 Banner 区 (浅粉背景 #FBEAF0) -->
+  <view class="banner-area">
+    <view class="cat-dog-row">
+      <!-- 左：猫头装饰圈 (52px, powder blue背景) -->
+      <view class="avatar-circle">
+        <text class="pet-deco-emoji">🐱</text>
+      </view>
+
+      <!-- 中：活动主标题 -->
+      <view class="title-wrap" bindtap="onTitleClick">
+        <text class="brand-title">Pawscars</text>
+        <text class="brand-subtitle">{{config.title || '毛孩奥斯卡'}}</text>
+      </view>
+
+      <!-- 右：狗头装饰圈 (52px, powder blue背景) -->
+      <view class="avatar-circle">
+        <text class="pet-deco-emoji">🐶</text>
+      </view>
+    </view>
+
+    <!-- 下方：三个小图标圈 (30px，黄/绿/紫三色，爪子/奖杯/爱心) -->
+    <view class="deco-icons-row">
+      <view class="mini-icon-circle icon-yellow">🐾</view>
+      <view class="mini-icon-circle icon-green">🏆</view>
+      <view class="mini-icon-circle icon-purple">❤️</view>
+    </view>
+  </view>
+
+  <!-- 正文内容区（严格适配一屏自适应排版要求） -->
+  <view class="content-body">
+    <!-- 宫师姐发言人样式开场 -->
+    <view class="spokesperson-row">
+      <view class="gong-avatar">
+        <text class="gong-text">宫</text>
+      </view>
+      <text class="gong-name">{{config.hostName || '宫师姐'}}</text>
+    </view>
+
+    <!-- 阶段A：报名期展示 -->
+    <block wx:if="{{config.currentPhase === 'nominate'}}">
+      <view class="story-desc">
+        {{config.hostIntro}}
+      </view>
+
+      <!-- 居中赛制流程胶囊条 -->
+      <view class="rule-capsule-wrap">
+        <view class="rule-capsule" bindtap="onShowRules">
+          {{config.rulesSummary}}
+        </view>
+      </view>
+
+      <!-- 评选类别小标题 -->
+      <view class="category-heading">评选类别：</view>
+
+      <!-- 三大门类横排卡片 (黄/绿/紫独立马卡龙色) -->
+      <view class="category-cards-row">
+        <view wx:for="{{categories}}" wx:key="id" class="cat-card cat-card-{{item.theme}}" style="background-color: {{item.bg}};">
+          <view class="cat-card-icon">{{item.icon}}</view>
+          <view class="cat-card-title" style="color: {{item.textColor}};">{{item.tag}}</view>
+          <view class="cat-card-sub" style="color: {{item.textColor}};">{{item.suffix}}</view>
+        </view>
+      </view>
+
+      <!-- 结尾号召语 -->
+      <view class="cta-callout">
+        {{config.callToActionText}}
+      </view>
+
+      <!-- 核心CTA按钮："我要提名" -->
+      <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapNominate">
+        我要提名
+      </button>
+    </block>
+
+    <!-- 阶段B：投票期展示 (初选/8进4/4强德比) -->
+    <block wx:elif="{{config.currentPhase === 'vote_initial' || config.currentPhase === 'vote_match_8' || config.currentPhase === 'vote_match_4'}}">
+      <!-- 投票期状态卡片 (薄荷绿底 #E6F6F1) -->
+      <view class="voting-status-card">
+        <view class="status-stage-tag">
+          <text wx:if="{{config.currentPhase === 'vote_initial'}}">投票进行中 · 阶段一</text>
+          <text wx:elif="{{config.currentPhase === 'vote_match_8'}}">投票进行中 · 阶段二</text>
+          <text wx:else>投票进行中 · 阶段三</text>
+        </view>
+        <view class="status-main-title">
+          <text wx:if="{{config.currentPhase === 'vote_initial'}}">Pawscars【初选打投】进行时</text>
+          <text wx:elif="{{config.currentPhase === 'vote_match_8'}}">Pawscars【8强淘汰赛】进行时</text>
+          <text wx:else>Pawscars【4强巅峰德比】进行时</text>
+        </view>
+        <view class="status-countdown">
+          距离本阶段投票截止还有 3 天 12 小时
+        </view>
+      </view>
+
+      <!-- 三阶段胶囊指示条 -->
+      <view class="stage-stepper-row">
+        <view class="step-pill {{config.currentPhase === 'vote_initial' ? 'pill-active' : ''}}">初选</view>
+        <view class="step-pill {{config.currentPhase === 'vote_match_8' ? 'pill-active' : ''}}">8进4</view>
+        <view class="step-pill {{config.currentPhase === 'vote_match_4' ? 'pill-active' : ''}}">4强德比</view>
+      </view>
+
+      <view class="voting-action-group">
+        <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapVote">
+          我要投票
+        </button>
+        <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
+          <text class="btn-icon">📋</text> 我的提名
+        </button>
+      </view>
+    </block>
+
+    <!-- 阶段C：颁奖期展示 -->
+    <block wx:else>
+      <view class="awards-status-card">
+        <view class="awards-banner-icon">🏆</view>
+        <view class="awards-congrats-text">
+          热烈祝贺 2026 Pawscars 毛孩奥斯卡的王者们！
+        </view>
+        <view class="awards-sub-text">
+          各大门类冠亚季军已荣耀揭晓
+        </view>
+      </view>
+
+      <view class="voting-action-group">
+        <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapAwards">
+          查看颁奖结果
+        </button>
+        <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
+          <text class="btn-icon">📋</text> 我的提名
+        </button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 底部管理后台便捷入口 -->
+  <view class="admin-link-row">
+    <text class="admin-link-text" bindtap="onTapAdmin">⚙️ 管理后台 / 赛程模拟</text>
+  </view>
+
+  <!-- 规则弹窗组件 -->
+  <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
+</view>

@@ -1,0 +1,105 @@
+<view class="nominate-container">
+  <nav-bar title="我要提名" subtitle="提交参赛毛孩" showMyNomination="{{true}}" showBack="{{true}}" />
+
+  <scroll-view scroll-y class="form-scroll">
+    <view class="form-card">
+      <!-- 1. 照片上传框 -->
+      <view class="form-item">
+        <view class="item-label">
+          <text class="label-title">毛孩照片</text>
+          <text class="label-hint">（单张，自动裁剪正方形）</text>
+        </view>
+        <view class="photo-upload-box" bindtap="onChoosePhoto">
+          <block wx:if="{{photoUrl}}">
+            <image class="preview-img" src="{{photoUrl}}" mode="aspectFill" />
+            <view class="change-photo-badge">点击更换</view>
+          </block>
+          <block wx:else>
+            <view class="upload-placeholder">
+              <text class="camera-icon">📷</text>
+              <text class="upload-tip">点击拍照或上传爱宠靓照</text>
+              <text class="upload-sub">猫猫/狗狗/虚拟AI生成均可</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 2. 宠物名输入 -->
+      <view class="form-item">
+        <view class="item-label">
+          <text class="label-title">毛孩名字</text>
+          <text class="label-required">*</text>
+        </view>
+        <input 
+          class="name-input" 
+          placeholder="给毛孩起个闪亮的名字 (1-20字)" 
+          value="{{petName}}"
+          bindinput="onInputPetName"
+          maxlength="20"
+        />
+      </view>
+
+      <!-- 3. 门类多选 chips -->
+      <view class="form-item">
+        <view class="item-label">
+          <text class="label-title">参赛门类</text>
+          <text class="label-hint">（可同时勾选多个门类）</text>
+        </view>
+        <view class="category-chips-wrap">
+          <view 
+            wx:for="{{categories}}" 
+            wx:key="id"
+            class="cat-chip {{selectedCatMap[item.id] ? 'chip-active' : ''}}"
+            style="{{selectedCatMap[item.id] ? 'background-color:' + item.bg + '; border-color:' + item.accentColor + '; color:' + item.textColor : ''}}"
+            bindtap="onToggleCategory"
+            data-id="{{item.id}}"
+          >
+            <text class="chip-icon">{{item.icon}}</text>
+            <text class="chip-name">{{item.name}}</text>
+            <text wx:if="{{selectedCatMap[item.id]}}" class="check-icon">✓</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 4. 免责与本人承诺勾选框 -->
+      <view class="pledge-item" bindtap="onTogglePledge">
+        <view class="checkbox-circle {{pledgeAgreed ? 'checked' : ''}}">
+          <text wx:if="{{pledgeAgreed}}" class="check-tick">✓</text>
+        </view>
+        <view class="pledge-text">
+          我确认这是本人拍摄/生成的毛孩子照片
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
+      <view class="submit-wrap">
+        <button 
+          class="paw-btn paw-btn-primary full-submit-btn {{!isFormReady ? 'btn-disabled' : ''}}" 
+          bindtap="onSubmit"
+        >
+          确认提名
+        </button>
+      </view>
+    </view>
+
+    <!-- 底部：我已提交的提名预览 -->
+    <view wx:if="{{myEntries.length > 0}}" class="my-entries-section">
+      <view class="section-heading">已提名的毛孩 ({{myEntries.length}})</view>
+      <view class="entries-grid">
+        <view wx:for="{{myEntries}}" wx:key="id" class="my-entry-card">
+          <watermark-image 
+            src="{{item.photoUrl}}" 
+            petName="{{item.petName}}" 
+            ownerLdap="{{item.ownerLdap}}"
+            showNameAbove="{{false}}"
+            customStyle="width: 80px; height: 80px;"
+          />
+          <view class="entry-meta">
+            <text class="entry-cat-badge">{{item.categoryName}}</text>
+            <text class="entry-date">{{item.timeStr}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

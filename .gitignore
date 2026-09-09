@@ -1,0 +1,5 @@
+node_modules/
+.chrome_temp/
+.DS_Store
+*.log
+.system_generated/

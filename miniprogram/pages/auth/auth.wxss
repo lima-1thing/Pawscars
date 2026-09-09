@@ -1,0 +1,132 @@
+.auth-container {
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 340px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 24px 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #FBEAF0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.auth-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #38242A;
+  margin-bottom: 4px;
+}
+
+.auth-subtitle {
+  font-size: 12px;
+  color: #7A7270;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #332827;
+  margin-bottom: 6px;
+}
+
+.ldap-input {
+  height: 46px;
+  background: #F7F5F0;
+  border: 1.5px solid #EBE6DC;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #2B2625;
+  box-sizing: border-box;
+}
+
+.input-error {
+  border-color: #E56B6F;
+  background: #FFF5F5;
+}
+
+.error-msg {
+  font-size: 11px;
+  color: #E56B6F;
+  margin-top: 6px;
+}
+
+.rule-hint {
+  font-size: 11px;
+  color: #8C8482;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 20px;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.appeal-box {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed #ECE7DE;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.appeal-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #665E5C;
+  margin-bottom: 4px;
+}
+
+.appeal-desc {
+  font-size: 11px;
+  color: #9A9290;
+  margin-bottom: 8px;
+}
+
+.appeal-link {
+  font-size: 12px;
+  color: #0C447C;
+  font-weight: 600;
+  text-decoration: underline;
+}

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "Pawscars 毛孩奥斯卡",
+  "navigationBarBackgroundColor": "#FBEAF0",
+  "usingComponents": {
+    "rules-modal": "/components/rules-modal/rules-modal"
+  }
+}

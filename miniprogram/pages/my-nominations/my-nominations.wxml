@@ -1,0 +1,58 @@
+<view class="my-nom-container">
+  <nav-bar 
+    title="我的提名" 
+    subtitle="参赛毛孩状态追踪" 
+    showMyNomination="{{false}}" 
+    showBack="{{true}}" 
+    showRules="{{false}}" 
+  />
+
+  <scroll-view scroll-y class="nom-scroll">
+    <view class="user-header-card">
+      <view class="user-avatar-tag">🐾</view>
+      <view class="user-info">
+        <text class="user-ldap-title">活动ID: {{userLdap}}</text>
+        <text class="user-sub">（私密页面，仅你本人可见实时票数与晋级状态）</text>
+      </view>
+    </view>
+
+    <!-- 参赛列表 -->
+    <view wx:if="{{entries.length > 0}}" class="entries-list">
+      <view wx:for="{{entries}}" wx:key="id" class="nom-entry-card">
+        <view class="entry-left">
+          <watermark-image 
+            src="{{item.photoUrl}}" 
+            petName="{{item.petName}}" 
+            ownerLdap="{{item.ownerLdap}}"
+            showNameAbove="{{false}}"
+            customStyle="width: 84px; height: 84px;"
+          />
+        </view>
+        <view class="entry-right">
+          <view class="entry-top-row">
+            <text class="pet-title">{{item.petName}}</text>
+            <text class="cat-pill" style="background-color: {{item.catBg}}; color: {{item.catText}};">
+              {{item.categoryName}}
+            </text>
+          </view>
+
+          <!-- 当前阶段战绩详情 -->
+          <view class="status-box">
+            <view class="status-pill">{{item.phaseStatusTitle}}</view>
+            <view class="status-desc">{{item.phaseStatusDetail}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:else class="empty-state">
+      <text class="empty-icon">🐶</text>
+      <text class="empty-title">你还没有提名参赛毛孩</text>
+      <text class="empty-sub">快去为自家的毛孩子报名参加 Pawscars 吧！</text>
+      <button class="paw-btn paw-btn-primary empty-btn" bindtap="onGoNominate">
+        立即去提名
+      </button>
+    </view>
+  </scroll-view>
+</view>

@@ -1,0 +1,28 @@
+<view class="nav-bar-container">
+  <!-- 左侧：我的提名入口 -->
+  <view class="nav-left">
+    <view wx:if="{{showMyNomination}}" class="my-nomination-btn" bindtap="onTapMyNomination">
+      <text class="icon">📋</text>
+      <text class="text">我的提名</text>
+    </view>
+    <view wx:elif="{{showBack}}" class="back-btn" bindtap="onTapBack">
+      <text class="back-arrow">‹</text>
+      <text class="text">返回</text>
+    </view>
+  </view>
+
+  <!-- 中间：两行标题 -->
+  <view class="nav-center">
+    <view class="main-title">{{title || 'Pawscars毛孩奥斯卡'}}</view>
+    <view wx:if="{{subtitle}}" class="sub-title">{{subtitle}}</view>
+  </view>
+
+  <!-- 右侧：比赛规则气泡按钮 -->
+  <view class="nav-right">
+    <view wx:if="{{showRules}}" class="rules-bubble-btn" bindtap="onTapRules">
+      <view class="avatar-ring">
+        <text class="avatar-text">宫</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "颁奖盛典",
+  "navigationBarBackgroundColor": "#FBEAF0",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/nav-bar",
+    "cert-modal": "/components/cert-modal/cert-modal",
+    "rules-modal": "/components/rules-modal/rules-modal"
+  }
+}

@@ -1,0 +1,10 @@
+<view class="pet-watermark-wrap {{customClass}}">
+  <view wx:if="{{showNameAbove && petName}}" class="pet-name-above">{{petName}}</view>
+  <view class="image-box" style="{{customStyle}}">
+    <image class="pet-img" src="{{src}}" mode="aspectFill" />
+    <view wx:if="{{!showNameAbove && petName}}" class="pet-name-tag">{{petName}}</view>
+    <view class="watermark-tag">{{maskedLdap}}</view>
+    <!-- Slot for overlay items like heart icon or selection check -->
+    <slot></slot>
+  </view>
+</view>

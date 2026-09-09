@@ -1,0 +1,37 @@
+<view class="auth-container">
+  <view class="auth-card">
+    <view class="auth-header">
+      <view class="auth-icon-circle">🐾</view>
+      <view class="auth-title">欢迎参加 Pawscars</view>
+      <view class="auth-subtitle">请先绑定你的社群活动ID (LDAP)</view>
+    </view>
+
+    <view class="auth-form">
+      <view class="input-label">活动ID (LDAP)</view>
+      <input 
+        class="ldap-input {{hasError ? 'input-error' : ''}}" 
+        placeholder="例如：JENNIFER（仅限英文字母）" 
+        value="{{ldapInput}}"
+        bindinput="onInputLdap"
+        maxlength="20"
+      />
+      <view wx:if="{{hasError}}" class="error-msg">{{errorMessage}}</view>
+      <view class="rule-hint">
+        ℹ️ 说明：ID 用于评选身份标识与拉票辨识（前端展示时会自动隐去部分字母如 JE****** 保障隐私）。
+      </view>
+
+      <button class="paw-btn paw-btn-primary submit-btn" bindtap="onSubmitBinding">
+        确认绑定
+      </button>
+    </view>
+
+    <!-- ID申诉入口 -->
+    <view class="appeal-box">
+      <text class="appeal-title">ID 被他人占用了？</text>
+      <text class="appeal-desc">若发现常用 ID 被误占用，请点击下方联系管理员核实解绑：</text>
+      <view class="appeal-action" bindtap="onContactAdmin">
+        <text class="appeal-link">📩 联系管理员申诉</text>
+      </view>
+    </view>
+  </view>
+</view>

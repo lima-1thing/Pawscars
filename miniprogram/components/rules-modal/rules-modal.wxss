@@ -1,0 +1,155 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 340px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: popIn 0.25s ease-out;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  padding: 16px 20px;
+  background: #FBEAF0;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.host-avatar-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #F4C0D1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.avatar-text {
+  font-size: 13px;
+  font-weight: bold;
+  color: #612D3A;
+}
+
+.header-info {
+  flex: 1;
+}
+
+.host-name {
+  font-size: 11px;
+  color: #993C1D;
+  display: block;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #38242A;
+}
+
+.close-btn {
+  font-size: 24px;
+  color: #887B7A;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.modal-body {
+  max-height: 380px;
+  padding: 16px 20px;
+  box-sizing: border-box;
+}
+
+.rule-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2B2625;
+  margin-bottom: 6px;
+}
+
+.section-text {
+  font-size: 12px;
+  color: #635C5B;
+  line-height: 1.5;
+}
+
+.rule-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FAC775;
+  color: #5C4A02;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #332827;
+  display: block;
+}
+
+.step-desc {
+  font-size: 11px;
+  color: #736B69;
+  line-height: 1.4;
+}
+
+.modal-footer {
+  padding: 12px 20px 16px;
+}
+
+.full-btn {
+  width: 100%;
+}

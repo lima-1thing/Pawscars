@@ -1,0 +1,73 @@
+<view class="initial-vote-container">
+  <!-- 顶部三段式导航条 -->
+  <nav-bar 
+    title="Pawscars毛孩奥斯卡" 
+    subtitle="初选投票" 
+    showMyNomination="{{true}}" 
+    showRules="{{true}}"
+    bind:openRules="onOpenRules"
+  />
+
+  <!-- 正文区：三门类同页分行展示 -->
+  <scroll-view scroll-y class="vote-rows-scroll">
+    <view class="category-row-section" wx:for="{{categoryList}}" wx:key="id" wx:for-item="cat">
+      <!-- 门类行头：名称 + 已选计数器 -->
+      <view class="row-header">
+        <text class="row-cat-name" style="color: {{cat.textColor}};">{{cat.name}}</text>
+        <view class="row-counter-badge">
+          已选 <text class="counter-num">{{cat.selectedIds.length}}</text>/8
+        </view>
+      </view>
+
+      <!-- 横向滑动区：支持左右滑动翻看该门类全部候选毛孩 -->
+      <view class="horizontal-slider-wrap">
+        <swiper 
+          class="pet-swiper" 
+          current="{{cat.currentIndex}}"
+          previous-margin="36px" 
+          next-margin="36px"
+          bindchange="onSwiperChange"
+          data-catid="{{cat.id}}"
+        >
+          <swiper-item wx:for="{{cat.entries}}" wx:key="id" wx:for-item="pet" class="swiper-pet-item">
+            <view class="card-outer-wrap">
+              <!-- 宠物名居中显示在卡片正上方 -->
+              <view class="pet-name-top">{{pet.petName}}</view>
+
+              <!-- 中间大图卡片 (150×100px, 圆角14px, 主题马卡龙底色) -->
+              <view 
+                class="main-pet-card {{cat.selectedMap[pet.id] ? 'card-selected' : ''}}"
+                style="background-color: {{cat.bg}};"
+                bindtap="onToggleSelect"
+                data-catid="{{cat.id}}"
+                data-petid="{{pet.id}}"
+              >
+                <!-- 毛孩照片 -->
+                <image class="card-pet-img" src="{{pet.photoUrl}}" mode="aspectFill" />
+
+                <!-- 右上角心形按钮 (空心=未选，实心红心=已选) -->
+                <view class="heart-badge-btn" catchtap="onToggleSelect" data-catid="{{cat.id}}" data-petid="{{pet.id}}">
+                  <text wx:if="{{cat.selectedMap[pet.id]}}" class="heart-icon heart-active">❤️</text>
+                  <text wx:else class="heart-icon heart-empty">🤍</text>
+                </view>
+
+                <!-- 右下角打码水印 (半透明白底小字) -->
+                <view class="watermark-overlay">{{pet.maskedLdap}}</view>
+              </view>
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部吸底提交按钮 -->
+  <view class="bottom-bar">
+    <button class="paw-btn paw-btn-primary submit-vote-btn" bindtap="onSubmitInitialVotes">
+      选好了！冲鸭
+    </button>
+  </view>
+
+  <!-- 比赛规则弹窗 -->
+  <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
+</view>

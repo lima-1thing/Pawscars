@@ -1,0 +1,216 @@
+.match-vote-container {
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 门类切换胶囊栏 */
+.category-tabs-bar {
+  display: flex;
+  padding: 10px 20px;
+  gap: 8px;
+  overflow-x: auto;
+  background: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.cat-tab-pill {
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: #F4F2EC;
+  color: #7A7270;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab-icon {
+  margin-right: 4px;
+}
+
+.active-cat-tab {
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.pk-hint-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #554A49;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+/* 对决卡片区：上下堆叠，正方形 150×150px */
+.match-duel-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 20px;
+}
+
+.match-pet-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.match-pet-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2B2625;
+  margin-bottom: 6px;
+}
+
+.photo-box {
+  width: 150px;
+  height: 150px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1.5px solid #EBE6DC;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pet-photo {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 选中动效：边框高亮珊瑚红 #D85A30 2.5px + scale 1.03 + 打勾徽标 */
+.card-chosen .photo-box {
+  border: 2.5px solid #D85A30;
+  transform: scale(1.03);
+  box-shadow: 0 6px 18px rgba(216, 90, 48, 0.25);
+}
+
+.chosen-tick-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #D85A30;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  animation: popTick 0.2s ease-out;
+}
+
+@keyframes popTick {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+.watermark-tag {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  color: #4A3E3D;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* 圆形 VS 分隔符 */
+.vs-circle-divider {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F1EFE8;
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  margin: 10px 0;
+  z-index: 10;
+}
+
+.vs-text {
+  font-size: 13px;
+  font-weight: 800;
+  color: #554A49;
+  letter-spacing: 0.5px;
+}
+
+/* 底部操作区 */
+.bottom-action-wrap {
+  padding: 10px 20px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.share-btn {
+  width: 100%;
+  max-width: 320px;
+  height: 42px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.share-icon {
+  margin-right: 4px;
+}
+
+/* 完成态 */
+.completed-box, .no-matches-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.congrats-trophy, .no-match-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.completed-title, .no-match-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2B2625;
+  margin-bottom: 8px;
+}
+
+.completed-desc, .no-match-desc {
+  font-size: 13px;
+  color: #7A7270;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.completed-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.comp-btn {
+  width: 100%;
+  height: 42px;
+}

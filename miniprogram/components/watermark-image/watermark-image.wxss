@@ -1,0 +1,59 @@
+.pet-watermark-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.pet-name-above {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2B2625;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.image-box {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #F4F2EC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.pet-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pet-name-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.watermark-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  color: #4A3E3D;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

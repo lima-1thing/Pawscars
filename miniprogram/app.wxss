@@ -1,0 +1,120 @@
+/**
+ * Pawscars Global Macaron Design System
+ * 严格按照 UI/UX 设计文档 v1.0 规范编写
+ */
+
+page {
+  --bg-banner: #FBEAF0;
+  --bg-page: #FDFBF7;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #F4F2EC;
+  --bg-capsule: #F1EFE8;
+
+  /* 马卡龙三大门类色板 */
+  --food-bg: #FAC775;
+  --food-text: #412402;
+  --abstract-bg: #9FE1CB;
+  --abstract-text: #04342C;
+  --beauty-bg: #CECBF6;
+  --beauty-text: #26215C;
+
+  /* 核心CTA与点缀色 */
+  --cta-bg: #F9E27A;
+  --cta-text: #5C4A02;
+  --host-avatar-bg: #F4C0D1;
+  --powder-blue: #C7E4F5;
+  --coral-accent: #D85A30;
+  --text-primary: #2B2625;
+  --text-secondary: #7A7270;
+  --text-muted: #A39B99;
+  --border-light: #ECE7DE;
+
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 布局辅助 */
+.container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 按钮通用规范 */
+.paw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  text-align: center;
+  border: none;
+  padding: 0 24px;
+}
+
+.paw-btn-primary {
+  background-color: var(--cta-bg);
+  color: var(--cta-text);
+  box-shadow: 0 4px 12px rgba(249, 226, 122, 0.4);
+}
+
+.paw-btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 6px rgba(249, 226, 122, 0.3);
+}
+
+.paw-btn-outline {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-light);
+}
+
+.paw-btn-outline:active {
+  background-color: #F7F5F0;
+}
+
+/* 卡片通用规范 (18px圆角) */
+.paw-card {
+  background: var(--bg-surface);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+/* 赛制胶囊条 */
+.rule-capsule {
+  background: var(--bg-capsule);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* 水印打码角标小字 */
+.watermark-badge {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #554A49;
+  letter-spacing: 0.5px;
+}

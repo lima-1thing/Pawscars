@@ -1,0 +1,222 @@
+.admin-container {
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-scroll {
+  flex: 1;
+  padding: 16px 20px 40px;
+  box-sizing: border-box;
+}
+
+.admin-section-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #38242A;
+  margin-bottom: 12px;
+}
+
+.phase-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.phase-btn {
+  height: 38px;
+  background: #F4F2EC;
+  border: 1.5px solid #EBE6DC;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #554A49;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.active-phase {
+  background: #FAC775;
+  border-color: #D8982D;
+  color: #412402;
+  font-weight: 700;
+}
+
+.phase-tip {
+  font-size: 11px;
+  color: #7A7270;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.highlight-text {
+  color: #D85A30;
+  font-weight: 700;
+}
+
+.desc-text {
+  font-size: 12px;
+  color: #635C5B;
+  margin-bottom: 8px;
+}
+
+/* 看板 */
+.metrics-row {
+  display: flex;
+  justify-content: space-around;
+  background: #FAF8F2;
+  border-radius: 14px;
+  padding: 12px 6px;
+  margin-bottom: 12px;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metric-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #2B2625;
+}
+
+.metric-label {
+  font-size: 10px;
+  color: #8C8482;
+  margin-top: 2px;
+}
+
+.cat-stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cat-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #F7F5F0;
+  border-radius: 10px;
+}
+
+.cat-stat-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #38242A;
+}
+
+.cat-stat-badge {
+  font-size: 11px;
+  color: #04342C;
+  background: #9FE1CB;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* 身份切换 */
+.quick-id-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.small-id-btn {
+  height: 32px;
+  font-size: 11px;
+  background: #F1EFE8;
+  border-radius: 10px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.unbind-action {
+  margin-top: 6px;
+}
+
+.text-danger {
+  color: #E56B6F;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 门类编辑 */
+.cat-edit-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cat-edit-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.cat-edit-input {
+  flex: 1;
+  height: 36px;
+  background: #F7F5F0;
+  border: 1px solid #EAE5DB;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* 违规处理 */
+.moderation-desc {
+  font-size: 11px;
+  color: #8C8482;
+  margin-bottom: 8px;
+}
+
+.moderation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.moderation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #FAF8F2;
+  border-radius: 8px;
+}
+
+.mod-name {
+  font-size: 12px;
+  color: #38242A;
+}
+
+.mod-btn {
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.reset-all-btn {
+  width: 100%;
+  height: 40px;
+  font-size: 13px;
+  color: #E56B6F;
+  border-color: #E56B6F;
+  margin-top: 6px;
+}

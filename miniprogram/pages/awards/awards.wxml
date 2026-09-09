@@ -1,0 +1,133 @@
+<view class="awards-page-container">
+  <!-- 顶部三段式导航条 -->
+  <nav-bar 
+    title="Pawscars毛孩奥斯卡" 
+    subtitle="颁奖结果" 
+    showMyNomination="{{true}}" 
+    showRules="{{true}}"
+    bind:openRules="onOpenRules"
+  />
+
+  <scroll-view scroll-y class="awards-scroll">
+    <!-- 门类横向胶囊切换标签 -->
+    <view class="cat-tabs-row">
+      <view 
+        wx:for="{{categories}}" 
+        wx:key="id"
+        class="tab-pill {{currentCategory.id === item.id ? 'tab-pill-active' : ''}}"
+        style="{{currentCategory.id === item.id ? 'background-color:' + item.bg + '; color:' + item.textColor : ''}}"
+        bindtap="onSelectCategory"
+        data-id="{{item.id}}"
+      >
+        {{item.name}}
+      </view>
+    </view>
+
+    <!-- 领奖台区域 (模拟真实颁奖台高低层次：亚军左 - 冠军中最大上浮 - 季军右) -->
+    <view class="podium-section">
+      <view class="podium-stage">
+        <!-- 亚军 (银牌，左侧，中等尺寸) -->
+        <view class="podium-slot slot-silver" wx:if="{{awardsResult.runnerUp}}" bindtap="onOpenCert" data-rank="runnerUp">
+          <view class="medal-badge medal-silver">🥈</view>
+          <view class="podium-card card-silver">
+            <image class="podium-pet-photo" src="{{awardsResult.runnerUp.photoUrl}}" mode="aspectFill" />
+            <view class="podium-watermark">{{awardsResult.runnerUp.maskedLdap}}</view>
+          </view>
+          <text class="pet-name">{{awardsResult.runnerUp.petName}}</text>
+          <text class="rank-tag tag-silver">亚军</text>
+        </view>
+
+        <!-- 冠军 (金牌，居中最大，上浮，金奖杯) -->
+        <view class="podium-slot slot-gold" wx:if="{{awardsResult.champion}}" bindtap="onOpenCert" data-rank="champion">
+          <view class="trophy-badge">🏆</view>
+          <view class="podium-card card-gold">
+            <image class="podium-pet-photo" src="{{awardsResult.champion.photoUrl}}" mode="aspectFill" />
+            <view class="podium-watermark">{{awardsResult.champion.maskedLdap}}</view>
+          </view>
+          <text class="pet-name champion-name">{{awardsResult.champion.petName}}</text>
+          <text class="rank-tag tag-gold">冠军</text>
+        </view>
+
+        <!-- 季军 (铜牌，右侧，较小尺寸) -->
+        <view class="podium-slot slot-bronze" wx:if="{{awardsResult.thirdPlace}}" bindtap="onOpenCert" data-rank="thirdPlace">
+          <view class="medal-badge medal-bronze">🥉</view>
+          <view class="podium-card card-bronze">
+            <image class="podium-pet-photo" src="{{awardsResult.thirdPlace.photoUrl}}" mode="aspectFill" />
+            <view class="podium-watermark">{{awardsResult.thirdPlace.maskedLdap}}</view>
+          </view>
+          <text class="pet-name">{{awardsResult.thirdPlace.petName}}</text>
+          <text class="rank-tag tag-bronze">季军</text>
+        </view>
+      </view>
+
+      <!-- 核心主操作："生成获奖证书" -->
+      <view class="cert-btn-wrap">
+        <button class="paw-btn paw-btn-primary full-cert-btn" bindtap="onOpenCert" data-rank="champion">
+          生成获奖证书
+        </button>
+      </view>
+    </view>
+
+    <!-- 分隔线 -->
+    <view class="awards-divider"></view>
+
+    <!-- 贺词墙区块 -->
+    <view class="congrats-wall-section">
+      <view class="wall-header">
+        <view class="wall-title-box">
+          <text class="wall-title">贺词墙</text>
+          <text class="wall-count">({{congratsList.length}}条祝贺)</text>
+        </view>
+        <view class="wall-rule-tip">每人限发1条祝福</view>
+      </view>
+
+      <!-- 贺词留言列表 -->
+      <view class="congrats-list">
+        <view wx:for="{{congratsList}}" wx:key="id" class="congrats-card">
+          <view class="congrats-content">{{item.content}}</view>
+          <view class="congrats-meta">
+            <text class="congrats-sender">{{item.maskedLdap}}</text>
+            <text class="congrats-time">{{item.timeStr}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 次级操作："发送贺词" -->
+      <view class="send-congrats-wrap">
+        <button class="paw-btn paw-btn-outline send-congrats-btn" bindtap="onOpenSendModal">
+          ✍️ 发送贺词
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 获奖证书弹窗 -->
+  <cert-modal 
+    visible="{{certModalVisible}}" 
+    entry="{{certEntry}}" 
+    categoryName="{{currentCategory.name}}" 
+    rankText="{{certRankText}}"
+    bind:close="onCloseCert"
+  />
+
+  <!-- 发送贺词弹窗 -->
+  <view wx:if="{{sendModalVisible}}" class="modal-mask">
+    <view class="send-modal-card">
+      <view class="send-modal-title">为王者毛孩送上祝贺</view>
+      <textarea 
+        class="congrats-textarea" 
+        placeholder="写下你对毛孩的祝福（限50字以内）" 
+        value="{{myCongratsText}}"
+        bindinput="onInputCongrats"
+        maxlength="50"
+      />
+      <view class="text-length-hint">{{myCongratsText.length}}/50</view>
+      <view class="modal-btn-row">
+        <button class="paw-btn paw-btn-outline half-btn" bindtap="onCloseSendModal">取消</button>
+        <button class="paw-btn paw-btn-primary half-btn" bindtap="onSubmitCongrats">发送祝福</button>
+      </view>
+    </view>
+  </view>
+
+  <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
+</view>

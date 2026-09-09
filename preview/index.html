@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pawscars 毛孩奥斯卡 - 交互模拟器</title>
+  <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+  <!-- 顶部演示控制栏 (方便测试人员与评委快速切换阶段与身份) -->
+  <header class="top-sim-bar">
+    <div class="sim-brand">
+      <span class="sim-logo">🐾</span>
+      <span class="sim-title">Pawscars 模拟控制台</span>
+    </div>
+    <div class="sim-controls">
+      <div class="sim-group">
+        <label>活动阶段快速切换：</label>
+        <select id="simPhaseSelect" class="sim-select">
+          <option value="nominate">1. 报名期 (我要提名)</option>
+          <option value="vote_initial">2. 初选划屏 (三门类同页横滑)</option>
+          <option value="vote_match_8">3. 8进4单败淘汰赛 (VS对决)</option>
+          <option value="vote_match_4">4. 4强巅峰德比 (循环赛)</option>
+          <option value="awards">5. 颁奖盛典 (领奖台+证书+贺词墙)</option>
+        </select>
+      </div>
+      <div class="sim-group">
+        <label>当前模拟身份：</label>
+        <select id="simUserSelect" class="sim-select">
+          <option value="JENNIFER">JENNIFER (已报: 团子/迷糊/小福)</option>
+          <option value="ZHANG">ZHANG (已报: 旺财/二哈/小白)</option>
+          <option value="ALICE">ALICE (已报: 肉包/汤圆/雪球)</option>
+          <option value="BOBBY">BOBBY (已报: 麻薯/皮皮/可可)</option>
+          <option value="UNBOUND">-- 未绑定身份 (测试首次进入) --</option>
+        </select>
+      </div>
+      <button id="simResetBtn" class="sim-action-btn">🔄 重置初始数据</button>
+      <button id="simAdminBtn" class="sim-action-btn admin-toggle">⚙️ 打开小程序管理后台</button>
+    </div>
+  </header>
+
+  <!-- 375px 真实手机视口容器 -->
+  <main class="device-stage">
+    <div class="device-frame">
+      <!-- 手机听筒/灵动岛装饰 -->
+      <div class="device-notch">
+        <div class="notch-speaker"></div>
+      </div>
+
+      <!-- 微信小程序内容视口 -->
+      <div class="app-viewport" id="appViewport">
+        <!-- 动态渲染的小程序页面将挂载到此处 -->
+        <div id="pageContainer" class="page-container"></div>
+      </div>
+
+      <!-- 全局比赛规则弹窗 -->
+      <div id="globalRulesModal" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="host-avatar-badge"><span class="avatar-text">宫</span></div>
+            <div class="header-info">
+              <span class="host-name">宫师姐发言</span>
+              <span class="modal-title">Pawscars 比赛规则说明</span>
+            </div>
+            <div class="close-btn" id="closeRulesBtn">×</div>
+          </div>
+          <div class="modal-body">
+            <div class="rule-section">
+              <div class="section-title">🏆 赛制全流程</div>
+              <div class="rule-timeline">
+                <div class="timeline-step">
+                  <span class="step-num">1</span>
+                  <div class="step-content">
+                    <span class="step-title">报名期（7天）</span>
+                    <span class="step-desc">提交爱宠单张照片，自动居中裁剪，可选一个或多个门类报名。</span>
+                  </div>
+                </div>
+                <div class="timeline-step">
+                  <span class="step-num">2</span>
+                  <div class="step-content">
+                    <span class="step-title">初选划屏（7天）</span>
+                    <span class="step-desc">三门类同页横向左右滑动，每类最多选8张。系统统计被选次数，前8名晋级。</span>
+                  </div>
+                </div>
+                <div class="timeline-step">
+                  <span class="step-num">3</span>
+                  <div class="step-content">
+                    <span class="step-title">8进4淘汰赛（7天）</span>
+                    <span class="step-desc">8强按主人ID字母顺序 (A→Z) 两两配对，4场1V1单败对决，胜者晋级4强。</span>
+                  </div>
+                </div>
+                <div class="timeline-step">
+                  <span class="step-num">4</span>
+                  <div class="step-content">
+                    <span class="step-title">4强巅峰德比（7天）</span>
+                    <span class="step-desc">4强之间两两对战（共6场循环赛），按总胜场与票数决出金银铜牌！</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rule-section">
+              <div class="section-title">⚖️ 打平判定规则</div>
+              <p class="section-text">全阶段统一：若票数并列，以“谁先达到该票数的时刻更早（以选票时间戳为准）”判定胜出。</p>
+            </div>
+            <div class="rule-section">
+              <div class="section-title">🔒 隐私与水印</div>
+              <p class="section-text">所有参赛照片统一标注宠物名与打码主人ID（如 JE******），社群内可辨识同时保障个人隐私。</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="paw-btn paw-btn-primary full-btn" id="confirmRulesBtn">我知道啦！继续比赛</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全局获奖证书海报生成弹窗 -->
+      <div id="globalCertModal" class="cert-overlay hidden">
+        <div class="cert-dialog">
+          <div class="cert-poster" id="certPosterElement">
+            <div class="cert-border-outer">
+              <div class="cert-border-inner">
+                <div class="cert-header">
+                  <div class="oscar-laurel">🏆</div>
+                  <div class="cert-event-title">PAWSCARS 2026</div>
+                  <div class="cert-event-subtitle">首届毛孩奥斯卡荣誉盛典</div>
+                </div>
+                <div class="cert-avatar-frame">
+                  <img id="certPetPhoto" class="cert-pet-photo" src="" alt="获奖毛孩" />
+                  <div id="certMaskedTag" class="cert-badge-overlay">JE******</div>
+                </div>
+                <div id="certPetName" class="cert-pet-name">团子</div>
+                <div class="cert-award-ribbon">
+                  <span id="certRibbonText" class="ribbon-text">干饭王者 · 冠军</span>
+                </div>
+                <div class="cert-declaration">
+                  在纽约🐶群七周年特别评选中，凭借超凡魅力与极高人气，荣获此殊荣，特发此证以资表彰！
+                </div>
+                <div class="cert-footer">
+                  <div class="footer-sign">
+                    <span class="sign-title">大会主持人</span>
+                    <span class="sign-name">宫师姐 敬颁</span>
+                  </div>
+                  <div class="footer-seal">
+                    <span class="seal-icon">🎖️</span>
+                    <span class="seal-text">官方认证</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="cert-actions">
+            <button class="paw-btn paw-btn-primary action-btn" id="downloadCertBtn">保存证书图片</button>
+            <button class="paw-btn paw-btn-outline action-btn" id="closeCertBtn">关闭</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全局发送贺词弹窗 -->
+      <div id="globalCongratsModal" class="modal-overlay hidden">
+        <div class="send-modal-card">
+          <div class="send-modal-title">为王者毛孩送上祝贺</div>
+          <textarea id="congratsTextarea" class="congrats-textarea" placeholder="写下你对毛孩的祝福（限50字以内）" maxlength="50"></textarea>
+          <div class="text-length-hint"><span id="congratsLength">0</span>/50</div>
+          <div class="modal-btn-row">
+            <button class="paw-btn paw-btn-outline half-btn" id="closeCongratsModalBtn">取消</button>
+            <button class="paw-btn paw-btn-primary half-btn" id="submitCongratsModalBtn">发送祝福</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="preview.js"></script>
+</body>
+</html>

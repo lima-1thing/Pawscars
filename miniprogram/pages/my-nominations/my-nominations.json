@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "我的提名",
+  "navigationBarBackgroundColor": "#FBEAF0",
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/nav-bar",
+    "watermark-image": "/components/watermark-image/watermark-image"
+  }
+}
