@@ -19,7 +19,7 @@
     "compileHotReLoad": true,
     "lazyCodeLoading": "requiredComponents"
   },
-  "appid": "touristappid",
+  "appid": "wxf02b8c1f2c026a7c",
   "projectname": "Pawscars",
   "libVersion": "3.3.4",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate",
