@@ -68,7 +68,7 @@ Pawscars 模拟奥斯卡分类评选，按三大特色门类进行，每阶段 7
   // 当前阶段: 'nominate' (报名期), 'vote_initial' (初选), 'vote_match_8' (8进4), 'vote_match_4' (4强德比), 'awards' (颁奖)
   currentPhase: 'nominate',
   phaseDeadline: Date.now() + 7 * 24 * 3600 * 1000,
-  adminOpenids: ['ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER']
+  adminOpenids: ['ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER', 'LIMA0001', 'lima0001', 'PRIVACY-BY-DESIGN', 'privacy-by-design']
 };
 
 const DEFAULT_CATEGORIES = [

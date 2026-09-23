@@ -21,8 +21,8 @@ App({
 
     // 初始化全局配置与用户状态
     const config = StorageService.getConfig();
-    const userBinding = StorageService.getUserBinding();
-    const isAdmin = userBinding && config.adminOpenids && config.adminOpenids.includes(userBinding.ldap);
+    const adminList = (config.adminOpenids || []).map(id => (id || '').toUpperCase());
+    const isAdmin = userBinding && userBinding.ldap && adminList.includes(userBinding.ldap.toUpperCase());
 
     this.globalData = {
       config,

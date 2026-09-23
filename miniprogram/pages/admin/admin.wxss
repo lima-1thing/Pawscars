@@ -146,6 +146,29 @@
   align-items: center;
 }
 
+.admin-badge-btn {
+  background: #FAC775;
+  color: #412402;
+  font-weight: 700;
+  border: 1px solid #E5AA45;
+}
+
+.admin-tags-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-tag-pill {
+  font-size: 11px;
+  background: #FFF3CD;
+  color: #633806;
+  border: 1px solid #F5C658;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
 .unbind-action {
   margin-top: 6px;
 }

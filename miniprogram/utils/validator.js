@@ -8,6 +8,8 @@
  * @param {string} id 
  * @returns {{ valid: boolean, message: string }}
  */
+const ADMIN_WHITELIST = ['LIMA0001', 'PRIVACY-BY-DESIGN', 'ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER'];
+
 function validateLdap(id) {
   if (!id || typeof id !== 'string') {
     return { valid: false, message: '请输入你的活动ID (LDAP)' };
@@ -15,6 +17,9 @@ function validateLdap(id) {
   const trimmed = id.trim();
   if (trimmed.length < 2) {
     return { valid: false, message: '活动ID长度至少为2位字母' };
+  }
+  if (ADMIN_WHITELIST.includes(trimmed.toUpperCase())) {
+    return { valid: true, message: '' };
   }
   if (!/^[A-Za-z]+$/.test(trimmed)) {
     return { valid: false, message: '活动ID仅支持英文字母，不能包含数字或特殊符号' };

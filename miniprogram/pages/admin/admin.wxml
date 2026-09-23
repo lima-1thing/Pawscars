@@ -88,9 +88,21 @@
         <button class="small-id-btn" bindtap="onSwitchId" data-id="ZHANG">ZHANG</button>
         <button class="small-id-btn" bindtap="onSwitchId" data-id="ALICE">ALICE</button>
         <button class="small-id-btn" bindtap="onSwitchId" data-id="BOBBY">BOBBY</button>
+        <button class="small-id-btn admin-badge-btn" bindtap="onSwitchId" data-id="LIMA0001">👑 LIMA0001</button>
+        <button class="small-id-btn admin-badge-btn" bindtap="onSwitchId" data-id="privacy-by-design">👑 privacy-by-design</button>
       </view>
       <view class="unbind-action" bindtap="onUnbindCurrent">
         <text class="text-danger">⚠️ 解绑当前身份（测试首次进入流程）</text>
+      </view>
+    </view>
+
+    <!-- 3.1 管理员名单公示 -->
+    <view class="admin-section-card">
+      <view class="section-title">👑 活动管理员团队</view>
+      <view class="admin-tags-row">
+        <text class="admin-tag-pill">👑 lima0001 (LIMA0001)</text>
+        <text class="admin-tag-pill">👑 privacy-by-design</text>
+        <text class="admin-tag-pill">👑 宫师姐 (ADMIN_GONG)</text>
       </view>
     </view>
 
