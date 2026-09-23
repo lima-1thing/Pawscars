@@ -12,8 +12,9 @@ const {
 console.log('Testing Validator...');
 assert.strictEqual(validateLdap('JENNIFER').valid, true);
 assert.strictEqual(validateLdap('Alex').valid, true);
-assert.strictEqual(validateLdap('LIMA0001').valid, true);
-assert.strictEqual(validateLdap('privacy-by-design').valid, true);
+// 管理员不走活动ID例外：含数字/符号的ID一律拒绝
+assert.strictEqual(validateLdap('LIMA0001').valid, false);
+assert.strictEqual(validateLdap('privacy-by-design').valid, false);
 assert.strictEqual(validateLdap('Alex123').valid, false);
 assert.strictEqual(validateLdap('Tom_Cat').valid, false);
 assert.strictEqual(validateLdap('A').valid, false);

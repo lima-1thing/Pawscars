@@ -49,8 +49,7 @@ const INITIAL_STATE = {
     hostIntro: '为庆祝纽约🐶群活跃七周年，宫师姐决定邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
     rulesSummary: '赛制：报名 → 8强投票 → 8进4淘汰赛 → 4强巅峰德比',
     callToActionText: '准备好让全体🐶友欣赏你家毛孩了吗？',
-    currentPhase: 'nominate',
-    adminOpenids: ['ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER', 'LIMA0001', 'privacy-by-design']
+    currentPhase: 'nominate'
   },
   currentUserLdap: 'JENNIFER',
   categories: [
@@ -412,9 +411,7 @@ const Router = {
     document.getElementById('authSubmitBtn').onclick = () => {
       const input = document.getElementById('authLdapInput').value.trim();
       const err = document.getElementById('authErrorMsg');
-      const ADMINS = ['LIMA0001', 'PRIVACY-BY-DESIGN', 'ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER'];
-      const isAdmin = ADMINS.includes(input.toUpperCase());
-      if (!input || (!/^[A-Za-z]+$/.test(input) && !isAdmin) || input.length < 2) {
+      if (!input || !/^[A-Za-z]+$/.test(input) || input.length < 2) {
         err.innerText = '活动ID仅支持纯英文字母，且长度至少2位';
         err.style.display = 'block';
         return;
@@ -1063,21 +1060,11 @@ const Router = {
             <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#38242A;">👤 模拟身份快捷切换器</div>
             <div style="font-size:12px;color:#635C5B;margin-bottom:8px;">当前登录ID：<strong style="color:#D85A30;">${Store.state.currentUserLdap || '未绑定'}</strong></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-              ${['JENNIFER', 'ZHANG', 'ALICE', 'BOBBY', 'LIMA0001', 'privacy-by-design'].map(id => `
-                <button class="small-switch-btn" data-id="${id}" style="padding:4px 10px;font-size:11px;border-radius:10px;background:${id.includes('0') || id.includes('-') ? '#FAC775' : '#F1EFE8'};color:${id.includes('0') || id.includes('-') ? '#412402' : '#333'};font-weight:${id.includes('0') || id.includes('-') ? '700' : 'normal'};border:none;cursor:pointer;">${id.includes('0') || id.includes('-') ? '👑 ' : ''}${id}</button>
+              ${['JENNIFER', 'ZHANG', 'ALICE', 'BOBBY'].map(id => `
+                <button class="small-switch-btn" data-id="${id}" style="padding:4px 10px;font-size:11px;border-radius:10px;background:#F1EFE8;border:none;cursor:pointer;">${id}</button>
               `).join('')}
             </div>
             <div style="font-size:11px;color:#E56B6F;font-weight:700;cursor:pointer;" id="unbindAdminBtn">⚠️ 解绑当前身份（测试首次进入流程）</div>
-          </div>
-
-          <!-- 活动管理员名单公示 -->
-          <div style="background:#FFF;border-radius:20px;padding:18px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.03);">
-            <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#38242A;">👑 活动管理员团队</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <span style="background:#FFF3CD;color:#633806;border:1px solid #F5C658;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">👑 lima0001 (LIMA0001)</span>
-              <span style="background:#FFF3CD;color:#633806;border:1px solid #F5C658;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">👑 privacy-by-design</span>
-              <span style="background:#FFF3CD;color:#633806;border:1px solid #F5C658;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;">👑 宫师姐 (ADMIN_GONG)</span>
-            </div>
           </div>
 
           <!-- 自定义门类 -->

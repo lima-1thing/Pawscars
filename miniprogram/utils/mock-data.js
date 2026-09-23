@@ -33,6 +33,9 @@ const createPetSvg = (bg, animal, name) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
+const DAY_MS = 24 * 3600 * 1000;
+const DAY_START = Date.now();
+
 const DEFAULT_CONFIG = {
   title: 'Pawscars 毛孩奥斯卡',
   subTitle: '纽约🐶群活跃七周年特别企划',
@@ -67,8 +70,17 @@ Pawscars 模拟奥斯卡分类评选，按三大特色门类进行，每阶段 7
   `.trim(),
   // 当前阶段: 'nominate' (报名期), 'vote_initial' (初选), 'vote_match_8' (8进4), 'vote_match_4' (4强德比), 'awards' (颁奖)
   currentPhase: 'nominate',
-  phaseDeadline: Date.now() + 7 * 24 * 3600 * 1000,
-  adminOpenids: ['ADMIN_LIMA', 'ADMIN_GONG', 'DEVELOPER', 'LIMA0001', 'lima0001', 'PRIVACY-BY-DESIGN', 'privacy-by-design']
+  // 各阶段截止时间（毫秒时间戳），管理员可在后台调整；每阶段默认 7 天
+  phaseDeadlines: {
+    nominate: DAY_START + 7 * DAY_MS,
+    vote_initial: DAY_START + 14 * DAY_MS,
+    vote_match_8: DAY_START + 21 * DAY_MS,
+    vote_match_4: DAY_START + 28 * DAY_MS,
+    awards: 0
+  },
+  // 管理员白名单：只填写微信 openid（在云开发控制台或云函数日志中获取），
+  // 不要填写活动ID——活动ID由用户自行输入，任何人都可以冒用
+  adminOpenids: []
 };
 
 const DEFAULT_CATEGORIES = [

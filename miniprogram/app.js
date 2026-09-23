@@ -20,16 +20,31 @@ App({
     }
 
     // 初始化全局配置与用户状态
-    const config = StorageService.getConfig();
-    const adminList = (config.adminOpenids || []).map(id => (id || '').toUpperCase());
-    const isAdmin = userBinding && userBinding.ldap && adminList.includes(userBinding.ldap.toUpperCase());
-
     this.globalData = {
-      config,
-      userBinding,
-      isAdmin: !!isAdmin,
+      config: StorageService.getConfig(),
+      userBinding: StorageService.getUserBinding(),
+      isAdmin: StorageService.isAdmin(),
       rulesModalVisible: false
     };
+  },
+
+  /**
+   * 是否为开发版/体验版：模拟身份切换、数据重置等调试工具只在这里开放
+   */
+  isDevBuild() {
+    try {
+      const { envVersion } = wx.getAccountInfoSync().miniProgram;
+      return envVersion === 'develop' || envVersion === 'trial';
+    } catch (e) {
+      return false;
+    }
+  },
+
+  /**
+   * 可进入管理后台：openid 白名单管理员，或开发/体验版调试
+   */
+  canAccessAdmin() {
+    return StorageService.isAdmin() || this.isDevBuild();
   },
 
   checkUserBinding(redirect = true) {
