@@ -23,8 +23,7 @@ App({
     this.globalData = {
       config: StorageService.getConfig(),
       userBinding: StorageService.getUserBinding(),
-      isAdmin: StorageService.isAdmin(),
-      rulesModalVisible: false
+      isAdmin: StorageService.isAdmin()
     };
   },
 
@@ -58,21 +57,13 @@ App({
       return false;
     }
     this.globalData.userBinding = binding;
+    this.globalData.isAdmin = StorageService.isAdmin();
     return true;
-  },
-
-  showRulesModal() {
-    const pages = getCurrentPages();
-    const curPage = pages[pages.length - 1];
-    if (curPage) {
-      curPage.setData({ rulesModalVisible: true });
-    }
   },
 
   globalData: {
     config: null,
     userBinding: null,
-    isAdmin: false,
-    rulesModalVisible: false
+    isAdmin: false
   }
 });

@@ -1,71 +1,94 @@
 <view class="initial-vote-container">
   <!-- 顶部三段式导航条 -->
-  <nav-bar 
-    title="Pawscars毛孩奥斯卡" 
-    subtitle="初选投票" 
-    showMyNomination="{{true}}" 
+  <nav-bar
+    title="Pawscars毛孩奥斯卡"
+    subtitle="初选投票"
+    showMyNomination="{{true}}"
     showRules="{{true}}"
     bind:openRules="onOpenRules"
   />
 
+  <view wx:if="{{!phaseOpen}}" class="closed-banner">初选投票已截止，已提交的选择仍可在下方查看</view>
+
   <!-- 正文区：三门类同页分行展示 -->
-  <scroll-view scroll-y class="vote-rows-scroll">
+  <view class="vote-rows">
     <view class="category-row-section" wx:for="{{categoryList}}" wx:key="id" wx:for-item="cat">
-      <!-- 门类行头：名称 + 已选计数器 -->
+      <!-- 门类行头：名称 + 状态/计数 -->
       <view class="row-header">
-        <text class="row-cat-name" style="color: {{cat.textColor}};">{{cat.name}}</text>
-        <view class="row-counter-badge">
+        <text class="row-cat-name" style="color: {{cat.textColor}};">{{cat.icon}} {{cat.name}}</text>
+        <view wx:if="{{!cat.needsVote}}" class="row-status-pill">免初选</view>
+        <view wx:elif="{{cat.isLocked}}" class="row-status-pill pill-locked">已提交 ✓</view>
+        <view wx:else class="row-counter-badge">
           已选 <text class="counter-num">{{cat.selectedIds.length}}</text>/8
         </view>
       </view>
 
-      <!-- 横向滑动区：支持左右滑动翻看该门类全部候选毛孩 -->
-      <view class="horizontal-slider-wrap">
-        <swiper 
-          class="pet-swiper" 
+      <!-- 报名不足 9 只：全员直接晋级，无需初选 -->
+      <view wx:if="{{!cat.needsVote}}" class="skip-note" style="background-color: {{cat.bg}}; color: {{cat.textColor}};">
+        本门类共 {{cat.entries.length}} 只报名，全员直接晋级淘汰赛，无需初选投票
+      </view>
+
+      <!-- 横向滑动区：中间当前照片，左右露出前后照片边缘 -->
+      <block wx:else>
+        <swiper
+          class="pet-swiper"
           current="{{cat.currentIndex}}"
-          previous-margin="36px" 
-          next-margin="36px"
+          previous-margin="120rpx"
+          next-margin="120rpx"
           bindchange="onSwiperChange"
           data-catid="{{cat.id}}"
         >
           <swiper-item wx:for="{{cat.entries}}" wx:key="id" wx:for-item="pet" class="swiper-pet-item">
             <view class="card-outer-wrap">
-              <!-- 宠物名居中显示在卡片正上方 -->
               <view class="pet-name-top">{{pet.petName}}</view>
-
-              <!-- 中间大图卡片 (150×100px, 圆角14px, 主题马卡龙底色) -->
-              <view 
-                class="main-pet-card {{cat.selectedMap[pet.id] ? 'card-selected' : ''}}"
+              <view
+                class="main-pet-card {{cat.selectedMap[pet.id] ? 'card-selected' : ''}} {{index === cat.currentIndex ? '' : 'card-side'}}"
                 style="background-color: {{cat.bg}};"
                 bindtap="onToggleSelect"
                 data-catid="{{cat.id}}"
                 data-petid="{{pet.id}}"
               >
-                <!-- 毛孩照片 -->
-                <image class="card-pet-img" src="{{pet.photoUrl}}" mode="aspectFill" />
-
-                <!-- 右上角心形按钮 (空心=未选，实心红心=已选) -->
-                <view class="heart-badge-btn" catchtap="onToggleSelect" data-catid="{{cat.id}}" data-petid="{{pet.id}}">
-                  <text wx:if="{{cat.selectedMap[pet.id]}}" class="heart-icon heart-active">❤️</text>
-                  <text wx:else class="heart-icon heart-empty">🤍</text>
+                <image class="card-pet-img" src="{{pet.photoUrl}}" mode="aspectFill" lazy-load />
+                <!-- 右上角心形：空心=未选，实心红=已选 -->
+                <view class="heart-badge-btn">
+                  <text class="heart-icon">{{cat.selectedMap[pet.id] ? '❤️' : '🤍'}}</text>
                 </view>
-
-                <!-- 右下角打码水印 (半透明白底小字) -->
-                <view class="watermark-overlay">{{pet.maskedLdap}}</view>
+                <view class="watermark-overlay">主人 {{pet.maskedLdap}}</view>
               </view>
             </view>
           </swiper-item>
         </swiper>
-      </view>
+        <view class="position-hint">第 {{cat.currentIndex + 1}} / {{cat.entries.length}} 位 · 左右滑动浏览，点击照片选择</view>
+      </block>
     </view>
-  </scroll-view>
+  </view>
 
   <!-- 底部吸底提交按钮 -->
-  <view class="bottom-bar">
-    <button class="paw-btn paw-btn-primary submit-vote-btn" bindtap="onSubmitInitialVotes">
-      选好了！冲鸭
-    </button>
+  <view wx:if="{{phaseOpen}}" class="bottom-bar">
+    <button class="paw-btn paw-btn-primary submit-vote-btn" bindtap="onOpenConfirm">选好了！冲鸭</button>
+  </view>
+
+  <!-- 提交确认页：分门类展示已选缩略图 -->
+  <view wx:if="{{confirmVisible}}" class="confirm-mask" catchtouchmove="noop">
+    <view class="confirm-sheet">
+      <view class="confirm-title">确认提交初选</view>
+      <view class="confirm-sub">每个门类提交后即锁定，不可更改</view>
+      <scroll-view scroll-y class="confirm-body">
+        <view wx:for="{{pendingGroups}}" wx:key="id" wx:for-item="group" class="confirm-group">
+          <view class="confirm-group-title" style="color: {{group.textColor}};">{{group.name}} · {{group.picks.length}} 张</view>
+          <view class="thumb-row">
+            <view wx:for="{{group.picks}}" wx:key="id" class="thumb">
+              <image class="thumb-img" src="{{item.photoUrl}}" mode="aspectFill" />
+              <text class="thumb-name">{{item.petName}}</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="confirm-actions">
+        <button class="paw-btn paw-btn-outline confirm-btn" bindtap="onCloseConfirm">返回修改</button>
+        <button class="paw-btn paw-btn-primary confirm-btn" bindtap="onSubmitInitialVotes" loading="{{submitting}}">确认提交</button>
+      </view>
+    </view>
   </view>
 
   <!-- 比赛规则弹窗 -->

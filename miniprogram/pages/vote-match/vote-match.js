@@ -1,20 +1,35 @@
 const StorageService = require('../../utils/storage');
 const { maskLdap } = require('../../utils/mask');
 
+const PHASE_STAGE = {
+  vote_match_8: StorageService.STAGE_KNOCKOUT,
+  vote_match_4: StorageService.STAGE_DERBY
+};
+
+const withMask = (m) => ({
+  ...m,
+  maskedLdapA: maskLdap(m.entryA.ownerLdap),
+  maskedLdapB: maskLdap(m.entryB.ownerLdap)
+});
+
 Page({
   data: {
+    stage: '',
+    phaseOpen: true,
     categories: [],
-    currentCategory: null,
-    stage: '8进4', // '8进4' 或 '4强德比'
-    stageSubtitle: '',
+    currentCategoryId: '',
     matches: [],
-    currentMatchIndex: 0,
     currentMatch: null,
-    maskedLdapA: '',
-    maskedLdapB: '',
+    currentMatchIndex: 0,
+    stageSubtitle: '',
     selectedSide: null,
-    isCompleted: false,
+    viewState: 'loading', // voting | completed | noMatches | notGenerated | closed
     rulesModalVisible: false
+  },
+
+  onLoad(options) {
+    // 分享卡片带门类参数直达对应门类
+    if (options && options.cat) this.setData({ currentCategoryId: options.cat });
   },
 
   onShow() {
@@ -22,138 +37,148 @@ Page({
   },
 
   loadData() {
-    const config = StorageService.getConfig();
-    const categories = StorageService.getCategories();
-    const stage = config.currentPhase === 'vote_match_4' ? '4强德比' : '8进4';
+    const phase = StorageService.getPhase();
+    const stage = PHASE_STAGE[phase] || '';
+    const categories = StorageService.getCategories().map(cat => ({
+      ...cat,
+      ...this.getCategoryStatus(cat.id, stage)
+    }));
 
-    const currentCategory = this.data.currentCategory || categories[0];
+    const currentCategoryId = categories.some(c => c.id === this.data.currentCategoryId)
+      ? this.data.currentCategoryId
+      : (categories.find(c => c.remaining > 0) || categories[0] || {}).id;
+
     this.setData({
+      stage,
+      phaseOpen: !!stage && StorageService.isPhaseOpen(phase),
       categories,
-      currentCategory,
-      stage
-    }, () => {
-      this.loadCategoryMatches();
+      currentCategoryId
+    }, () => this.loadCategoryMatches());
+  },
+
+  // 门类标签上的投票进度：未投 x 场 / 已投完 / 无需投票
+  getCategoryStatus(categoryId, stage) {
+    if (!stage) return { total: 0, remaining: 0, statusText: '' };
+    const matches = StorageService.getVotableMatches(categoryId, stage);
+    const remaining = matches.filter(m => !StorageService.getUserMatchVote(m.id)).length;
+    let statusText = '已投完';
+    if (matches.length === 0) statusText = '无需投票';
+    else if (remaining > 0) statusText = `待投 ${remaining}`;
+    return { total: matches.length, remaining, statusText };
+  },
+
+  refreshCategoryStatus() {
+    const { stage } = this.data;
+    this.setData({
+      categories: this.data.categories.map(cat => ({ ...cat, ...this.getCategoryStatus(cat.id, stage) }))
     });
   },
 
   loadCategoryMatches() {
-    const { currentCategory, stage } = this.data;
-    if (!currentCategory) return;
+    const { currentCategoryId, stage, phaseOpen } = this.data;
+    if (!stage) {
+      this.setData({ viewState: 'closed', currentMatch: null, stageSubtitle: 'PK 对局' });
+      return;
+    }
 
-    let matches = StorageService.getMatches(currentCategory.id, stage);
+    // 对阵只由管理员推进阶段时生成，这里只读取
+    const generated = StorageService.getQualifiers(currentCategoryId) !== null;
+    const matches = StorageService.getVotableMatches(currentCategoryId, stage);
 
-    // 若尚未生成对阵，通过系统自检补齐
+    if (!generated) {
+      this.setData({ viewState: 'notGenerated', matches: [], currentMatch: null, stageSubtitle: stage });
+      return;
+    }
     if (matches.length === 0) {
-      StorageService.setPhase(this.data.stage === '4强德比' ? 'vote_match_4' : 'vote_match_8');
-      matches = StorageService.getMatches(currentCategory.id, stage);
+      this.setData({ viewState: 'noMatches', matches: [], currentMatch: null, stageSubtitle: stage });
+      return;
     }
 
-    // 找到用户下一个未投的场次
-    let firstUnvotedIdx = -1;
-    for (let i = 0; i < matches.length; i++) {
-      const v = StorageService.getUserMatchVote(matches[i].id);
-      if (!v) {
-        firstUnvotedIdx = i;
-        break;
-      }
+    // 从第一场未投的对局继续（支持中途退出后接着投）
+    const nextIdx = matches.findIndex(m => !StorageService.getUserMatchVote(m.id));
+    if (nextIdx === -1 || !phaseOpen) {
+      this.setData({
+        viewState: nextIdx === -1 ? 'completed' : 'closed',
+        matches,
+        currentMatch: null,
+        stageSubtitle: `${stage} · ${nextIdx === -1 ? '已完成' : '已截止'}`
+      });
+      return;
     }
+    this.showMatch(matches, nextIdx);
+  },
 
-    const isCompleted = matches.length > 0 && firstUnvotedIdx === -1;
-    const currentMatchIndex = isCompleted ? matches.length : (firstUnvotedIdx !== -1 ? firstUnvotedIdx : 0);
-    const currentMatch = matches[currentMatchIndex] || null;
-
-    const subtitle = currentMatch
-      ? `${stage} · 第 ${currentMatchIndex + 1}/${matches.length} 场`
-      : `${stage} · 已完成`;
-
+  showMatch(matches, idx) {
     this.setData({
+      viewState: 'voting',
       matches,
-      currentMatchIndex,
-      currentMatch,
-      isCompleted,
-      stageSubtitle: subtitle,
+      currentMatchIndex: idx,
+      currentMatch: withMask(matches[idx]),
       selectedSide: null,
-      maskedLdapA: currentMatch && currentMatch.entryA ? maskLdap(currentMatch.entryA.ownerLdap) : '',
-      maskedLdapB: currentMatch && currentMatch.entryB ? maskLdap(currentMatch.entryB.ownerLdap) : ''
+      stageSubtitle: `${this.data.stage} · 第 ${idx + 1}/${matches.length} 场`
     });
   },
 
   onSwitchCategory(e) {
     const { id } = e.currentTarget.dataset;
-    const cat = this.data.categories.find(c => c.id === id);
-    if (cat) {
-      this.setData({ currentCategory: cat }, () => {
-        this.loadCategoryMatches();
-      });
-    }
+    if (id === this.data.currentCategoryId) return;
+    this.setData({ currentCategoryId: id }, () => this.loadCategoryMatches());
   },
 
   onChoosePet(e) {
     if (this.data.selectedSide) return; // 正在动效过渡中
     const { side } = e.currentTarget.dataset;
-    const { currentMatch, matches, currentMatchIndex, stage } = this.data;
+    const { currentMatch } = this.data;
     if (!currentMatch) return;
-
-    // 触发边框高亮珊瑚红 + 打勾反馈动效
-    this.setData({ selectedSide: side });
 
     try {
       StorageService.submitMatchVote(currentMatch.id, side);
     } catch (err) {
-      console.warn('投票提交异常', err);
+      // 已投过：视为本场完成，直接进入下一场；其他错误：停留在本场并提示重试，避免"以为投了其实没成功"
+      if (!/已投过/.test(err.message)) {
+        wx.showModal({
+          title: '投票没有成功',
+          content: `${err.message || '网络异常'}，请重试。`,
+          showCancel: false,
+          confirmText: '好的'
+        });
+        return;
+      }
     }
 
-    // 600ms 后自动跳下一场
+    // 选中动效：边框高亮 + 放大 + 打勾，随后自动跳下一场
+    this.setData({ selectedSide: side });
+    if (wx.vibrateShort) wx.vibrateShort({ type: 'light' });
+
     setTimeout(() => {
-      const nextIdx = currentMatchIndex + 1;
-      if (nextIdx < matches.length) {
-        const nextMatch = matches[nextIdx];
-        this.setData({
-          currentMatchIndex: nextIdx,
-          currentMatch: nextMatch,
-          selectedSide: null,
-          stageSubtitle: `${stage} · 第 ${nextIdx + 1}/${matches.length} 场`,
-          maskedLdapA: maskLdap(nextMatch.entryA.ownerLdap),
-          maskedLdapB: maskLdap(nextMatch.entryB.ownerLdap)
-        });
+      this.refreshCategoryStatus();
+      const { matches, currentMatchIndex } = this.data;
+      const nextIdx = matches.findIndex((m, i) => i > currentMatchIndex && !StorageService.getUserMatchVote(m.id));
+      if (nextIdx !== -1) {
+        this.showMatch(matches, nextIdx);
       } else {
-        // 全部投完
         this.setData({
-          isCompleted: true,
+          viewState: 'completed',
           currentMatch: null,
           selectedSide: null,
-          stageSubtitle: `${stage} · 已完成`
+          stageSubtitle: `${this.data.stage} · 已完成`
         });
       }
     }, 650);
   },
 
-  onShareMatch() {
-    const { currentMatch } = this.data;
-    if (!currentMatch) return;
-    wx.showModal({
-      title: '对决已生成 📣',
-      content: `【${currentMatch.entryA.petName} VS ${currentMatch.entryB.petName}】火热对决中！快发到社群里为TA拉票吧！`,
-      showCancel: false,
-      confirmText: '去拉票'
-    });
-  },
-
   onNextCategory() {
-    const { categories, currentCategory } = this.data;
-    const idx = categories.findIndex(c => c.id === currentCategory.id);
-    const nextCat = categories[(idx + 1) % categories.length];
-    this.setData({ currentCategory: nextCat }, () => {
-      this.loadCategoryMatches();
-    });
+    const { categories, currentCategoryId } = this.data;
+    const next = categories.find(c => c.id !== currentCategoryId && c.remaining > 0);
+    if (!next) {
+      wx.showToast({ title: '所有门类都已投完啦！', icon: 'none' });
+      return;
+    }
+    this.setData({ currentCategoryId: next.id }, () => this.loadCategoryMatches());
   },
 
   onGoHome() {
-    wx.navigateBack({
-      fail: () => {
-        wx.switchTab({ url: '/pages/index/index' });
-      }
-    });
+    wx.reLaunch({ url: '/pages/index/index' });
   },
 
   onOpenRules() {
@@ -162,5 +187,21 @@ Page({
 
   onCloseRules() {
     this.setData({ rulesModalVisible: false });
+  },
+
+  // "分享本场PK"按钮（open-type="share"）与右上角菜单共用
+  onShareAppMessage() {
+    const { currentMatch, currentCategoryId } = this.data;
+    const path = `/pages/vote-match/vote-match?cat=${currentCategoryId}`;
+    if (!currentMatch) {
+      return { title: 'Pawscars PK 对决进行中，快来投票！', path };
+    }
+    const share = {
+      title: `【${currentMatch.entryA.petName} VS ${currentMatch.entryB.petName}】火热对决中，帮忙投一票！`,
+      path
+    };
+    // data: URI 不能作为分享封面，此时由微信默认截取当前页面
+    if (!/^data:/.test(currentMatch.entryA.photoUrl)) share.imageUrl = currentMatch.entryA.photoUrl;
+    return share;
   }
 });

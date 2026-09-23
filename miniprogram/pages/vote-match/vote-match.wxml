@@ -1,109 +1,98 @@
 <view class="match-vote-container">
   <!-- 顶部三段式导航条 -->
-  <nav-bar 
-    title="Pawscars毛孩奥斯卡" 
-    subtitle="{{stageSubtitle}}" 
-    showMyNomination="{{true}}" 
+  <nav-bar
+    title="Pawscars毛孩奥斯卡"
+    subtitle="{{stageSubtitle}}"
+    showMyNomination="{{true}}"
     showRules="{{true}}"
     bind:openRules="onOpenRules"
   />
 
-  <!-- 门类切换横向标签栏 -->
+  <!-- 门类切换标签：显示各门类当前投票进度 -->
   <view class="category-tabs-bar">
-    <view 
-      wx:for="{{categories}}" 
+    <view
+      wx:for="{{categories}}"
       wx:key="id"
-      class="cat-tab-pill {{currentCategory.id === item.id ? 'active-cat-tab' : ''}}"
-      style="{{currentCategory.id === item.id ? 'background-color:' + item.bg + '; color:' + item.textColor : ''}}"
+      class="cat-tab-pill {{currentCategoryId === item.id ? 'active-cat-tab' : ''}}"
+      style="{{currentCategoryId === item.id ? 'background-color:' + item.bg + '; color:' + item.textColor : ''}}"
       bindtap="onSwitchCategory"
       data-id="{{item.id}}"
     >
       <text class="tab-icon">{{item.icon}}</text>
       <text class="tab-name">{{item.name}}</text>
+      <text wx:if="{{item.statusText}}" class="tab-status {{item.remaining > 0 ? 'tab-status-todo' : ''}}">{{item.statusText}}</text>
     </view>
   </view>
 
-  <!-- 提示文字 -->
-  <view class="pk-hint-text">
-    <text wx:if="!isCompleted">点击为TA投票</text>
-    <text wx:else>本阶段对局已全部投完！</text>
-  </view>
-
-  <!-- 对决进行中区域 -->
-  <block wx:if="{{!isCompleted && currentMatch}}">
+  <!-- 对决进行中 -->
+  <block wx:if="{{viewState === 'voting' && currentMatch}}">
+    <view class="pk-hint-text">点击为TA投票</view>
     <view class="match-duel-area">
-      <!-- 选手 A 卡片 -->
-      <view 
-        class="match-pet-card {{selectedSide === 'A' ? 'card-chosen' : ''}}"
-        bindtap="onChoosePet"
-        data-side="A"
-      >
-        <!-- 宠物名上方独立展示 -->
+      <view class="match-pet-card {{selectedSide === 'A' ? 'card-chosen' : ''}}" bindtap="onChoosePet" data-side="A">
         <view class="match-pet-name">{{currentMatch.entryA.petName}}</view>
         <view class="photo-box">
           <image class="pet-photo" src="{{currentMatch.entryA.photoUrl}}" mode="aspectFill" />
           <view wx:if="{{selectedSide === 'A'}}" class="chosen-tick-badge">✓</view>
-          <view class="watermark-tag">{{maskedLdapA}}</view>
+          <view class="watermark-tag">主人 {{currentMatch.maskedLdapA}}</view>
         </view>
       </view>
 
-      <!-- 中间圆形 VS 分隔标识 -->
       <view class="vs-circle-divider">
         <text class="vs-text">VS</text>
       </view>
 
-      <!-- 选手 B 卡片 -->
-      <view 
-        class="match-pet-card {{selectedSide === 'B' ? 'card-chosen' : ''}}"
-        bindtap="onChoosePet"
-        data-side="B"
-      >
-        <!-- 宠物名上方独立展示 -->
+      <view class="match-pet-card {{selectedSide === 'B' ? 'card-chosen' : ''}}" bindtap="onChoosePet" data-side="B">
         <view class="match-pet-name">{{currentMatch.entryB.petName}}</view>
         <view class="photo-box">
           <image class="pet-photo" src="{{currentMatch.entryB.photoUrl}}" mode="aspectFill" />
           <view wx:if="{{selectedSide === 'B'}}" class="chosen-tick-badge">✓</view>
-          <view class="watermark-tag">{{maskedLdapB}}</view>
+          <view class="watermark-tag">主人 {{currentMatch.maskedLdapB}}</view>
         </view>
       </view>
     </view>
 
-    <!-- 底部次级按钮："分享本场PK" -->
+    <!-- 次级按钮：分享本场PK（生成带对局标题与照片的分享卡片） -->
     <view class="bottom-action-wrap">
-      <button class="paw-btn paw-btn-outline share-btn" bindtap="onShareMatch">
-        <text class="share-icon">🔗</text> 分享本场PK
+      <button class="paw-btn paw-btn-outline share-btn" open-type="share">
+        <text class="share-icon">🔗</text> 分享本场PK拉票
       </button>
     </view>
   </block>
 
-  <!-- 本门类全部投完状态 -->
-  <block wx:elif="{{isCompleted}}">
-    <view class="completed-box">
-      <view class="congrats-trophy">🎉</view>
-      <view class="completed-title">【{{currentCategory.name}}】本轮投票已完成</view>
-      <view class="completed-desc">
-        你的每一票都已记录（平局严格根据投票时间戳裁决）。可继续为其他门类投票或查看我的提名！
-      </view>
-      <view class="completed-btns">
-        <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">
-          再投下一个门类
-        </button>
-        <button class="paw-btn paw-btn-outline comp-btn" bindtap="onGoHome">
-          返回首页
-        </button>
-      </view>
+  <!-- 本门类已全部投完 -->
+  <view wx:elif="{{viewState === 'completed'}}" class="completed-box">
+    <view class="congrats-trophy">🎉</view>
+    <view class="completed-title">本门类{{stage}}投票已完成</view>
+    <view class="completed-desc">你的每一票都已记录，结果将在本阶段截止后公布。</view>
+    <view class="completed-btns">
+      <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">再投下一个门类</button>
+      <button class="paw-btn paw-btn-outline comp-btn" bindtap="onGoHome">返回首页</button>
     </view>
-  </block>
+  </view>
 
-  <!-- 暂无对阵状态 -->
-  <block wx:else>
-    <view class="no-matches-box">
-      <text class="no-match-icon">⏳</text>
-      <text class="no-match-title">对阵表生成中</text>
-      <text class="no-match-desc">当前阶段对阵正在由管理员结算中，请稍候再来查看！</text>
-      <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
-    </view>
-  </block>
+  <!-- 晋级者不足，本门类没有需要投票的对局 -->
+  <view wx:elif="{{viewState === 'noMatches'}}" class="no-matches-box">
+    <text class="no-match-icon">🕊️</text>
+    <text class="no-match-title">本门类本轮无需投票</text>
+    <text class="no-match-desc">晋级名额不足以组成对决（或全部轮空晋级），可以去其他门类看看。</text>
+    <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">去其他门类</button>
+  </view>
+
+  <!-- 投票已截止 / 不在 PK 阶段 -->
+  <view wx:elif="{{viewState === 'closed'}}" class="no-matches-box">
+    <text class="no-match-icon">⏰</text>
+    <text class="no-match-title">{{stage ? '本阶段投票已截止' : '当前不在 PK 投票阶段'}}</text>
+    <text class="no-match-desc">结果公布后可在首页或"我的提名"查看。</text>
+    <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
+  </view>
+
+  <!-- 对阵尚未生成 -->
+  <view wx:elif="{{viewState === 'notGenerated'}}" class="no-matches-box">
+    <text class="no-match-icon">⏳</text>
+    <text class="no-match-title">对阵表生成中</text>
+    <text class="no-match-desc">管理员正在结算上一阶段结果，请稍后再来！</text>
+    <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
+  </view>
 
   <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
 </view>

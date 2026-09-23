@@ -100,17 +100,41 @@ python3 -m http.server 3000 -d preview
 3. 项目目录选择 `/Users/lima/dev/Pawscars`（或本机项目根路径）。
 4. AppID 可以选择自己的测试号或输入注册的测试 AppID。
 5. 导入后即可在模拟器中实时编译预览。
-6. 开箱即用：项目内置了存储抽象层，未配置云环境时会自动启用本地 Mock 存储，所有功能无缝运行！
+6. 当前小程序页面使用本地 Mock 存储（数据只保存在本机，适合单人演示）。多人真实活动需要把页面的数据调用接到下方云函数上。
 7. 部署云开发时：右键 `cloudfunctions/` 下的各个云函数目录，点击“上传并部署：云端安装依赖”即可。
+
+### 管理员与云端配置
+
+管理员**只按微信 openid 白名单判定**，不接受活动ID（活动ID由用户自行输入，任何人都能冒用）。
+在云数据库 `Activity` 集合中创建 `_id = main_config` 的文档：
+
+```json
+{
+  "currentPhase": "nominate",
+  "phaseDeadlines": { "nominate": 0, "vote_initial": 0, "vote_match_8": 0, "vote_match_4": 0 },
+  "adminOpenids": ["<管理员的 openid>"],
+  "categories": [
+    { "id": "food", "name": "干饭王者" },
+    { "id": "abstract", "name": "抽象王者" },
+    { "id": "beauty", "name": "颜值王者" }
+  ]
+}
+```
+
+- openid 可在调用 `login` 云函数的返回值或云开发控制台日志中获取。
+- `phaseDeadlines` 为毫秒时间戳，0 表示不限；过了截止时间将拒绝报名/投票，但阶段需管理员手动推进。
+- 其余集合：`UserBinding`、`Entry`、`InitialSelection`、`Match`、`Vote`、`Bracket`、`CongratsMessage`。
+- `cloudfunctions/adminOps/bracket.js` 是 `miniprogram/utils/bracket.js` 的副本，修改赛制算法时需同步复制（`npm test` 会校验两者一致）。
+- 开发版/体验版中管理后台对所有人开放并提供身份切换、数据重置等调试工具；正式版仅白名单管理员可见。
 
 ---
 
 ## 🧪 单元测试
 
-运行赛制算法、打码规则与 LDAP 校验的自动化测试：
+运行赛制算法、数据层、云函数与端到端仿真测试：
 
 ```bash
-node tests/bracket.test.js
+npm test
 ```
 
 测试覆盖：
@@ -119,3 +143,6 @@ node tests/bracket.test.js
 - 初选结果统计与时间戳打平裁决
 - 8强按主人ID字母顺序 (A-Z) 排序配对（1v2、3v4、5v6、7v8）
 - 4强德比循环赛 6 场对阵与冠亚季军排名决胜
+- 报名不足 8 / ≤4 / 轮空、0:0 打平等赛制边界（`tests/storage.test.js`）
+- 阶段推进幂等、回退清理、截止时间与阶段校验、小程序启动冒烟测试
+- 云函数：管理员不信任客户端身份字段、ID 唯一绑定、每人一票、阶段结算（`tests/cloud.test.js`）

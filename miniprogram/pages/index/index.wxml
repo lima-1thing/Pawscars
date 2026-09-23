@@ -29,31 +29,30 @@
 
   <!-- 正文内容区（严格适配一屏自适应排版要求） -->
   <view class="content-body">
-    <!-- 宫师姐发言人样式开场 -->
+    <!-- 主持人"发言人"样式开场：头像 + 昵称，紧跟阶段文案 -->
     <view class="spokesperson-row">
       <view class="gong-avatar">
-        <text class="gong-text">宫</text>
+        <image wx:if="{{hostAvatar}}" class="gong-avatar-img" src="{{hostAvatar}}" mode="aspectFill" binderror="onHostAvatarError" />
+        <text wx:else class="gong-text">{{config.hostName[0] || '宫'}}</text>
       </view>
       <text class="gong-name">{{config.hostName || '宫师姐'}}</text>
     </view>
 
-    <!-- 阶段A：报名期展示 -->
-    <block wx:if="{{config.currentPhase === 'nominate'}}">
-      <view class="story-desc">
-        {{config.hostIntro}}
+    <!-- 阶段A：报名期 -->
+    <block wx:if="{{phaseKind === 'nominate'}}">
+      <view class="story-desc">{{config.hostIntro}}</view>
+
+      <view class="phase-strip {{phaseOpen ? '' : 'phase-strip-closed'}}">
+        <text wx:if="{{phaseOpen && countdownText}}">报名中 · 距截止还剩 {{countdownText}}</text>
+        <text wx:elif="{{phaseOpen}}">报名进行中</text>
+        <text wx:else>报名已截止，初选即将开始</text>
       </view>
 
-      <!-- 居中赛制流程胶囊条 -->
       <view class="rule-capsule-wrap">
-        <view class="rule-capsule" bindtap="onShowRules">
-          {{config.rulesSummary}}
-        </view>
+        <view class="rule-capsule" bindtap="onShowRules">{{config.rulesSummary}} ›</view>
       </view>
 
-      <!-- 评选类别小标题 -->
       <view class="category-heading">评选类别：</view>
-
-      <!-- 三大门类横排卡片 (黄/绿/紫独立马卡龙色) -->
       <view class="category-cards-row">
         <view wx:for="{{categories}}" wx:key="id" class="cat-card cat-card-{{item.theme}}" style="background-color: {{item.bg}};">
           <view class="cat-card-icon">{{item.icon}}</view>
@@ -62,37 +61,28 @@
         </view>
       </view>
 
-      <!-- 结尾号召语 -->
-      <view class="cta-callout">
-        {{config.callToActionText}}
-      </view>
+      <view class="cta-callout">{{config.callToActionText}}</view>
 
-      <!-- 核心CTA按钮："我要提名" -->
-      <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapNominate">
-        我要提名
+      <button class="paw-btn paw-btn-primary full-cta-btn {{phaseOpen ? '' : 'btn-disabled'}}" bindtap="onTapNominate">
+        {{phaseOpen ? '我要提名' : '报名已截止'}}
+      </button>
+      <button wx:if="{{!phaseOpen}}" class="paw-btn paw-btn-outline full-cta-btn sec-btn top-gap" bindtap="onTapMyNomination">
+        <text class="btn-icon">📋</text> 我的提名
       </button>
     </block>
 
-    <!-- 阶段B：投票期展示 (初选/8进4/4强德比) -->
-    <block wx:elif="{{config.currentPhase === 'vote_initial' || config.currentPhase === 'vote_match_8' || config.currentPhase === 'vote_match_4'}}">
-      <!-- 投票期状态卡片 (薄荷绿底 #E6F6F1) -->
-      <view class="voting-status-card">
-        <view class="status-stage-tag">
-          <text wx:if="{{config.currentPhase === 'vote_initial'}}">投票进行中 · 阶段一</text>
-          <text wx:elif="{{config.currentPhase === 'vote_match_8'}}">投票进行中 · 阶段二</text>
-          <text wx:else>投票进行中 · 阶段三</text>
-        </view>
-        <view class="status-main-title">
-          <text wx:if="{{config.currentPhase === 'vote_initial'}}">Pawscars【初选打投】进行时</text>
-          <text wx:elif="{{config.currentPhase === 'vote_match_8'}}">Pawscars【8强淘汰赛】进行时</text>
-          <text wx:else>Pawscars【4强巅峰德比】进行时</text>
-        </view>
+    <!-- 阶段B：投票期（初选 / 8进4 / 4强德比） -->
+    <block wx:elif="{{phaseKind === 'vote'}}">
+      <view class="speech-bubble">
+        <view class="status-stage-tag">投票进行中 · {{votePhaseInfo.step}}</view>
+        <view class="status-main-title">Pawscars【{{votePhaseInfo.name}}】进行时</view>
         <view class="status-countdown">
-          距离本阶段投票截止还有 3 天 12 小时
+          <text wx:if="{{!phaseOpen}}">本阶段投票已截止，结果即将公布</text>
+          <text wx:elif="{{countdownText}}">距离本阶段投票截止还有 {{countdownText}}</text>
+          <text wx:else>快来为喜欢的毛孩投上一票！</text>
         </view>
       </view>
 
-      <!-- 三阶段胶囊指示条 -->
       <view class="stage-stepper-row">
         <view class="step-pill {{config.currentPhase === 'vote_initial' ? 'pill-active' : ''}}">初选</view>
         <view class="step-pill {{config.currentPhase === 'vote_match_8' ? 'pill-active' : ''}}">8进4</view>
@@ -100,8 +90,8 @@
       </view>
 
       <view class="voting-action-group">
-        <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapVote">
-          我要投票
+        <button class="paw-btn paw-btn-primary full-cta-btn {{phaseOpen ? '' : 'btn-disabled'}}" bindtap="onTapVote">
+          {{phaseOpen ? '我要投票' : '投票已截止'}}
         </button>
         <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
           <text class="btn-icon">📋</text> 我的提名
@@ -109,21 +99,18 @@
       </view>
     </block>
 
-    <!-- 阶段C：颁奖期展示 -->
+    <!-- 阶段C：颁奖期 -->
     <block wx:else>
-      <view class="awards-status-card">
+      <view class="speech-bubble speech-bubble-gold">
         <view class="awards-banner-icon">🏆</view>
-        <view class="awards-congrats-text">
-          热烈祝贺 2026 Pawscars 毛孩奥斯卡的王者们！
-        </view>
-        <view class="awards-sub-text">
-          各大门类冠亚季军已荣耀揭晓
-        </view>
+        <view class="awards-congrats-text">热烈祝贺 {{awardsYear}} {{config.title}}的王者们！</view>
+        <view class="awards-sub-text">各大门类冠亚季军已荣耀揭晓，来贺词墙送上祝福吧</view>
       </view>
 
       <view class="voting-action-group">
-        <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapAwards">
-          查看颁奖结果
+        <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapSendCongrats">发送贺词</button>
+        <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapAwards">
+          <text class="btn-icon">🏆</text> 查看颁奖结果
         </button>
         <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
           <text class="btn-icon">📋</text> 我的提名
@@ -133,8 +120,8 @@
   </view>
 
   <!-- 底部管理后台便捷入口 -->
-  <view class="admin-link-row">
-    <text class="admin-link-text" bindtap="onTapAdmin">⚙️ 管理后台 / 赛程模拟</text>
+  <view wx:if="{{canAccessAdmin}}" class="admin-link-row">
+    <text class="admin-link-text" bindtap="onTapAdmin">⚙️ 管理后台</text>
   </view>
 
   <!-- 规则弹窗组件 -->

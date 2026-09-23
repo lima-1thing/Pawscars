@@ -66,7 +66,7 @@ Page({
   onContactAdmin() {
     wx.showModal({
       title: '申诉提示',
-      content: '请联系活动组织者微信（管理员：宫师姐）并在群内告知你的常用ID，核实后后台将为你解绑。',
+      content: `请联系活动组织者（${StorageService.getConfig().hostName || '管理员'}）并告知你的常用ID，核实后管理员会在后台为你解绑。`,
       showCancel: false,
       confirmText: '我知道了'
     });

@@ -120,7 +120,7 @@
 
 .appeal-desc {
   font-size: 11px;
-  color: #9A9290;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 

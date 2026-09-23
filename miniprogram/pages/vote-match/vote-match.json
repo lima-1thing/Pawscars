@@ -4,5 +4,6 @@
   "usingComponents": {
     "nav-bar": "/components/nav-bar/nav-bar",
     "rules-modal": "/components/rules-modal/rules-modal"
-  }
+  },
+  "navigationStyle": "custom"
 }

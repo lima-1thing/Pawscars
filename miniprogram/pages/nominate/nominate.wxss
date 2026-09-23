@@ -47,8 +47,9 @@
 
 /* 照片上传框：正方形，圆角 16px */
 .photo-upload-box {
-  width: 100%;
+  width: 200px;
   height: 200px;
+  margin: 0 auto;
   background: #FAF8F2;
   border: 2px dashed #E0DACD;
   border-radius: 18px;
@@ -193,11 +194,6 @@
   font-size: 15px;
 }
 
-.btn-disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 /* 底部已提名条目预览 */
 .my-entries-section {
   margin-top: 24px;
@@ -235,17 +231,59 @@
   align-items: center;
 }
 
-.entry-cat-badge {
-  font-size: 10px;
-  font-weight: 600;
-  color: #5C4A02;
-  background: #FAC775;
-  padding: 2px 6px;
-  border-radius: 8px;
-}
-
 .entry-date {
   font-size: 9px;
-  color: #A39B99;
+  color: var(--text-muted);
   margin-top: 2px;
+}
+
+.closed-notice {
+  background: #F1EFE8;
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.closed-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #38242A;
+}
+
+.closed-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.entry-group {
+  margin-bottom: 12px;
+}
+
+.entry-group-title {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.group-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.entry-edit-btn {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #993C1D;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #FBEAF0;
 }

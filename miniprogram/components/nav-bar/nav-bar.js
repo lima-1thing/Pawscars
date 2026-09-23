@@ -1,3 +1,25 @@
+const StorageService = require('../../utils/storage');
+
+/**
+ * 读取胶囊按钮位置，计算自定义导航栏的状态栏高度、导航栏高度与右侧避让宽度
+ */
+function getNavMetrics() {
+  const fallback = { statusBarHeight: 20, navHeight: 44, capsuleInset: 96 };
+  try {
+    const win = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const menu = wx.getMenuButtonBoundingClientRect();
+    const statusBarHeight = win.statusBarHeight || fallback.statusBarHeight;
+    if (!menu || !menu.height) return { ...fallback, statusBarHeight };
+    return {
+      statusBarHeight,
+      navHeight: (menu.top - statusBarHeight) * 2 + menu.height,
+      capsuleInset: win.windowWidth - menu.left + 8
+    };
+  } catch (e) {
+    return fallback;
+  }
+}
+
 Component({
   properties: {
     title: {
@@ -12,13 +34,30 @@ Component({
       type: Boolean,
       value: true
     },
-    showBack: {
-      type: Boolean,
-      value: false
-    },
     showRules: {
       type: Boolean,
       value: true
+    }
+  },
+
+  data: {
+    statusBarHeight: 20,
+    navHeight: 44,
+    capsuleInset: 96,
+    canGoBack: false,
+    hostAvatar: '',
+    hostInitial: '宫'
+  },
+
+  lifetimes: {
+    attached() {
+      const config = StorageService.getConfig();
+      this.setData({
+        ...getNavMetrics(),
+        canGoBack: getCurrentPages().length > 1,
+        hostAvatar: config.hostAvatar || '',
+        hostInitial: (config.hostName || '宫').slice(0, 1)
+      });
     }
   },
 
@@ -29,19 +68,18 @@ Component({
       });
     },
     onTapBack() {
-      wx.navigateBack({
-        fail: () => {
-          wx.switchTab({ url: '/pages/index/index' });
-        }
-      });
+      if (this.data.canGoBack) {
+        wx.navigateBack();
+      } else {
+        // 通过分享直达的页面没有上一页，回到首页
+        wx.reLaunch({ url: '/pages/index/index' });
+      }
     },
     onTapRules() {
-      const app = getApp();
-      if (app && app.showRulesModal) {
-        app.showRulesModal();
-      } else {
-        this.triggerEvent('openRules');
-      }
+      this.triggerEvent('openRules');
+    },
+    onAvatarError() {
+      this.setData({ hostAvatar: '' });
     }
   }
 });

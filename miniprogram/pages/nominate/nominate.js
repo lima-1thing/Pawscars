@@ -1,92 +1,109 @@
 const { validatePetName } = require('../../utils/validator');
 const StorageService = require('../../utils/storage');
-const { createPetSvg } = require('../../utils/mock-data');
+const { formatDateTime } = require('../../utils/time');
+
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_EXT = /\.(jpe?g|png)$/i;
+
+/**
+ * 选择一张照片 → 校验格式与大小 → 裁剪为正方形
+ * @returns {Promise<string>} 裁剪后的临时路径；用户取消返回空字符串
+ */
+function pickSquarePhoto() {
+  return new Promise((resolve, reject) => {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (!file) return resolve('');
+        if (!ALLOWED_EXT.test(file.tempFilePath)) {
+          return reject(new Error('仅支持 JPG / PNG 格式的照片'));
+        }
+        if (file.size > MAX_PHOTO_BYTES) {
+          return reject(new Error('照片需小于 5MB，请换一张'));
+        }
+        if (!wx.cropImage) return resolve(file.tempFilePath); // 低版本基础库：展示时居中裁剪
+        wx.cropImage({
+          src: file.tempFilePath,
+          cropScale: '1:1',
+          success: (cropRes) => resolve(cropRes.tempFilePath),
+          fail: (err) => (/cancel/.test(err.errMsg || '') ? resolve('') : resolve(file.tempFilePath))
+        });
+      },
+      fail: (err) => (/cancel/.test(err.errMsg || '') ? resolve('') : reject(new Error('无法打开相册，请检查权限')))
+    });
+  });
+}
 
 Page({
   data: {
+    phaseOpen: true,
     photoUrl: '',
     petName: '',
     categories: [],
     selectedCatMap: {},
     pledgeAgreed: false,
     isFormReady: false,
-    myEntries: []
+    entryGroups: [],
+    entryCount: 0
   },
 
   onLoad() {
-    this.loadInitialData();
+    // 不默认预选门类，避免引导所有人都报第一个门类
+    this.setData({ categories: StorageService.getCategories() });
   },
 
   onShow() {
+    this.setData({ phaseOpen: StorageService.isPhaseOpen('nominate') });
     this.refreshMyEntries();
-  },
-
-  loadInitialData() {
-    const categories = StorageService.getCategories();
-    // 默认预选第一个门类
-    const selectedCatMap = {};
-    if (categories.length > 0) {
-      selectedCatMap[categories[0].id] = true;
-    }
-
-    this.setData({
-      categories,
-      selectedCatMap
-    }, () => this.checkFormReady());
   },
 
   refreshMyEntries() {
     const user = StorageService.getUserBinding();
     if (!user) return;
     const entries = StorageService.getMyNominations(user.ldap);
-    const categories = StorageService.getCategories();
-    const catMap = {};
-    categories.forEach(c => { catMap[c.id] = c.name; });
 
-    const formatted = entries.map(e => ({
-      ...e,
-      categoryName: catMap[e.categoryId] || e.categoryId,
-      timeStr: new Date(e.createdAt).toLocaleDateString()
-    }));
+    // 按门类分组展示（同一门类下可能有多只不同的宠物）
+    const entryGroups = StorageService.getCategories()
+      .map(cat => ({
+        ...cat,
+        entries: entries
+          .filter(e => e.categoryId === cat.id)
+          .map(e => ({ ...e, timeStr: formatDateTime(e.updatedAt || e.createdAt) }))
+      }))
+      .filter(group => group.entries.length > 0);
 
-    this.setData({ myEntries: formatted });
+    this.setData({ entryGroups, entryCount: entries.length });
   },
 
-  onChoosePhoto() {
-    // 优先调用系统相册/相机，如果环境限制则生成精美毛孩示例图
-    if (typeof wx !== 'undefined' && wx.chooseMedia) {
-      wx.chooseMedia({
-        count: 1,
-        mediaType: ['image'],
-        sourceType: ['album', 'camera'],
-        camera: 'back',
-        success: (res) => {
-          if (res.tempFiles && res.tempFiles.length > 0) {
-            this.setData({
-              photoUrl: res.tempFiles[0].tempFilePath
-            }, () => this.checkFormReady());
-          }
-        },
-        fail: () => {
-          this.useSamplePhoto();
-        }
-      });
-    } else {
-      this.useSamplePhoto();
+  async onChoosePhoto() {
+    if (!this.data.phaseOpen) return;
+    try {
+      const path = await pickSquarePhoto();
+      if (path) this.setData({ photoUrl: path }, () => this.checkFormReady());
+    } catch (e) {
+      wx.showToast({ title: e.message, icon: 'none' });
     }
   },
 
-  useSamplePhoto() {
-    const randomAnimal = Math.random() > 0.5 ? 'dog' : 'cat';
-    const randomBg = ['#FFF3CD', '#D8F3DC', '#E8D7F1', '#FFE8D6'][Math.floor(Math.random() * 4)];
-    const sample = createPetSvg(randomBg, randomAnimal, this.data.petName || '毛孩');
-    this.setData({ photoUrl: sample }, () => this.checkFormReady());
+  async onReplacePhoto(e) {
+    const { id } = e.currentTarget.dataset;
+    try {
+      const path = await pickSquarePhoto();
+      if (!path) return;
+      StorageService.updateEntryPhoto(id, path);
+      wx.showToast({ title: '照片已更新', icon: 'success' });
+      this.refreshMyEntries();
+    } catch (err) {
+      wx.showToast({ title: err.message || '更新失败', icon: 'none' });
+    }
   },
 
   onInputPetName(e) {
-    this.setData({
-      petName: e.detail.value
-    }, () => this.checkFormReady());
+    this.setData({ petName: e.detail.value }, () => this.checkFormReady());
   },
 
   onToggleCategory(e) {
@@ -101,73 +118,52 @@ Page({
   },
 
   onTogglePledge() {
-    this.setData({
-      pledgeAgreed: !this.data.pledgeAgreed
-    }, () => this.checkFormReady());
+    this.setData({ pledgeAgreed: !this.data.pledgeAgreed }, () => this.checkFormReady());
   },
 
   checkFormReady() {
-    const hasPhoto = !!this.data.photoUrl;
-    const nameValid = validatePetName(this.data.petName).valid;
-    const hasCategory = Object.keys(this.data.selectedCatMap).length > 0;
-    const pledge = this.data.pledgeAgreed;
-
+    const { photoUrl, petName, selectedCatMap, pledgeAgreed } = this.data;
     this.setData({
-      isFormReady: hasPhoto && nameValid && hasCategory && pledge
+      isFormReady: !!photoUrl && validatePetName(petName).valid && Object.keys(selectedCatMap).length > 0 && pledgeAgreed
     });
   },
 
+  // 返回第一个缺失项的提示文案，全部满足返回空字符串
+  getMissingHint() {
+    if (!this.data.photoUrl) return '请先上传毛孩照片';
+    const val = validatePetName(this.data.petName);
+    if (!val.valid) return val.message;
+    if (Object.keys(this.data.selectedCatMap).length === 0) return '请至少选择一个参赛门类';
+    if (!this.data.pledgeAgreed) return '请勾选本人拍摄承诺';
+    return '';
+  },
+
   onSubmit() {
-    if (!this.data.isFormReady) {
-      if (!this.data.photoUrl) {
-        wx.showToast({ title: '请先上传毛孩照片', icon: 'none' });
-        return;
-      }
-      const val = validatePetName(this.data.petName);
-      if (!val.valid) {
-        wx.showToast({ title: val.message, icon: 'none' });
-        return;
-      }
-      if (Object.keys(this.data.selectedCatMap).length === 0) {
-        wx.showToast({ title: '请至少选择一个参赛门类', icon: 'none' });
-        return;
-      }
-      if (!this.data.pledgeAgreed) {
-        wx.showToast({ title: '请勾选本人拍摄承诺', icon: 'none' });
-        return;
-      }
+    const hint = this.getMissingHint();
+    if (hint) {
+      wx.showToast({ title: hint, icon: 'none' });
       return;
     }
 
-    const categoryIds = Object.keys(this.data.selectedCatMap);
     try {
       const result = StorageService.submitNominations({
         petName: this.data.petName,
         photoUrl: this.data.photoUrl,
-        categoryIds
+        categoryIds: Object.keys(this.data.selectedCatMap)
       });
+      this.refreshMyEntries();
+      this.resetForm();
 
       if (result.skippedCategories.length > 0) {
+        const added = result.addedEntries.length;
         wx.showModal({
-          title: '部分门类已提交',
-          content: `该毛孩已在【${result.skippedCategories.join('、')}】报过名，其余选中的门类已成功提交！`,
+          title: added > 0 ? '部分门类已提交' : '没有新增提名',
+          content: `该毛孩已经被提名【${result.skippedCategories.join('｜')}】${added > 0 ? '，其余选中的门类已成功提交！' : '。'}`,
           showCancel: false,
-          confirmText: '太棒了',
-          success: () => {
-            this.refreshMyEntries();
-            this.resetForm();
-          }
+          confirmText: '知道了'
         });
       } else {
-        wx.showToast({
-          title: '提名成功！',
-          icon: 'success',
-          duration: 1500
-        });
-        setTimeout(() => {
-          this.refreshMyEntries();
-          this.resetForm();
-        }, 1200);
+        wx.showToast({ title: '提名成功！', icon: 'success' });
       }
     } catch (e) {
       wx.showToast({ title: e.message || '提交失败', icon: 'none' });
@@ -178,6 +174,7 @@ Page({
     this.setData({
       petName: '',
       photoUrl: '',
+      selectedCatMap: {},
       pledgeAgreed: false,
       isFormReady: false
     });

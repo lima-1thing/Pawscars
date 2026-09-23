@@ -2,59 +2,18 @@
   <view class="modal-card">
     <view class="modal-header">
       <view class="host-avatar-badge">
-        <text class="avatar-text">宫</text>
+        <image wx:if="{{hostAvatar}}" class="host-avatar-img" src="{{hostAvatar}}" mode="aspectFill" binderror="onAvatarError" />
+        <text wx:else class="avatar-text">{{hostName[0]}}</text>
       </view>
       <view class="header-info">
-        <text class="host-name">宫师姐发言</text>
+        <text class="host-name">{{hostName}}发言</text>
         <text class="modal-title">Pawscars 比赛规则说明</text>
       </view>
       <view class="close-btn" bindtap="onClose">×</view>
     </view>
     
     <scroll-view scroll-y class="modal-body">
-      <view class="rule-section">
-        <view class="section-title">🏆 赛制全流程</view>
-        <view class="rule-timeline">
-          <view class="timeline-step">
-            <text class="step-num">1</text>
-            <view class="step-content">
-              <text class="step-title">报名期（7天）</text>
-              <text class="step-desc">提交爱宠单张照片，自动居中裁剪，可选一个或多个门类报名。</text>
-            </view>
-          </view>
-          <view class="timeline-step">
-            <text class="step-num">2</text>
-            <view class="step-content">
-              <text class="step-title">初选划屏（7天）</text>
-              <text class="step-desc">三门类同页横向左右滑动，每类最多选8张。系统统计被选次数，前8名晋级。</text>
-            </view>
-          </view>
-          <view class="timeline-step">
-            <text class="step-num">3</text>
-            <view class="step-content">
-              <text class="step-title">8进4淘汰赛（7天）</text>
-              <text class="step-desc">8强按主人ID字母顺序 (A→Z) 两两配对，4场1V1单败对决，胜者晋级4强。</text>
-            </view>
-          </view>
-          <view class="timeline-step">
-            <text class="step-num">4</text>
-            <view class="step-content">
-              <text class="step-title">4强巅峰德比（7天）</text>
-              <text class="step-desc">4强之间两两对战（共6场循环赛），按总胜场与票数决出金银铜牌！</text>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <view class="rule-section">
-        <view class="section-title">⚖️ 打平判定规则</view>
-        <text class="section-text">全阶段统一：若票数并列，以“谁先达到该票数的时刻更早（以选票时间戳为准）”判定胜出。</text>
-      </view>
-
-      <view class="rule-section">
-        <view class="section-title">🔒 隐私与水印</view>
-        <text class="section-text">所有参赛照片统一标注宠物名与打码主人ID（如 JE******），社群内可辨识同时保障个人隐私。</text>
-      </view>
+      <text class="section-text rules-detail" user-select>{{rulesDetail}}</text>
     </scroll-view>
 
     <view class="modal-footer">

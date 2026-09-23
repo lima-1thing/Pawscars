@@ -1,13 +1,30 @@
 const StorageService = require('../../utils/storage');
 const { maskLdap } = require('../../utils/mask');
 const { validateCongrats } = require('../../utils/validator');
+const { formatDateTime } = require('../../utils/time');
+
+const RANKS = [
+  { key: 'champion', text: '冠军' },
+  { key: 'runnerUp', text: '亚军' },
+  { key: 'thirdPlace', text: '季军' }
+];
+
+const formatEntry = (e) => (e ? {
+  ...e,
+  maskedLdap: maskLdap(e.ownerLdap),
+  scoreText: e.totalVotes !== undefined ? `${e.wins || 0} 胜 · ${e.totalVotes || 0} 票` : ''
+} : null);
 
 Page({
   data: {
+    isAwardsPhase: false,
+    canPreview: false,
     categories: [],
     currentCategory: null,
     awardsResult: null,
+    resultState: 'ready', // ready | empty | pending
     congratsList: [],
+    hasSentCongrats: false,
     rulesModalVisible: false,
     certModalVisible: false,
     sendModalVisible: false,
@@ -16,14 +33,30 @@ Page({
     myCongratsText: ''
   },
 
+  onLoad(options) {
+    this.focusCongrats = options && options.focus === 'congrats';
+    this.initialCategoryId = options && options.cat;
+  },
+
   onShow() {
     this.loadData();
+    if (this.focusCongrats) {
+      this.focusCongrats = false;
+      setTimeout(() => {
+        wx.pageScrollTo({ selector: '#congrats-wall', duration: 300 });
+        if (this.data.isAwardsPhase && !this.data.hasSentCongrats) this.onOpenSendModal();
+      }, 300);
+    }
   },
 
   loadData() {
     const categories = StorageService.getCategories();
-    const currentCategory = this.data.currentCategory || categories[0];
+    const preferredId = (this.data.currentCategory && this.data.currentCategory.id) || this.initialCategoryId;
+    const currentCategory = categories.find(c => c.id === preferredId) || categories[0];
     this.setData({
+      isAwardsPhase: StorageService.getPhase() === 'awards',
+      // 管理员可在颁奖前预览结果；普通用户颁奖开始后才能看到
+      canPreview: getApp().canAccessAdmin(),
       categories,
       currentCategory
     }, () => {
@@ -37,63 +70,67 @@ Page({
     if (!currentCategory) return;
 
     const result = StorageService.getAwardsResult(currentCategory.id);
-    // 处理打码
-    const formatEntry = (e) => e ? { ...e, maskedLdap: maskLdap(e.ownerLdap) } : null;
+    let resultState = 'ready';
+    if (!result) resultState = 'pending';
+    else if (result.isEmpty) resultState = 'empty';
 
     this.setData({
-      awardsResult: {
+      resultState,
+      awardsResult: result ? {
         champion: formatEntry(result.champion),
         runnerUp: formatEntry(result.runnerUp),
-        thirdPlace: formatEntry(result.thirdPlace),
-        fourthPlace: formatEntry(result.fourthPlace)
-      }
+        thirdPlace: formatEntry(result.thirdPlace)
+      } : null
     });
   },
 
   refreshCongrats() {
+    const user = StorageService.getUserBinding();
     const rawList = StorageService.getCongrats();
-    const congratsList = rawList.map(item => ({
-      ...item,
-      maskedLdap: maskLdap(item.ownerLdap),
-      timeStr: new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }));
-    this.setData({ congratsList });
+    this.setData({
+      congratsList: rawList.map(item => ({
+        ...item,
+        maskedLdap: maskLdap(item.ownerLdap),
+        timeStr: formatDateTime(item.createdAt)
+      })),
+      hasSentCongrats: !!user && rawList.some(item => item.ownerLdap === user.ldap)
+    });
   },
 
   onSelectCategory(e) {
     const { id } = e.currentTarget.dataset;
     const cat = this.data.categories.find(c => c.id === id);
     if (cat) {
-      this.setData({ currentCategory: cat }, () => {
-        this.refreshCategoryResult();
-      });
+      this.setData({ currentCategory: cat }, () => this.refreshCategoryResult());
     }
   },
 
-  onOpenCert(e) {
-    const { rank } = e.currentTarget.dataset;
-    const { awardsResult } = this.data;
-    if (!awardsResult) return;
-
-    let entry = awardsResult.champion;
-    let rankText = '冠军';
-    if (rank === 'runnerUp') {
-      entry = awardsResult.runnerUp;
-      rankText = '亚军';
-    } else if (rank === 'thirdPlace') {
-      entry = awardsResult.thirdPlace;
-      rankText = '季军';
-    }
-
-    if (!entry) {
+  openCertFor(rankKey) {
+    const rank = RANKS.find(r => r.key === rankKey);
+    const entry = this.data.awardsResult && this.data.awardsResult[rankKey];
+    if (!rank || !entry) {
       wx.showToast({ title: '暂无该奖项获奖者', icon: 'none' });
       return;
     }
+    this.setData({ certEntry: entry, certRankText: rank.text, certModalVisible: true });
+  },
 
-    this.setData({
-      certEntry: entry,
-      certRankText: rankText,
-      certModalVisible: true
+  // 点击领奖台上的获奖者，直接生成其证书
+  onTapWinner(e) {
+    this.openCertFor(e.currentTarget.dataset.rank);
+  },
+
+  // 主按钮：选择要生成证书的奖项
+  onChooseCert() {
+    const available = RANKS.filter(r => this.data.awardsResult && this.data.awardsResult[r.key]);
+    if (available.length === 0) return;
+    if (available.length === 1) {
+      this.openCertFor(available[0].key);
+      return;
+    }
+    wx.showActionSheet({
+      itemList: available.map(r => `${r.text} · ${this.data.awardsResult[r.key].petName}`),
+      success: (res) => this.openCertFor(available[res.tapIndex].key)
     });
   },
 
@@ -102,8 +139,11 @@ Page({
   },
 
   onOpenSendModal() {
-    const app = getApp();
-    if (!app.checkUserBinding()) return;
+    if (!getApp().checkUserBinding()) return;
+    if (this.data.hasSentCongrats) {
+      wx.showToast({ title: '你已经发送过贺词啦', icon: 'none' });
+      return;
+    }
     this.setData({ sendModalVisible: true, myCongratsText: '' });
   },
 
@@ -116,15 +156,13 @@ Page({
   },
 
   onSubmitCongrats() {
-    const { myCongratsText } = this.data;
-    const val = validateCongrats(myCongratsText);
+    const val = validateCongrats(this.data.myCongratsText);
     if (!val.valid) {
       wx.showToast({ title: val.message, icon: 'none' });
       return;
     }
-
     try {
-      StorageService.submitCongrats(myCongratsText);
+      StorageService.submitCongrats(this.data.myCongratsText);
       wx.showToast({ title: '祝福已上墙！🎉', icon: 'success' });
       this.setData({ sendModalVisible: false });
       this.refreshCongrats();
@@ -139,5 +177,18 @@ Page({
 
   onCloseRules() {
     this.setData({ rulesModalVisible: false });
+  },
+
+  // 分享战报：带当前门类的冠军信息
+  onShareAppMessage() {
+    const { currentCategory, awardsResult } = this.data;
+    const path = `/pages/awards/awards?cat=${currentCategory ? currentCategory.id : ''}`;
+    const champion = awardsResult && awardsResult.champion;
+    if (!champion) return { title: 'Pawscars 毛孩奥斯卡颁奖典礼', path };
+    return { title: `【${currentCategory.name}】冠军是 ${champion.petName}！快来看 Pawscars 颁奖典礼`, path };
+  },
+
+  onShareTimeline() {
+    return { title: 'Pawscars 毛孩奥斯卡颁奖典礼' };
   }
 });

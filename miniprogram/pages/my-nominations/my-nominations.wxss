@@ -103,10 +103,14 @@
 }
 
 .status-pill {
+  display: inline-block;
   font-size: 12px;
   font-weight: 700;
-  color: #D85A30;
-  margin-bottom: 2px;
+  color: #993C1D;
+  background: #FBEAF0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-bottom: 4px;
 }
 
 .status-desc {
@@ -146,3 +150,8 @@
   height: 42px;
   font-size: 14px;
 }
+
+/* 进度状态色调 */
+.tone-good { background: #E6F6F1; color: #085041; }
+.tone-muted { background: #F1EFE8; color: #5E5654; }
+.tone-gold { background: #FFF1C9; color: #5C4A02; }
