@@ -24,10 +24,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Run Algorithm and Simulation Tests
         run: npm test
+
+      - name: Test Google Cloud backend
+        working-directory: gcloud-functions
+        run: |
+          npm ci
+          npm test
 
   deploy:
     environment:

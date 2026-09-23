@@ -69,6 +69,7 @@ Pawscars/
 │   ├── submitCongrats/           # 贺词提交（限1条，≤50字）
 │   ├── getData/                  # 只读查询（服务端打码，公共视图不含实时票数）
 │   └── adminOps/                 # 管理员运维（阶段结算、配置、解绑、软删除、后台总览）
+├── gcloud-functions/             # Google Cloud 版后台（Cloud Functions + Firestore + Cloud Storage），见其 README
 ├── preview/                      # 独立的高保真 Web/H5 手机模拟器
 │   ├── index.html                # 375px 真实手机视口与控制台
 │   ├── preview.css               # 马卡龙主题高保真样式
