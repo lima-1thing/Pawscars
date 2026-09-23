@@ -276,7 +276,89 @@ function resolveFinalRankings(finalists, derbyMatches) {
   return { ...resolveDerbyRankings(list, derbyMatches || []), isEmpty: false };
 }
 
+/**
+ * 阶段是否开放：当前阶段一致且未过截止时间（0 表示不限）
+ */
+function isPhaseOpen(config, phase, now = Date.now()) {
+  if (!config || config.currentPhase !== phase) return false;
+  const deadline = (config.phaseDeadlines || {})[phase];
+  return !deadline || now < deadline;
+}
+
+const PHASE_ORDER = ['nominate', 'vote_initial', 'vote_match_8', 'vote_match_4', 'awards'];
+
+/**
+ * "我的提名"私密进度（本人可见各阶段票数与晋级情况）
+ * @param {object} p
+ * @param {object} p.entry 报名条目（含 id、initialVotes）
+ * @param {string} p.phase 当前阶段
+ * @param {boolean} p.needsInitialRound 该门类是否设初选
+ * @param {Array|null} p.qualifiers 初选晋级名单（尚未结算为 null）
+ * @param {Array} p.knockoutMatches 淘汰赛对阵（含票数）
+ * @param {Array} p.derbyMatches 德比对阵（含票数）
+ * @returns {{ title: string, detail: string, tone: string }}
+ */
+function computeEntryProgress({ entry, phase, needsInitialRound, qualifiers, knockoutMatches, derbyMatches }) {
+  const phaseIdx = PHASE_ORDER.indexOf(phase);
+  const initialVotes = entry.initialVotes || 0;
+
+  if (phaseIdx <= 0) return { title: '报名成功', detail: '等待初选开始', tone: 'neutral' };
+
+  if (phaseIdx === 1) {
+    if (!needsInitialRound) {
+      return { title: '直接晋级', detail: '本门类报名不足 9 只，免初选直接进入淘汰赛', tone: 'good' };
+    }
+    return { title: '初选划屏中', detail: `当前已被选中 ${initialVotes} 次（前 8 名晋级）`, tone: 'neutral' };
+  }
+
+  if (!(qualifiers || []).some(q => q.id === entry.id)) {
+    return { title: '止步初选', detail: `初选共被选中 ${initialVotes} 次，感谢参与！`, tone: 'muted' };
+  }
+
+  const knockout = knockoutMatches || [];
+  const involves = (m) => (m.entryA && m.entryA.id === entry.id) || (m.entryB && m.entryB.id === entry.id);
+  const myKnockout = knockout.find(involves);
+  const finalists = knockout.length > 0 ? getKnockoutWinners(knockout) : (qualifiers || []);
+
+  if (phaseIdx === 2) {
+    if (!myKnockout) return { title: '直接晋级 4 强', detail: '本门类晋级者不足 5 只，免淘汰赛', tone: 'good' };
+    if (!myKnockout.entryB) return { title: '轮空晋级', detail: '本轮轮空，自动晋级 4 强德比', tone: 'good' };
+    const isA = myKnockout.entryA.id === entry.id;
+    const mine = (isA ? myKnockout.votesA : myKnockout.votesB) || 0;
+    const theirs = (isA ? myKnockout.votesB : myKnockout.votesA) || 0;
+    const rival = isA ? myKnockout.entryB : myKnockout.entryA;
+    return { title: '8进4 对决中', detail: `对阵 ${rival.petName}：我方 ${mine} 票 / 对方 ${theirs} 票`, tone: 'neutral' };
+  }
+
+  if (!finalists.some(f => f.id === entry.id)) {
+    return { title: '止步 8 强', detail: '淘汰赛惜败，并列第 5-8 名', tone: 'muted' };
+  }
+
+  const derby = derbyMatches || [];
+  let wins = 0;
+  let votes = 0;
+  derby.filter(involves).forEach(m => {
+    const isA = m.entryA.id === entry.id;
+    votes += (isA ? m.votesA : m.votesB) || 0;
+    if ((resolveMatchWinner(m) === 'A') === isA) wins += 1;
+  });
+
+  if (phaseIdx === 3) {
+    return { title: '4强德比中', detail: `当前暂计 ${wins} 胜 · 累计 ${votes} 票`, tone: 'neutral' };
+  }
+
+  const ranked = resolveFinalRankings(finalists, derby).fullRankings.find(r => r.id === entry.id);
+  const labels = { 1: '冠军 🥇', 2: '亚军 🥈', 3: '季军 🥉' };
+  if (ranked && labels[ranked.rank]) {
+    return { title: labels[ranked.rank], detail: `德比 ${ranked.wins || 0} 胜 · 累计 ${ranked.totalVotes || 0} 票`, tone: 'gold' };
+  }
+  return { title: '4 强', detail: `德比 ${wins} 胜 · 累计 ${votes} 票，感谢参与！`, tone: 'muted' };
+}
+
 module.exports = {
+  PHASE_ORDER,
+  isPhaseOpen,
+  computeEntryProgress,
   getKnockoutWinners,
   buildKnockoutStage,
   resolveFinalRankings,

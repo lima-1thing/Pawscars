@@ -73,6 +73,12 @@
       <view class="section-title">📝 活动信息与文案</view>
       <view class="field-label">活动主标题</view>
       <input class="field-input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="20" />
+      <view class="field-label">主持人头像（首页发言人、规则气泡与证书使用）</view>
+      <view class="avatar-row" bindtap="onChooseHostAvatar">
+        <image wx:if="{{hostAvatar}}" class="host-avatar-preview" src="{{hostAvatar}}" mode="aspectFill" />
+        <view wx:else class="host-avatar-preview avatar-empty">{{form.hostName[0] || '宫'}}</view>
+        <text class="avatar-change">更换头像</text>
+      </view>
       <view class="field-label">主持人昵称</view>
       <input class="field-input" value="{{form.hostName}}" data-field="hostName" bindinput="onFormInput" maxlength="10" />
       <view class="field-label">首页开场白</view>
@@ -125,8 +131,8 @@
     </view>
 
     <!-- 8. 开发调试工具（仅开发版/体验版可见） -->
-    <view wx:if="{{isDevBuild}}" class="admin-section-card dev-card">
-      <view class="section-title">🧪 开发调试（正式版不显示）</view>
+    <view wx:if="{{isDevBuild && isMockMode}}" class="admin-section-card dev-card">
+      <view class="section-title">🧪 开发调试 · 本地模式（正式版不显示）</view>
       <view class="desc-text">当前本机身份：<text class="highlight-text">{{currentLdap || '未绑定'}}</text></view>
       <view class="quick-id-row">
         <button wx:for="{{devIds}}" wx:key="*this" class="small-id-btn" bindtap="onSwitchId" data-id="{{item}}">{{item}}</button>

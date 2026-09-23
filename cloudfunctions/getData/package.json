@@ -1,0 +1,9 @@
+{
+  "name": "getData",
+  "version": "1.0.0",
+  "description": "Pawscars read-only data API (masked, no live vote counts in public views)",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,45 +1,54 @@
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 
 Page({
   data: {
+    loaded: false,
     userLdap: '',
     entries: [],
     canNominate: false
   },
 
-  onShow() {
-    this.loadData();
-  },
-
-  loadData() {
-    const user = StorageService.getUserBinding();
+  async onShow() {
+    try {
+      await getApp().ready;
+    } catch (e) {
+      return;
+    }
+    const { user, categories } = api.getState();
     if (!user) {
       wx.redirectTo({ url: '/pages/auth/auth' });
       return;
     }
 
+    let raw = [];
+    try {
+      raw = await api.getMyNominations();
+    } catch (e) {
+      wx.showToast({ title: e.message || '加载失败', icon: 'none' });
+    }
+
     const catMap = {};
-    StorageService.getCategories().forEach(c => { catMap[c.id] = c; });
+    categories.forEach(c => { catMap[c.id] = c; });
 
     // 私密页面：本人可见各阶段票数与晋级情况
-    const entries = StorageService.getMyNominations(user.ldap).map(e => {
+    const entries = raw.map(e => {
       const cat = catMap[e.categoryId] || { name: e.categoryId, bg: '#FAC775', textColor: '#412402' };
-      const progress = StorageService.getEntryProgress(e);
       return {
         ...e,
         categoryName: cat.name,
         catBg: cat.bg,
         catText: cat.textColor,
-        phaseStatusTitle: progress.title,
-        phaseStatusDetail: progress.detail,
-        statusTone: progress.tone
+        phaseStatusTitle: e.progress.title,
+        phaseStatusDetail: e.progress.detail,
+        statusTone: e.progress.tone
       };
     });
 
     this.setData({
+      loaded: true,
       userLdap: user.ldap,
       entries,
-      canNominate: StorageService.isPhaseOpen('nominate')
+      canNominate: api.isPhaseOpen('nominate')
     });
   },
 

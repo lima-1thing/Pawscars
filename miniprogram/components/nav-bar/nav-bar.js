@@ -1,4 +1,4 @@
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 
 /**
  * 读取胶囊按钮位置，计算自定义导航栏的状态栏高度、导航栏高度与右侧避让宽度
@@ -51,13 +51,18 @@ Component({
 
   lifetimes: {
     attached() {
-      const config = StorageService.getConfig();
       this.setData({
         ...getNavMetrics(),
-        canGoBack: getCurrentPages().length > 1,
-        hostAvatar: config.hostAvatar || '',
-        hostInitial: (config.hostName || '宫').slice(0, 1)
+        canGoBack: getCurrentPages().length > 1
       });
+      // 通过分享直达时配置可能还在加载，加载完成后再填充主持人头像
+      getApp().ready.then(() => {
+        const config = api.getState().config || {};
+        this.setData({
+          hostAvatar: config.hostAvatar || '',
+          hostInitial: (config.hostName || '宫').slice(0, 1)
+        });
+      }).catch(() => {});
     }
   },
 

@@ -1,4 +1,4 @@
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 const { maskLdap } = require('../../utils/mask');
 
 const MAX_PICKS = 8;
@@ -13,37 +13,38 @@ Page({
     rulesModalVisible: false
   },
 
-  onShow() {
-    this.loadData();
+  async onShow() {
+    try {
+      await getApp().ready;
+      await this.loadData();
+    } catch (e) {
+      wx.showToast({ title: e.message || '加载失败', icon: 'none' });
+    }
   },
 
-  loadData() {
-    const categoryList = StorageService.getCategories().map(cat => {
-      // 候选按主人活动ID字母顺序 (A→Z) 固定排列，所有人看到的顺序一致
-      const entries = [...StorageService.getEntries(cat.id)]
-        .sort((a, b) => (a.ownerLdap || '').toUpperCase().localeCompare((b.ownerLdap || '').toUpperCase()))
-        .map(e => ({ ...e, maskedLdap: maskLdap(e.ownerLdap) }));
+  async loadData() {
+    const { phaseOpen, categories } = await api.getInitialState();
+    const styles = {};
+    api.getState().categories.forEach(c => { styles[c.id] = c; });
 
-      const existingVote = StorageService.getInitialVotesForUser(cat.id);
-      const selectedIds = existingVote ? existingVote.selectedEntryIds : [];
+    const categoryList = categories.map(cat => {
+      const selectedIds = cat.mySelection || [];
       const selectedMap = {};
       selectedIds.forEach(id => { selectedMap[id] = true; });
-
       return {
-        ...cat,
-        entries,
-        needsVote: StorageService.needsInitialRound(cat.id),
+        ...styles[cat.id],
+        id: cat.id,
+        // 候选已按主人活动ID字母顺序 (A→Z) 固定排列，所有人看到的顺序一致
+        entries: cat.entries.map(e => ({ ...e, maskedLdap: maskLdap(e.ownerLdap) })),
+        needsVote: cat.needsVote,
         selectedIds,
         selectedMap,
         currentIndex: 0,
-        isLocked: !!existingVote
+        isLocked: !!cat.mySelection
       };
     });
 
-    this.setData({
-      phaseOpen: StorageService.isPhaseOpen('vote_initial'),
-      categoryList
-    });
+    this.setData({ phaseOpen, categoryList });
   },
 
   updateCategory(catId, updater) {
@@ -110,27 +111,31 @@ Page({
     this.setData({ confirmVisible: false });
   },
 
-  onSubmitInitialVotes() {
+  async onSubmitInitialVotes() {
     if (this.data.submitting) return;
     this.setData({ submitting: true });
 
     const failures = [];
     let submittedCount = 0;
-    this.data.pendingGroups.forEach(group => {
+    for (const group of this.data.pendingGroups) {
       const cat = this.data.categoryList.find(c => c.id === group.id);
       try {
-        StorageService.submitInitialVote(cat.id, cat.selectedIds);
+        await api.submitInitialVote(cat.id, cat.selectedIds);
         submittedCount++;
       } catch (e) {
         failures.push(`${cat.name}：${e.message}`);
       }
-    });
+    }
 
-    this.setData({ submitting: false, confirmVisible: false });
     // 重新加载：已提交的门类锁定，失败/未提交的门类保留当前选择可重试
     const previousSelections = {};
     this.data.categoryList.forEach(c => { previousSelections[c.id] = c; });
-    this.loadData();
+    this.setData({ submitting: false, confirmVisible: false });
+    try {
+      await this.loadData();
+    } catch (e) {
+      // 刷新失败时保留当前页面状态
+    }
     this.data.categoryList.forEach(c => {
       const prev = previousSelections[c.id];
       if (!c.isLocked && prev && prev.selectedIds.length > 0) {

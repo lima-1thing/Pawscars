@@ -10,8 +10,10 @@ const {
   buildKnockoutStage,
   getKnockoutWinners,
   generateDerbyMatches,
-  resolveMatchWinner,
-  resolveFinalRankings
+  resolveFinalRankings,
+  computeEntryProgress,
+  isPhaseOpen,
+  PHASE_ORDER
 } = require('./bracket');
 const { validatePetName, validateCongrats } = require('./validator');
 
@@ -26,7 +28,6 @@ const STORAGE_KEYS = {
   CONGRATS: 'pawscars_congrats'
 };
 
-const PHASE_ORDER = ['nominate', 'vote_initial', 'vote_match_8', 'vote_match_4', 'awards'];
 const STAGE_KNOCKOUT = '8进4';
 const STAGE_DERBY = '4强德比';
 const MAX_INITIAL_PICKS = 8;
@@ -116,9 +117,7 @@ const StorageService = {
    * 当前阶段是否仍在开放窗口内（阶段匹配且未过截止时间）
    */
   isPhaseOpen(phase) {
-    if (this.getPhase() !== phase) return false;
-    const deadline = this.getPhaseDeadline(phase);
-    return !deadline || Date.now() < deadline;
+    return isPhaseOpen(this.getConfig(), phase);
   },
 
   assertPhaseOpen(phase, closedMessage) {
@@ -547,68 +546,15 @@ const StorageService = {
    * "我的提名"私密进度：本人可见各阶段票数与晋级情况
    */
   getEntryProgress(entry) {
-    const phase = this.getPhase();
-    const phaseIdx = PHASE_ORDER.indexOf(phase);
     const catId = entry.categoryId;
-    const result = { title: '报名成功', detail: '等待初选开始', tone: 'neutral' };
-
-    if (phaseIdx === 0) return result;
-
-    if (phaseIdx === 1) {
-      if (!this.needsInitialRound(catId)) {
-        return { title: '直接晋级', detail: '本门类报名不足 9 只，免初选直接进入淘汰赛', tone: 'good' };
-      }
-      return { title: '初选划屏中', detail: `当前已被选中 ${entry.initialVotes || 0} 次（前 8 名晋级）`, tone: 'neutral' };
-    }
-
-    const qualifiers = this.getQualifiers(catId) || [];
-    const qualifier = qualifiers.find(q => q.id === entry.id);
-    if (!qualifier) {
-      return { title: '止步初选', detail: `初选共被选中 ${entry.initialVotes || 0} 次，感谢参与！`, tone: 'muted' };
-    }
-
-    const knockout = this.getMatches(catId, STAGE_KNOCKOUT);
-    const myKnockout = knockout.find(m => (m.entryA && m.entryA.id === entry.id) || (m.entryB && m.entryB.id === entry.id));
-    const finalists = this.getFinalists(catId);
-    const inFinal = finalists.some(f => f.id === entry.id);
-
-    if (phaseIdx === 2) {
-      if (!myKnockout) return { title: '直接晋级 4 强', detail: '本门类晋级者不足 5 只，免淘汰赛', tone: 'good' };
-      if (!myKnockout.entryB) return { title: '轮空晋级', detail: '本轮轮空，自动晋级 4 强德比', tone: 'good' };
-      const isA = myKnockout.entryA.id === entry.id;
-      const mine = isA ? myKnockout.votesA : myKnockout.votesB;
-      const theirs = isA ? myKnockout.votesB : myKnockout.votesA;
-      const rival = isA ? myKnockout.entryB : myKnockout.entryA;
-      return { title: '8进4 对决中', detail: `对阵 ${rival.petName}：我方 ${mine || 0} 票 / 对方 ${theirs || 0} 票`, tone: 'neutral' };
-    }
-
-    if (!inFinal) {
-      return { title: '止步 8 强', detail: '淘汰赛惜败，并列第 5-8 名', tone: 'muted' };
-    }
-
-    const derby = this.getMatches(catId, STAGE_DERBY);
-    let wins = 0;
-    let votes = 0;
-    derby.forEach(m => {
-      const isA = m.entryA.id === entry.id;
-      const isB = m.entryB.id === entry.id;
-      if (!isA && !isB) return;
-      votes += (isA ? m.votesA : m.votesB) || 0;
-      const w = resolveMatchWinner(m);
-      if ((w === 'A' && isA) || (w === 'B' && isB)) wins += 1;
+    return computeEntryProgress({
+      entry,
+      phase: this.getPhase(),
+      needsInitialRound: this.needsInitialRound(catId),
+      qualifiers: this.getQualifiers(catId),
+      knockoutMatches: this.getMatches(catId, STAGE_KNOCKOUT),
+      derbyMatches: this.getMatches(catId, STAGE_DERBY)
     });
-
-    if (phaseIdx === 3) {
-      return { title: '4强德比中', detail: `当前暂计 ${wins} 胜 · 累计 ${votes} 票`, tone: 'neutral' };
-    }
-
-    const awards = this.getAwardsResult(catId);
-    const ranked = awards && awards.fullRankings.find(r => r.id === entry.id);
-    const labels = { 1: '冠军 🥇', 2: '亚军 🥈', 3: '季军 🥉' };
-    if (ranked && labels[ranked.rank]) {
-      return { title: labels[ranked.rank], detail: `德比 ${ranked.wins || 0} 胜 · 累计 ${ranked.totalVotes || 0} 票`, tone: 'gold' };
-    }
-    return { title: '4 强', detail: `德比 ${wins} 胜 · 累计 ${votes} 票，感谢参与！`, tone: 'muted' };
   },
 
   /**

@@ -1,5 +1,5 @@
 const { maskLdap } = require('../../utils/mask');
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 
 // 证书画布的逻辑尺寸（px），导出时按设备像素比放大
 const W = 300;
@@ -38,7 +38,16 @@ function fillWrappedText(ctx, text, centerX, y, maxWidth, lineHeight, maxLines) 
   return Math.min(lines.length, maxLines);
 }
 
-function loadImage(canvas, src) {
+// 云存储文件需先下载到本地，画布无法直接加载 cloud:// 地址
+function resolveImageSrc(src) {
+  if (!src || !/^cloud:\/\//.test(src)) return Promise.resolve(src);
+  return wx.cloud.downloadFile({ fileID: src })
+    .then(res => res.tempFilePath)
+    .catch(() => '');
+}
+
+async function loadImage(canvas, rawSrc) {
+  const src = await resolveImageSrc(rawSrc);
   return new Promise((resolve) => {
     if (!src) return resolve(null);
     const img = canvas.createImage();
@@ -110,7 +119,7 @@ Component({
 
     async draw(canvas) {
       const { entry, categoryName, rankText } = this.properties;
-      const config = StorageService.getConfig();
+      const config = api.getState().config || {};
       const theme = RANK_THEME[rankText] || RANK_THEME['冠军'];
       const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2;
 

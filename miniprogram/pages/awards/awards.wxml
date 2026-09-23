@@ -38,6 +38,7 @@
 
       <view wx:if="{{resultState === 'empty'}}" class="podium-empty">本门类无人参赛</view>
       <view wx:elif="{{resultState === 'pending'}}" class="podium-empty">结果将在 4 强德比结束后生成</view>
+      <view wx:elif="{{resultState === 'loading'}}" class="podium-empty">结果加载中…</view>
 
       <!-- 领奖台：亚军（左）— 冠军（中，最大且最高）— 季军（右） -->
       <view wx:else class="podium-stage">
