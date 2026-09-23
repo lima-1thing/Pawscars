@@ -26,14 +26,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Run Algorithm and Simulation Tests
-        run: npm test
+      - name: Install Google Cloud backend dependencies
+        run: npm ci --prefix gcloud-functions
 
       - name: Test Google Cloud backend
-        working-directory: gcloud-functions
-        run: |
-          npm ci
-          npm test
+        run: npm test --prefix gcloud-functions
+
+      - name: Run mini program, integration and simulation tests
+        run: npm test
 
   deploy:
     environment:

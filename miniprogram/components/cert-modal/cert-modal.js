@@ -38,12 +38,16 @@ function fillWrappedText(ctx, text, centerX, y, maxWidth, lineHeight, maxLines) 
   return Math.min(lines.length, maxLines);
 }
 
-// 云存储文件需先下载到本地，画布无法直接加载 cloud:// 地址
+// 网络图片先下载到本地再绘制（需在小程序后台登记 downloadFile 合法域名）
 function resolveImageSrc(src) {
-  if (!src || !/^cloud:\/\//.test(src)) return Promise.resolve(src);
-  return wx.cloud.downloadFile({ fileID: src })
-    .then(res => res.tempFilePath)
-    .catch(() => '');
+  if (!src || !/^https?:\/\//.test(src)) return Promise.resolve(src);
+  return new Promise((resolve) => {
+    wx.downloadFile({
+      url: src,
+      success: (res) => resolve(res.statusCode === 200 ? res.tempFilePath : ''),
+      fail: () => resolve('')
+    });
+  });
 }
 
 async function loadImage(canvas, rawSrc) {

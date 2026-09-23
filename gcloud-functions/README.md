@@ -1,9 +1,7 @@
 # Pawscars 后台 · Google Cloud 版
 
-用 **Google Cloud Functions（第 2 代）+ Firestore + Cloud Storage** 替代微信云开发，适合境外主体、海外用户的小程序。
-逻辑与 `cloudfunctions/`（微信云开发版）一致：同样的赛制规则、打码规则、唯一性约束与管理员校验。
-
-> 当前小程序前台仍在调用微信云开发（`miniprogram/utils/api.js`）。切换到本后台需要再改前台的数据接口层，见文末"接入小程序"。
+小程序的后台：**Google Cloud Functions（第 2 代）+ Firestore + Cloud Storage**，适合境外主体、海外用户的小程序。
+小程序通过 `miniprogram/utils/api.js` 调用本服务，地址在 `miniprogram/env.js` 的 `API_BASE_URL` 中配置。
 
 ## 架构
 
@@ -187,10 +185,7 @@ gcloud scheduler jobs create http pawscars-advance-phase \
 
 ## 接入小程序
 
-前台所有数据读写都集中在 `miniprogram/utils/api.js`，接入时只需：
-1. 启动时调用 `wx.login` → `POST /login`，保存返回的 `token`；
-2. 把 `wx.cloud.callFunction` 换成带 `Authorization` 头的 `wx.request`，路径按上表对应；
-3. 照片改用 `wx.uploadFile` 调 `/upload`，再把返回的 `url` 传给 `/nominate`；
-4. 收到 401 时重新登录。
-
-`cloudfunctions/`（微信云开发版）在切换完成后可以删除。
+1. 部署并绑定域名后，把 `miniprogram/env.js` 中的 `API_BASE_URL` 改为 `https://api.<你的域名>`（`BACKEND` 保持 `'gcloud'`）。
+2. 小程序启动时自动调用 `wx.login` → `/login` 获取令牌并保存在本机；令牌过期（401）时自动重新登录并重试。
+3. 照片通过 `wx.uploadFile` 上传到 `/upload`，再把返回的地址提交给 `/nominate`。
+4. 上传体验版后用两三个微信号完整跑一遍：报名 → 初选 → PK → 颁奖 → 贺词。

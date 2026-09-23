@@ -203,7 +203,7 @@ Page({
       title: `【${currentMatch.entryA.petName} VS ${currentMatch.entryB.petName}】火热对决中，帮忙投一票！`,
       path
     };
-    // 分享封面只支持网络/本地图片；data: 与 cloud:// 地址交由微信默认截取当前页面
+    // 分享封面只支持网络/本地图片；data: 地址交由微信默认截取当前页面
     if (/^(https?:|wxfile:)/.test(currentMatch.entryA.photoUrl)) share.imageUrl = currentMatch.entryA.photoUrl;
     return share;
   }

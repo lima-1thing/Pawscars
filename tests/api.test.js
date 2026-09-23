@@ -4,19 +4,27 @@
 const assert = require('assert');
 
 (async () => {
-  console.log('Testing app.js launches and the API falls back to mock mode without wx.cloud...');
+  console.log('Testing app.js launch: release build refuses to run without a backend...');
   let appDef = null;
+  let modalShown = false;
+  let envVersion = 'release';
   global.App = (def) => { appDef = def; };
   global.wx = {
     getStorageSync: () => '',
     setStorageSync: () => {},
-    getAccountInfoSync: () => ({ miniProgram: { envVersion: 'release' } })
+    showModal: () => { modalShown = true; },
+    getAccountInfoSync: () => ({ miniProgram: { envVersion } })
   };
   require('../miniprogram/app.js');
   appDef.onLaunch();
+  await assert.rejects(appDef.ready, /API_BASE_URL/);
+  assert.strictEqual(modalShown, true);
+
+  console.log('Testing app.js launch: dev build falls back to local mock storage...');
+  envVersion = 'develop';
+  appDef.onLaunch();
   await appDef.ready;
   assert.strictEqual(appDef.globalData.mode, 'mock');
-  assert.strictEqual(appDef.canAccessAdmin(), false);
   assert.strictEqual(appDef.checkUserBinding(false), false);
   delete global.App;
   delete global.wx;
