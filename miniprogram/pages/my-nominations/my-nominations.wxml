@@ -3,7 +3,6 @@
     title="我的提名" 
     subtitle="参赛毛孩状态追踪" 
     showMyNomination="{{false}}" 
-    showBack="{{true}}" 
     showRules="{{false}}" 
   />
 
@@ -24,7 +23,6 @@
             src="{{item.photoUrl}}" 
             petName="{{item.petName}}" 
             ownerLdap="{{item.ownerLdap}}"
-            showNameAbove="{{false}}"
             customStyle="width: 84px; height: 84px;"
           />
         </view>
@@ -38,7 +36,7 @@
 
           <!-- 当前阶段战绩详情 -->
           <view class="status-box">
-            <view class="status-pill">{{item.phaseStatusTitle}}</view>
+            <view class="status-pill tone-{{item.statusTone}}">{{item.phaseStatusTitle}}</view>
             <view class="status-desc">{{item.phaseStatusDetail}}</view>
           </view>
         </view>
@@ -49,8 +47,9 @@
     <view wx:else class="empty-state">
       <text class="empty-icon">🐶</text>
       <text class="empty-title">你还没有提名参赛毛孩</text>
-      <text class="empty-sub">快去为自家的毛孩子报名参加 Pawscars 吧！</text>
-      <button class="paw-btn paw-btn-primary empty-btn" bindtap="onGoNominate">
+      <text wx:if="{{canNominate}}" class="empty-sub">快去为自家的毛孩子报名参加 Pawscars 吧！</text>
+      <text wx:else class="empty-sub">本届报名已截止，下次活动再来参加吧！</text>
+      <button wx:if="{{canNominate}}" class="paw-btn paw-btn-primary empty-btn" bindtap="onGoNominate">
         立即去提名
       </button>
     </view>

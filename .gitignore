@@ -3,3 +3,4 @@ node_modules/
 .DS_Store
 *.log
 .system_generated/
+project.private.config.json

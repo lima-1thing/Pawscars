@@ -20,7 +20,7 @@
   padding: 6px 14px;
   border-radius: 16px;
   background: #F4F2EC;
-  color: #7A7270;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   font-size: 12px;
@@ -30,6 +30,20 @@
 
 .tab-icon {
   margin-right: 4px;
+}
+
+.tab-status {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.tab-status-todo {
+  color: #FFFFFF;
+  background: #D85A30;
 }
 
 .active-cat-tab {
@@ -46,7 +60,7 @@
   margin-bottom: 6px;
 }
 
-/* 对决卡片区：上下堆叠，正方形 150×150px */
+/* 对决卡片区：上下堆叠，正方形照片 */
 .match-duel-area {
   flex: 1;
   display: flex;
@@ -70,9 +84,12 @@
   margin-bottom: 6px;
 }
 
+/* 两张照片需同屏可见：边长取屏宽 64% 与屏高 30% 中较小者 */
 .photo-box {
-  width: 150px;
-  height: 150px;
+  width: 56vw;
+  height: 56vw;
+  width: min(64vw, 30vh);
+  height: min(64vw, 30vh);
   border-radius: 16px;
   background: #FFFFFF;
   border: 1.5px solid #EBE6DC;
@@ -124,7 +141,7 @@
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(4px);
   color: #4A3E3D;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
@@ -155,7 +172,7 @@
 
 /* 底部操作区 */
 .bottom-action-wrap {
-  padding: 10px 20px 24px;
+  padding: 10px 20px calc(16px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: center;
 }

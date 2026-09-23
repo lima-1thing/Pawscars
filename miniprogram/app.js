@@ -20,16 +20,30 @@ App({
     }
 
     // 初始化全局配置与用户状态
-    const config = StorageService.getConfig();
-    const userBinding = StorageService.getUserBinding();
-    const isAdmin = userBinding && config.adminOpenids && config.adminOpenids.includes(userBinding.ldap);
-
     this.globalData = {
-      config,
-      userBinding,
-      isAdmin: !!isAdmin,
-      rulesModalVisible: false
+      config: StorageService.getConfig(),
+      userBinding: StorageService.getUserBinding(),
+      isAdmin: StorageService.isAdmin()
     };
+  },
+
+  /**
+   * 是否为开发版/体验版：模拟身份切换、数据重置等调试工具只在这里开放
+   */
+  isDevBuild() {
+    try {
+      const { envVersion } = wx.getAccountInfoSync().miniProgram;
+      return envVersion === 'develop' || envVersion === 'trial';
+    } catch (e) {
+      return false;
+    }
+  },
+
+  /**
+   * 可进入管理后台：openid 白名单管理员，或开发/体验版调试
+   */
+  canAccessAdmin() {
+    return StorageService.isAdmin() || this.isDevBuild();
   },
 
   checkUserBinding(redirect = true) {
@@ -43,21 +57,13 @@ App({
       return false;
     }
     this.globalData.userBinding = binding;
+    this.globalData.isAdmin = StorageService.isAdmin();
     return true;
-  },
-
-  showRulesModal() {
-    const pages = getCurrentPages();
-    const curPage = pages[pages.length - 1];
-    if (curPage) {
-      curPage.setData({ rulesModalVisible: true });
-    }
   },
 
   globalData: {
     config: null,
     userBinding: null,
-    isAdmin: false,
-    rulesModalVisible: false
+    isAdmin: false
   }
 });

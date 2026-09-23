@@ -110,6 +110,15 @@
   margin-right: 8px;
 }
 
+.gong-avatar {
+  overflow: hidden;
+}
+
+.gong-avatar-img {
+  width: 30px;
+  height: 30px;
+}
+
 .gong-text {
   font-size: 12px;
   font-weight: bold;
@@ -205,18 +214,6 @@
   border-radius: 24px;
 }
 
-/* 投票期状态卡片 */
-.voting-status-card {
-  background: #E6F6F1;
-  border-radius: 18px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 14px rgba(4, 52, 44, 0.05);
-}
 
 .status-stage-tag {
   font-size: 11px;
@@ -278,18 +275,6 @@
   margin-right: 4px;
 }
 
-/* 颁奖期卡片 */
-.awards-status-card {
-  background: #FFF8E7;
-  border: 1.5px solid #FAC775;
-  border-radius: 18px;
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 16px;
-}
 
 .awards-banner-icon {
   font-size: 36px;
@@ -316,8 +301,48 @@
 
 .admin-link-text {
   font-size: 11px;
-  color: #9A9290;
+  color: var(--text-muted);
   padding: 6px 12px;
   background: #F4F0E8;
   border-radius: 12px;
+}
+
+/* 阶段状态条（报名期） */
+.phase-strip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7A2E4A;
+  background: #FBEAF0;
+  border-radius: 12px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.phase-strip-closed {
+  color: #5E5654;
+  background: #F1EFE8;
+}
+
+/* 主持人发言气泡：左上角尖角指向头像，呼应"发言人"样式 */
+.speech-bubble {
+  background: #E6F6F1;
+  border-radius: 4px 18px 18px 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(4, 52, 44, 0.05);
+}
+
+.speech-bubble-gold {
+  background: #FFF8E7;
+  border: 1.5px solid #FAC775;
+  align-items: center;
+  text-align: center;
+}
+
+.top-gap {
+  margin-top: 10px;
 }

@@ -1,48 +1,24 @@
 <view wx:if="{{visible}}" class="cert-overlay" catchtouchmove="preventD">
   <view class="cert-dialog">
-    <!-- 证书卡片主体（奥斯卡复古鎏金/马卡龙典雅风格） -->
-    <view class="cert-poster" id="certPoster">
-      <view class="cert-border-outer">
-        <view class="cert-border-inner">
-          <view class="cert-header">
-            <view class="oscar-laurel">🏆</view>
-            <view class="cert-event-title">PAWSCARS 2026</view>
-            <view class="cert-event-subtitle">首届毛孩奥斯卡荣誉盛典</view>
-          </view>
-
-          <view class="cert-avatar-frame">
-            <image class="cert-pet-photo" src="{{entry.photoUrl}}" mode="aspectFill" />
-            <view class="cert-badge-overlay">{{maskedLdap}}</view>
-          </view>
-
-          <view class="cert-pet-name">{{entry.petName}}</view>
-
-          <view class="cert-award-ribbon">
-            <text class="ribbon-text">{{categoryName}} · {{rankText}}</text>
-          </view>
-
-          <view class="cert-declaration">
-            在纽约🐶群七周年特别评选中，凭借超凡实力与极高人气，荣获此殊荣，特发此证以资表彰！
-          </view>
-
-          <view class="cert-footer">
-            <view class="footer-sign">
-              <text class="sign-title">大会主持人</text>
-              <text class="sign-name">宫师姐 敬颁</text>
-            </view>
-            <view class="footer-seal">
-              <text class="seal-icon">🎖️</text>
-              <text class="seal-text">官方认证</text>
-            </view>
-          </view>
-        </view>
+    <!-- 预览即为导出的证书图片，长按可调出微信原生保存/转发菜单 -->
+    <view class="cert-preview">
+      <image wx:if="{{certPath}}" class="cert-image" src="{{certPath}}" mode="widthFix" show-menu-by-longpress />
+      <view wx:elif="{{failed}}" class="cert-placeholder">
+        <text>证书生成失败</text>
+        <text class="retry-link" bindtap="onRetry">点击重试</text>
+      </view>
+      <view wx:else class="cert-placeholder">
+        <text>证书生成中…</text>
       </view>
     </view>
 
-    <!-- 操作按钮 -->
     <view class="cert-actions">
-      <button class="paw-btn paw-btn-primary action-btn" bindtap="onSaveImage">保存证书图片</button>
-      <button class="paw-btn paw-btn-outline action-btn" bindtap="onClose">关闭</button>
+      <button class="paw-btn paw-btn-primary action-btn" bindtap="onSaveImage" disabled="{{!certPath}}">保存到相册</button>
+      <button class="paw-btn paw-btn-outline action-btn" bindtap="onShareImage" disabled="{{!certPath}}">分享证书</button>
     </view>
+    <view class="close-link" bindtap="onClose">关闭</view>
   </view>
+
+  <!-- 离屏画布：用于绘制证书 -->
+  <canvas type="2d" id="certCanvas" class="cert-canvas"></canvas>
 </view>

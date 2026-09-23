@@ -1,13 +1,18 @@
 <view class="nominate-container">
-  <nav-bar title="我要提名" subtitle="提交参赛毛孩" showMyNomination="{{true}}" showBack="{{true}}" />
+  <nav-bar title="我要提名" subtitle="提交参赛毛孩" showMyNomination="{{true}}" showRules="{{false}}" />
 
   <scroll-view scroll-y class="form-scroll">
-    <view class="form-card">
+    <view wx:if="{{!phaseOpen}}" class="closed-notice">
+      <text class="closed-title">报名已截止</text>
+      <text class="closed-desc">下方为你已提交的提名，现已锁定为只读。</text>
+    </view>
+
+    <view wx:if="{{phaseOpen}}" class="form-card">
       <!-- 1. 照片上传框 -->
       <view class="form-item">
         <view class="item-label">
           <text class="label-title">毛孩照片</text>
-          <text class="label-hint">（单张，自动裁剪正方形）</text>
+          <text class="label-hint">（单张 JPG/PNG，≤5MB，自动裁剪为正方形）</text>
         </view>
         <view class="photo-upload-box" bindtap="onChoosePhoto">
           <block wx:if="{{photoUrl}}">
@@ -74,7 +79,7 @@
       <!-- 提交按钮 -->
       <view class="submit-wrap">
         <button 
-          class="paw-btn paw-btn-primary full-submit-btn {{!isFormReady ? 'btn-disabled' : ''}}" 
+          class="paw-btn paw-btn-primary full-submit-btn {{isFormReady ? '' : 'btn-disabled'}}" 
           bindtap="onSubmit"
         >
           确认提名
@@ -82,21 +87,25 @@
       </view>
     </view>
 
-    <!-- 底部：我已提交的提名预览 -->
-    <view wx:if="{{myEntries.length > 0}}" class="my-entries-section">
-      <view class="section-heading">已提名的毛孩 ({{myEntries.length}})</view>
-      <view class="entries-grid">
-        <view wx:for="{{myEntries}}" wx:key="id" class="my-entry-card">
-          <watermark-image 
-            src="{{item.photoUrl}}" 
-            petName="{{item.petName}}" 
-            ownerLdap="{{item.ownerLdap}}"
-            showNameAbove="{{false}}"
-            customStyle="width: 80px; height: 80px;"
-          />
-          <view class="entry-meta">
-            <text class="entry-cat-badge">{{item.categoryName}}</text>
-            <text class="entry-date">{{item.timeStr}}</text>
+    <!-- 我的提名：按门类分组，报名期内可更换照片 -->
+    <view wx:if="{{entryCount > 0}}" class="my-entries-section">
+      <view class="section-heading">已提名的毛孩 ({{entryCount}})</view>
+      <view wx:for="{{entryGroups}}" wx:key="id" wx:for-item="group" class="entry-group">
+        <view class="entry-group-title" style="color: {{group.textColor}};">
+          <text class="group-dot" style="background-color: {{group.bg}};"></text>{{group.icon}} {{group.name}}
+        </view>
+        <view class="entries-grid">
+          <view wx:for="{{group.entries}}" wx:key="id" class="my-entry-card">
+            <watermark-image
+              src="{{item.photoUrl}}"
+              petName="{{item.petName}}"
+              ownerLdap="{{item.ownerLdap}}"
+              customStyle="width: 88px; height: 88px;"
+            />
+            <view class="entry-meta">
+              <text class="entry-date">{{item.timeStr}}</text>
+              <text wx:if="{{phaseOpen}}" class="entry-edit-btn" bindtap="onReplacePhoto" data-id="{{item.id}}">更换照片</text>
+            </view>
           </view>
         </view>
       </view>

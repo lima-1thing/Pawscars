@@ -153,3 +153,20 @@
 .full-btn {
   width: 100%;
 }
+
+.rules-detail {
+  display: block;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #4A3E3D;
+}
+
+.host-avatar-badge {
+  overflow: hidden;
+}
+
+.host-avatar-img {
+  width: 100%;
+  height: 100%;
+}
