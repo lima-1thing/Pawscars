@@ -1,5 +1,5 @@
 // cloudfunctions/adminOps/index.js
-// 管理员运维：阶段流转与结算、活动配置、门类改名、ID 解绑、违规内容软删除、数据看板
+// 管理员运维：阶段流转与结算、活动配置、门类改名、ID 解绑、违规内容软删除、后台总览
 // 注意：bracket.js 是 miniprogram/utils/bracket.js 的副本（云函数需独立部署），
 // 修改赛制算法时两处需保持一致（tests/storage.test.js 会校验）。
 const cloud = require('wx-server-sdk');
@@ -18,10 +18,20 @@ const STAGE_KNOCKOUT = '8进4';
 const STAGE_DERBY = '4强德比';
 const CONFIG_FIELDS = ['title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail', 'phaseDeadlines'];
 const PAGE_SIZE = 100;
+const DEFAULT_CATEGORIES = [
+  { id: 'food', name: '干饭王者' },
+  { id: 'abstract', name: '抽象王者' },
+  { id: 'beauty', name: '颜值王者' }
+];
 
 async function getConfig() {
   const res = await db.collection('Activity').doc('main_config').get().catch(() => null);
-  return res ? res.data : null;
+  if (!res) return null;
+  const config = res.data;
+  if (!Array.isArray(config.categories) || config.categories.length === 0) {
+    config.categories = DEFAULT_CATEGORIES;
+  }
+  return config;
 }
 
 async function fetchAll(collection, where) {
@@ -117,7 +127,7 @@ const actions = {
     const targetIdx = PHASE_ORDER.indexOf(targetPhase);
     if (targetIdx === -1) return { success: false, message: `未知阶段：${targetPhase}` };
 
-    const categoryIds = (config.categories || []).map(c => c.id);
+    const categoryIds = config.categories.map(c => c.id);
     await clearStagesAfter(targetPhase, categoryIds);
     for (const categoryId of categoryIds) {
       if (targetIdx >= PHASE_ORDER.indexOf('vote_match_8')) await ensureKnockout(categoryId);
@@ -144,7 +154,7 @@ const actions = {
     }
     const clean = (name || '').trim();
     if (!clean || clean.length > 10) return { success: false, message: '门类名称需在 1-10 字之间' };
-    const categories = (config.categories || []).map(c => (c.id === categoryId ? { ...c, name: clean } : c));
+    const categories = config.categories.map(c => (c.id === categoryId ? { ...c, name: clean } : c));
     await db.collection('Activity').doc('main_config').update({ data: { categories } });
     return { success: true, message: '门类名已保存' };
   },
@@ -167,16 +177,44 @@ const actions = {
     return { success: true, message: '留言已隐藏' };
   },
 
-  async getDashboard(payload, config) {
+  // 管理后台总览：数据看板 + 待审核的报名与贺词（管理员可见完整活动ID）
+  async getOverview(payload, config) {
     const perCategory = [];
-    for (const cat of config.categories || []) {
+    for (const cat of config.categories) {
       const entryCount = (await db.collection('Entry').where({ categoryId: cat.id, status: _.neq('deleted') }).count()).total;
       const initialVoterCount = (await db.collection('InitialSelection').where({ categoryId: cat.id }).count()).total;
-      perCategory.push({ id: cat.id, name: cat.name, entryCount, initialVoterCount });
+      const matchIds = (await fetchAll('Match', { categoryId: cat.id })).map(m => m._id);
+      const pkVoters = matchIds.length > 0
+        ? new Set((await fetchAll('Vote', { matchId: _.in(matchIds) })).map(v => v.openid)).size
+        : 0;
+      perCategory.push({ id: cat.id, name: cat.name, entryCount, initialVoterCount, pkVoterCount: pkVoters });
     }
-    const totalMatchVotes = (await db.collection('Vote').count()).total;
-    const totalCongrats = (await db.collection('CongratsMessage').where({ status: _.neq('deleted') }).count()).total;
-    return { success: true, data: { perCategory, totalMatchVotes, totalCongrats } };
+
+    const entries = (await fetchAll('Entry', { status: _.neq('deleted') })).map(e => ({
+      id: e._id, categoryId: e.categoryId, petName: e.petName, photoUrl: e.photoUrl, ownerLdap: e.ownerLdap
+    }));
+    const congrats = (await fetchAll('CongratsMessage', { status: _.neq('deleted') })).map(c => ({
+      id: c._id, content: c.content, ownerLdap: c.ownerLdap
+    }));
+    const voters = new Set([
+      ...(await fetchAll('InitialSelection', {})).map(s => s.openid),
+      ...(await fetchAll('Vote', {})).map(v => v.openid)
+    ]);
+
+    return {
+      success: true,
+      data: {
+        stats: {
+          totalEntries: entries.length,
+          totalVoters: voters.size,
+          totalMatchVotes: (await db.collection('Vote').count()).total,
+          totalCongrats: congrats.length,
+          perCategory
+        },
+        entries,
+        congrats
+      }
+    };
   }
 };
 

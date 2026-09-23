@@ -5,6 +5,12 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
 
+const DEFAULT_CATEGORIES = [
+  { id: 'food', name: '干饭王者' },
+  { id: 'abstract', name: '抽象王者' },
+  { id: 'beauty', name: '颜值王者' }
+];
+
 async function getOpenConfig() {
   const res = await db.collection('Activity').doc('main_config').get().catch(() => null);
   if (!res || res.data.currentPhase !== 'nominate') return null;
@@ -23,7 +29,8 @@ async function create(openid, user, config, { petName, photoUrl, categoryIds, pl
   if (pledged !== true) return { success: false, message: '请勾选本人拍摄承诺' };
 
   const catNames = {};
-  (config.categories || []).forEach(c => { catNames[c.id] = c.name; });
+  const categories = Array.isArray(config.categories) && config.categories.length > 0 ? config.categories : DEFAULT_CATEGORIES;
+  categories.forEach(c => { catNames[c.id] = c.name; });
   const validIds = [...new Set(Array.isArray(categoryIds) ? categoryIds : [])].filter(id => catNames[id]);
   if (validIds.length === 0) return { success: false, message: '请至少选择一个参赛门类' };
 

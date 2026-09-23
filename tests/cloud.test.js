@@ -6,12 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 
-console.log('Testing cloud bracket.js stays in sync with the mini program copy...');
-assert.strictEqual(
-  fs.readFileSync(path.join(__dirname, '../cloudfunctions/adminOps/bracket.js'), 'utf8'),
-  fs.readFileSync(path.join(__dirname, '../miniprogram/utils/bracket.js'), 'utf8'),
-  'cloudfunctions/adminOps/bracket.js 与 miniprogram/utils/bracket.js 不一致，请同步复制'
-);
+console.log('Testing cloud bracket.js copies stay in sync with the mini program copy...');
+['adminOps', 'getData'].forEach(fnName => {
+  assert.strictEqual(
+    fs.readFileSync(path.join(__dirname, `../cloudfunctions/${fnName}/bracket.js`), 'utf8'),
+    fs.readFileSync(path.join(__dirname, '../miniprogram/utils/bracket.js'), 'utf8'),
+    `cloudfunctions/${fnName}/bracket.js 与 miniprogram/utils/bracket.js 不一致，请同步复制`
+  );
+});
 
 // ---------------- 内存数据库 ----------------
 const tables = {};
@@ -158,6 +160,90 @@ const as = (openid, name, event) => { currentOpenid = openid; return fn(name)(ev
   table('Activity').main_config.currentPhase = 'awards';
   assert.strictEqual((await as('openid_a', 'submitCongrats', { content: '恭喜！' })).success, true);
   assert.match((await as('openid_a', 'submitCongrats', { content: '再来一条' })).message, /仅限/);
+
+  console.log('Testing client API in cloud mode end-to-end against the cloud functions...');
+  Object.keys(tables).forEach(k => delete tables[k]);
+  table('Activity').main_config = {
+    _id: 'main_config',
+    currentPhase: 'nominate',
+    phaseDeadlines: {},
+    adminOpenids: ['openid_admin']
+  };
+  global.wx = {
+    getStorageSync: () => '',
+    setStorageSync: () => {},
+    getAccountInfoSync: () => ({ miniProgram: { envVersion: 'release' } }),
+    cloud: {
+      init() {},
+      callFunction: async ({ name, data }) => ({ result: await fn(name)(data) }),
+      uploadFile: async ({ cloudPath }) => ({ fileID: `cloud://env/${cloudPath}` })
+    }
+  };
+  const api = require('../miniprogram/utils/api');
+  const asUser = async (openid) => { currentOpenid = openid; await api.refresh(); };
+
+  currentOpenid = 'openid_u1';
+  await api.init();
+  assert.strictEqual(api.getMode(), 'cloud');
+  assert.strictEqual(api.getState().user, null);
+  assert.strictEqual(api.getState().config.adminOpenids, undefined); // 白名单不下发给前端
+  assert.strictEqual(api.getState().categories.length, 3);
+  assert.ok(api.getState().categories[0].bg); // 本地配色已合并
+
+  await api.bindUser('alice');
+  const nom = await api.submitNominations({ petName: '肉包', photoPath: 'wxfile://tmp/a.jpg', categoryIds: ['food'] });
+  assert.strictEqual(nom.addedEntries.length, 1);
+  const myEntryId = nom.addedEntries[0].id;
+  assert.match(table('Entry')[myEntryId].photoUrl, /^cloud:\/\/env\/entries\//);
+  ['BOB', 'CAT', 'DAN', 'EVE'].forEach((ldap, i) => {
+    table('Entry')[`x${i}`] = { _id: `x${i}`, categoryId: 'food', petName: `宠物${i}`, ownerLdap: ldap, ownerOpenid: `o${i}`, photoUrl: 'cloud://p', status: 'active' };
+  });
+  let mine = await api.getMyNominations();
+  assert.strictEqual(mine[0].ownerLdap, 'AL***');
+  assert.strictEqual(mine[0].progress.title, '报名成功');
+  assert.strictEqual(mine[0].ownerOpenid, undefined);
+
+  await asUser('openid_u1');
+  await assert.rejects(api.admin('setPhase', { targetPhase: 'vote_initial' }), /权限不足/);
+  await asUser('openid_admin');
+  await api.admin('setPhase', { targetPhase: 'vote_initial' });
+
+  await asUser('openid_u1');
+  const initial = await api.getInitialState();
+  const food = initial.categories.find(c => c.id === 'food');
+  assert.strictEqual(food.needsVote, false); // 5 只，免初选
+  assert.deepStrictEqual(food.entries.map(e => e.ownerLdap), ['AL***', 'BO*', 'CA*', 'DA*', 'EV*']);
+  assert.ok(food.entries.every(e => e.initialVotes === undefined && e.ownerOpenid === undefined));
+
+  await asUser('openid_admin');
+  await api.admin('setPhase', { targetPhase: 'vote_match_8' });
+  await asUser('openid_u1');
+  assert.strictEqual(await api.getAwards('food'), null); // 颁奖前普通用户看不到结果
+  const pk = (await api.getMatchState('8进4')).categories.find(c => c.id === 'food');
+  assert.strictEqual(pk.generated, true);
+  assert.strictEqual(pk.matches.length, 2); // 5 只：2 场 + 1 个轮空（轮空不下发）
+  assert.ok(pk.matches.every(m => m.votesA === undefined && m.entryA.ownerOpenid === undefined));
+  const myMatch = pk.matches.find(m => m.entryA.id === myEntryId || m.entryB.id === myEntryId);
+  const mySide = myMatch.entryA.id === myEntryId ? 'A' : 'B';
+  await api.submitMatchVote(myMatch.id, mySide);
+  assert.strictEqual((await api.getMatchState('8进4')).categories.find(c => c.id === 'food').myVotes[myMatch.id], mySide);
+  mine = await api.getMyNominations();
+  assert.match(mine[0].progress.detail, /我方 1 票/); // 本人私密可见自己的票数
+
+  await asUser('openid_admin');
+  await api.admin('setPhase', { targetPhase: 'awards' });
+  const overview = await api.admin('getOverview');
+  assert.strictEqual(overview.stats.totalEntries, 5);
+  assert.strictEqual(overview.entries.find(e => e.id === myEntryId).ownerLdap, 'ALICE'); // 管理员可见完整ID
+  await asUser('openid_u1');
+  const awards = await api.getAwards('food');
+  assert.ok(awards && awards.champion && awards.champion.ownerLdap.includes('*'));
+  assert.strictEqual((await api.getCongrats()).hasSent, false);
+  await api.submitCongrats('恭喜！');
+  const wall = await api.getCongrats();
+  assert.strictEqual(wall.hasSent, true);
+  assert.strictEqual(wall.list[0].ownerLdap, 'AL***');
+  delete global.wx;
 
   console.log('All cloud function tests passed!');
 })().catch(err => {

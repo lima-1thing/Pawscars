@@ -20,7 +20,7 @@
         ℹ️ 说明：ID 用于评选身份标识与拉票辨识（前端展示时会自动隐去部分字母如 JE****** 保障隐私）。
       </view>
 
-      <button class="paw-btn paw-btn-primary submit-btn" bindtap="onSubmitBinding">
+      <button class="paw-btn paw-btn-primary submit-btn" bindtap="onSubmitBinding" loading="{{submitting}}" disabled="{{submitting}}">
         确认绑定
       </button>
     </view>

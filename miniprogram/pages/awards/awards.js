@@ -1,4 +1,4 @@
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 const { maskLdap } = require('../../utils/mask');
 const { validateCongrats } = require('../../utils/validator');
 const { formatDateTime } = require('../../utils/time');
@@ -22,7 +22,7 @@ Page({
     categories: [],
     currentCategory: null,
     awardsResult: null,
-    resultState: 'ready', // ready | empty | pending
+    resultState: 'loading', // loading | ready | empty | pending
     congratsList: [],
     hasSentCongrats: false,
     rulesModalVisible: false,
@@ -38,23 +38,30 @@ Page({
     this.initialCategoryId = options && options.cat;
   },
 
-  onShow() {
+  async onShow() {
+    try {
+      await getApp().ready;
+      await api.refresh();
+    } catch (e) {
+      wx.showToast({ title: e.message || '加载失败', icon: 'none' });
+      return;
+    }
     this.loadData();
     if (this.focusCongrats) {
       this.focusCongrats = false;
       setTimeout(() => {
         wx.pageScrollTo({ selector: '#congrats-wall', duration: 300 });
         if (this.data.isAwardsPhase && !this.data.hasSentCongrats) this.onOpenSendModal();
-      }, 300);
+      }, 600);
     }
   },
 
   loadData() {
-    const categories = StorageService.getCategories();
+    const { config, categories } = api.getState();
     const preferredId = (this.data.currentCategory && this.data.currentCategory.id) || this.initialCategoryId;
     const currentCategory = categories.find(c => c.id === preferredId) || categories[0];
     this.setData({
-      isAwardsPhase: StorageService.getPhase() === 'awards',
+      isAwardsPhase: config.currentPhase === 'awards',
       // 管理员可在颁奖前预览结果；普通用户颁奖开始后才能看到
       canPreview: getApp().canAccessAdmin(),
       categories,
@@ -65,11 +72,19 @@ Page({
     });
   },
 
-  refreshCategoryResult() {
+  async refreshCategoryResult() {
     const { currentCategory } = this.data;
     if (!currentCategory) return;
 
-    const result = StorageService.getAwardsResult(currentCategory.id);
+    let result = null;
+    try {
+      result = await api.getAwards(currentCategory.id);
+    } catch (e) {
+      wx.showToast({ title: e.message, icon: 'none' });
+    }
+    // 切换门类期间返回的旧结果直接丢弃
+    if (!this.data.currentCategory || this.data.currentCategory.id !== currentCategory.id) return;
+
     let resultState = 'ready';
     if (!result) resultState = 'pending';
     else if (result.isEmpty) resultState = 'empty';
@@ -84,24 +99,27 @@ Page({
     });
   },
 
-  refreshCongrats() {
-    const user = StorageService.getUserBinding();
-    const rawList = StorageService.getCongrats();
-    this.setData({
-      congratsList: rawList.map(item => ({
-        ...item,
-        maskedLdap: maskLdap(item.ownerLdap),
-        timeStr: formatDateTime(item.createdAt)
-      })),
-      hasSentCongrats: !!user && rawList.some(item => item.ownerLdap === user.ldap)
-    });
+  async refreshCongrats() {
+    try {
+      const { list, hasSent } = await api.getCongrats();
+      this.setData({
+        congratsList: list.map(item => ({
+          ...item,
+          maskedLdap: maskLdap(item.ownerLdap),
+          timeStr: formatDateTime(item.createdAt)
+        })),
+        hasSentCongrats: hasSent
+      });
+    } catch (e) {
+      wx.showToast({ title: e.message, icon: 'none' });
+    }
   },
 
   onSelectCategory(e) {
     const { id } = e.currentTarget.dataset;
     const cat = this.data.categories.find(c => c.id === id);
     if (cat) {
-      this.setData({ currentCategory: cat }, () => this.refreshCategoryResult());
+      this.setData({ currentCategory: cat, resultState: 'loading' }, () => this.refreshCategoryResult());
     }
   },
 
@@ -155,19 +173,23 @@ Page({
     this.setData({ myCongratsText: e.detail.value });
   },
 
-  onSubmitCongrats() {
+  async onSubmitCongrats() {
+    if (this.sendingCongrats) return;
     const val = validateCongrats(this.data.myCongratsText);
     if (!val.valid) {
       wx.showToast({ title: val.message, icon: 'none' });
       return;
     }
+    this.sendingCongrats = true;
     try {
-      StorageService.submitCongrats(this.data.myCongratsText);
+      await api.submitCongrats(this.data.myCongratsText);
       wx.showToast({ title: '祝福已上墙！🎉', icon: 'success' });
       this.setData({ sendModalVisible: false });
       this.refreshCongrats();
     } catch (e) {
       wx.showToast({ title: e.message || '提交失败', icon: 'none' });
+    } finally {
+      this.sendingCongrats = false;
     }
   },
 

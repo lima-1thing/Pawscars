@@ -1,3 +1,4 @@
+const api = require('../../utils/api');
 const StorageService = require('../../utils/storage');
 const { toPickerValues, fromPickerValues, formatDateTime } = require('../../utils/time');
 
@@ -10,12 +11,15 @@ const PHASES = [
 ];
 
 const EDITABLE_FIELDS = ['title', 'hostName', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
+const PHASE_ORDER = PHASES.map(p => p.key);
 const DEV_IDS = ['JENNIFER', 'ZHANG', 'ALICE', 'BOBBY'];
 
 Page({
   data: {
     allowed: false,
     isDevBuild: false,
+    isMockMode: true,
+    hostAvatar: '',
     phases: PHASES,
     config: null,
     form: {},
@@ -30,17 +34,28 @@ Page({
     devIds: DEV_IDS
   },
 
-  onShow() {
+  async onShow() {
+    try {
+      await getApp().ready;
+    } catch (e) {
+      return;
+    }
     const app = getApp();
     const allowed = app.canAccessAdmin();
-    this.setData({ allowed, isDevBuild: app.isDevBuild() });
+    this.setData({ allowed, isDevBuild: app.isDevBuild(), isMockMode: api.getMode() === 'mock' });
     if (allowed) this.loadData();
   },
 
-  loadData() {
-    const config = StorageService.getConfig();
-    const categories = StorageService.getCategories();
-    const user = StorageService.getUserBinding();
+  async loadData() {
+    let overview;
+    try {
+      await api.refresh();
+      overview = await api.admin('getOverview');
+    } catch (e) {
+      wx.showToast({ title: e.message || '加载失败', icon: 'none' });
+      return;
+    }
+    const { config, categories, user } = api.getState();
 
     const form = {};
     EDITABLE_FIELDS.forEach(key => { form[key] = config[key] || ''; });
@@ -50,24 +65,38 @@ Page({
       return { key: p.key, label: p.label, ...toPickerValues(ts), display: ts ? formatDateTime(ts) : '未设置' };
     });
 
-    const entries = StorageService.getEntries().filter(e => e.status !== 'deleted');
-    const moderationGroups = categories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      entries: entries.filter(e => e.categoryId === cat.id)
-    }));
-
     this.setData({
       config,
       form,
+      hostAvatar: config.hostAvatar || '',
       deadlineRows,
       categories,
       categoryLocked: config.currentPhase !== 'nominate',
-      stats: StorageService.getAdminStats(),
-      moderationGroups,
-      congratsItems: StorageService.getCongrats(),
+      stats: overview.stats,
+      moderationGroups: categories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        entries: overview.entries.filter(e => e.categoryId === cat.id)
+      })),
+      congratsItems: overview.congrats,
       currentLdap: user ? user.ldap : ''
     });
+  },
+
+  // 统一执行管理员操作：loading → 成功提示 → 刷新
+  async runAdmin(action, payload, successText) {
+    wx.showLoading({ title: '处理中', mask: true });
+    try {
+      await api.admin(action, payload);
+      wx.hideLoading();
+      wx.showToast({ title: successText, icon: 'success' });
+      await this.loadData();
+      return true;
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: e.message || '操作失败', icon: 'none' });
+      return false;
+    }
   },
 
   // ---------------- 阶段流转 ----------------
@@ -76,8 +105,7 @@ Page({
     const current = this.data.config.currentPhase;
     if (phase === current) return;
 
-    const order = StorageService.PHASE_ORDER;
-    const backward = order.indexOf(phase) < order.indexOf(current);
+    const backward = PHASE_ORDER.indexOf(phase) < PHASE_ORDER.indexOf(current);
     const label = PHASES.find(p => p.key === phase).label;
     wx.showModal({
       title: backward ? '确认回退阶段？' : '确认推进阶段？',
@@ -87,14 +115,7 @@ Page({
       confirmText: backward ? '确认回退' : '确认推进',
       confirmColor: backward ? '#C0392B' : '#576B95',
       success: (res) => {
-        if (!res.confirm) return;
-        try {
-          StorageService.setPhase(phase);
-          wx.showToast({ title: '阶段已切换', icon: 'success' });
-          this.loadData();
-        } catch (err) {
-          wx.showToast({ title: err.message, icon: 'none' });
-        }
+        if (res.confirm) this.runAdmin('setPhase', { targetPhase: phase }, '阶段已切换');
       }
     });
   },
@@ -106,9 +127,7 @@ Page({
     const date = part === 'date' ? e.detail.value : row.date;
     const time = part === 'time' ? e.detail.value : row.time;
     const deadlines = { ...(this.data.config.phaseDeadlines || {}), [phase]: fromPickerValues(date, time) };
-    StorageService.saveConfig({ phaseDeadlines: deadlines });
-    wx.showToast({ title: '截止时间已保存', icon: 'success' });
-    this.loadData();
+    this.runAdmin('updateConfig', { phaseDeadlines: deadlines }, '截止时间已保存');
   },
 
   // ---------------- 活动信息文案 ----------------
@@ -123,9 +142,29 @@ Page({
       wx.showToast({ title: '活动标题和主持人昵称不能为空', icon: 'none' });
       return;
     }
-    StorageService.saveConfig(form);
-    wx.showToast({ title: '活动信息已保存', icon: 'success' });
-    this.loadData();
+    this.runAdmin('updateConfig', form, '活动信息已保存');
+  },
+
+  onChooseHostAvatar() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sizeType: ['compressed'],
+      success: async (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (!file) return;
+        wx.showLoading({ title: '上传中', mask: true });
+        try {
+          await api.uploadHostAvatar(file.tempFilePath);
+          wx.hideLoading();
+          wx.showToast({ title: '头像已更新', icon: 'success' });
+          this.loadData();
+        } catch (e) {
+          wx.hideLoading();
+          wx.showToast({ title: e.message || '上传失败', icon: 'none' });
+        }
+      }
+    });
   },
 
   // ---------------- 门类名称 ----------------
@@ -134,13 +173,7 @@ Page({
     const newName = e.detail.value.trim();
     const current = this.data.categories.find(c => c.id === id);
     if (!current || newName === current.name) return;
-    try {
-      StorageService.renameCategory(id, newName);
-      wx.showToast({ title: '门类名已保存', icon: 'success' });
-    } catch (err) {
-      wx.showToast({ title: err.message, icon: 'none' });
-    }
-    this.loadData();
+    this.runAdmin('renameCategory', { categoryId: id, name: newName }, '门类名已保存');
   },
 
   // ---------------- ID 申诉解绑 ----------------
@@ -157,19 +190,11 @@ Page({
     wx.showModal({
       title: '确认解绑',
       content: `解绑后 ${ldap} 可被正确的人重新绑定。请确认已线下核实申诉。`,
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) return;
-        // 本地演示模式下绑定关系只存在本机；正式环境由云函数 adminOps.unbindUser 执行
-        const current = StorageService.getUserBinding();
-        if (current && current.ldap === ldap) {
-          StorageService.unbindUser();
-          getApp().globalData.userBinding = null;
-          wx.showToast({ title: `已解绑 ${ldap}`, icon: 'success' });
-        } else {
-          wx.showToast({ title: '本地模式只能解绑本机身份', icon: 'none' });
+        if (await this.runAdmin('unbindUser', { ldap }, `已解绑 ${ldap}`)) {
+          this.setData({ unbindInput: '' });
         }
-        this.setData({ unbindInput: '' });
-        this.loadData();
       }
     });
   },
@@ -182,10 +207,7 @@ Page({
       content: `软删除「${name}」这条报名？删除后不再参与评选，数据仍保留在后台。`,
       confirmColor: '#C0392B',
       success: (res) => {
-        if (!res.confirm) return;
-        StorageService.deleteEntry(id);
-        wx.showToast({ title: '已删除', icon: 'success' });
-        this.loadData();
+        if (res.confirm) this.runAdmin('softDeleteEntry', { entryId: id }, '已删除');
       }
     });
   },
@@ -197,33 +219,30 @@ Page({
       content: '隐藏后贺词墙不再展示这条留言。',
       confirmColor: '#C0392B',
       success: (res) => {
-        if (!res.confirm) return;
-        StorageService.deleteCongrats(id);
-        wx.showToast({ title: '已隐藏', icon: 'success' });
-        this.loadData();
+        if (res.confirm) this.runAdmin('softDeleteCongrats', { msgId: id }, '已隐藏');
       }
     });
   },
 
-  // ---------------- 开发调试工具（仅开发版/体验版） ----------------
-  onSwitchId(e) {
-    if (!this.data.isDevBuild) return;
+  // ---------------- 开发调试工具（仅开发版/体验版 + 本地模式） ----------------
+  async onSwitchId(e) {
+    if (!this.data.isDevBuild || !this.data.isMockMode) return;
     const { id } = e.currentTarget.dataset;
-    getApp().globalData.userBinding = StorageService.bindUser(id);
+    await api.bindUser(id);
     wx.showToast({ title: `已切换为 ${id}`, icon: 'success' });
     this.loadData();
   },
 
-  onUnbindCurrent() {
-    if (!this.data.isDevBuild) return;
+  async onUnbindCurrent() {
+    if (!this.data.isDevBuild || !this.data.isMockMode) return;
     StorageService.unbindUser();
-    getApp().globalData.userBinding = null;
+    await api.refresh();
     wx.showToast({ title: '已解绑当前身份', icon: 'none' });
     this.loadData();
   },
 
   onResetAll() {
-    if (!this.data.isDevBuild) return;
+    if (!this.data.isDevBuild || !this.data.isMockMode) return;
     wx.showModal({
       title: '警告',
       content: '将清空所有投票记录并重置为初始演示数据，确认重置？',
@@ -231,8 +250,8 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         StorageService.resetAll();
+        api.refresh().then(() => this.loadData());
         wx.showToast({ title: '已重置数据', icon: 'success' });
-        this.loadData();
       }
     });
   },

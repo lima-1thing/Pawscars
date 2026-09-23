@@ -94,5 +94,9 @@
     <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
   </view>
 
+  <view wx:elif="{{viewState === 'loading'}}" class="no-matches-box">
+    <text class="no-match-desc">对阵加载中…</text>
+  </view>
+
   <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
 </view>

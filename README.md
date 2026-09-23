@@ -37,7 +37,8 @@ Pawscars/
 ├── project.config.json           # 微信小程序工程配置文件
 ├── miniprogram/                  # 小程序前端代码
 │   ├── app.json                  # 全局页面路由与窗口配置
-│   ├── app.js                    # 全局生命周期与云开发/本地存储适配器
+│   ├── app.js                    # 全局生命周期：启动时初始化数据接口（app.ready）
+│   ├── env.js                    # 运行环境：USE_CLOUD（云开发/本地演示）与云环境 ID
 │   ├── app.wxss                  # 全局马卡龙设计主题样式库
 │   ├── components/               # 公共组件
 │   │   ├── nav-bar/              # 导航条（我的提名入口 + 宫师姐规则气泡）
@@ -57,7 +58,8 @@ Pawscars/
 │       ├── validator.js          # LDAP字母正则校验、宠物名与贺词校验
 │       ├── mask.js               # 水印打码算法 (JE******)
 │       ├── bracket.js            # 赛程算法（8强字母配对、德比循环赛、时间戳打平判定）
-│       ├── storage.js            # 数据持久化层（本地 Mock 与云开发统一抽象）
+│       ├── api.js                # 页面唯一的数据入口：云模式调云函数，本地模式包装 storage.js
+│       ├── storage.js            # 本地 Mock 存储（单机演示）
 │       └── mock-data.js          # 预置演示数据与 SVG 头像
 ├── cloudfunctions/               # 微信云开发云函数
 │   ├── login/                    # 获取 openid 与用户绑定状态
@@ -65,7 +67,8 @@ Pawscars/
 │   ├── submitNomination/         # 报名多门类写入与防重
 │   ├── submitVote/               # 初选与单场 PK 投票时间戳记录
 │   ├── submitCongrats/           # 贺词提交（限1条，≤50字）
-│   └── adminOps/                 # 管理员运维（阶段切换、软删除、申诉解绑）
+│   ├── getData/                  # 只读查询（服务端打码，公共视图不含实时票数）
+│   └── adminOps/                 # 管理员运维（阶段结算、配置、解绑、软删除、后台总览）
 ├── preview/                      # 独立的高保真 Web/H5 手机模拟器
 │   ├── index.html                # 375px 真实手机视口与控制台
 │   ├── preview.css               # 马卡龙主题高保真样式
@@ -100,8 +103,11 @@ python3 -m http.server 3000 -d preview
 3. 项目目录选择 `/Users/lima/dev/Pawscars`（或本机项目根路径）。
 4. AppID 可以选择自己的测试号或输入注册的测试 AppID。
 5. 导入后即可在模拟器中实时编译预览。
-6. 当前小程序页面使用本地 Mock 存储（数据只保存在本机，适合单人演示）。多人真实活动需要把页面的数据调用接到下方云函数上。
-7. 部署云开发时：右键 `cloudfunctions/` 下的各个云函数目录，点击“上传并部署：云端安装依赖”即可。
+6. 部署云开发：在开发者工具中开通云开发并选择环境，右键 `cloudfunctions/` 下的**每个**云函数目录（含 `getData`），点击“上传并部署：云端安装依赖”；在云数据库中创建下方列出的集合与 `main_config` 文档。
+7. 数据模式由 `miniprogram/env.js` 控制：
+   - `USE_CLOUD: true`（默认）：所有数据走云开发，照片上传到云存储，适用于多人真实活动。`CLOUD_ENV` 留空时使用开发者工具中为项目选择的默认环境。
+   - `USE_CLOUD: false`：本地 Mock 存储，数据只保存在本机，适合单人演示。
+   - 开发版/体验版中云开发不可用时会自动退回本地 Mock；正式版不会退回，而是提示加载失败。
 
 ### 管理员与云端配置
 
@@ -124,7 +130,8 @@ python3 -m http.server 3000 -d preview
 - openid 可在调用 `login` 云函数的返回值或云开发控制台日志中获取。
 - `phaseDeadlines` 为毫秒时间戳，0 表示不限；过了截止时间将拒绝报名/投票，但阶段需管理员手动推进。
 - 其余集合：`UserBinding`、`Entry`、`InitialSelection`、`Match`、`Vote`、`Bracket`、`CongratsMessage`。
-- `cloudfunctions/adminOps/bracket.js` 是 `miniprogram/utils/bracket.js` 的副本，修改赛制算法时需同步复制（`npm test` 会校验两者一致）。
+- `cloudfunctions/adminOps/bracket.js` 与 `cloudfunctions/getData/bracket.js` 是 `miniprogram/utils/bracket.js` 的副本，修改赛制算法时需同步复制（`npm test` 会校验三者一致）。
+- 数据库集合权限建议设为“仅管理端可读写”：所有读写都经由云函数完成，前端不直接访问数据库。
 - 开发版/体验版中管理后台对所有人开放并提供身份切换、数据重置等调试工具；正式版仅白名单管理员可见。
 
 ---
@@ -146,3 +153,4 @@ npm test
 - 报名不足 8 / ≤4 / 轮空、0:0 打平等赛制边界（`tests/storage.test.js`）
 - 阶段推进幂等、回退清理、截止时间与阶段校验、小程序启动冒烟测试
 - 云函数：管理员不信任客户端身份字段、ID 唯一绑定、每人一票、阶段结算（`tests/cloud.test.js`）
+- 前端数据接口：本地模式全流程（`tests/api.test.js`）；云模式下经由真实云函数代码跑通报名→初选→PK→颁奖→贺词，并校验打码与票数不外泄

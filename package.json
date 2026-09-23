@@ -4,8 +4,8 @@
   "description": "Pawscars (毛孩奥斯卡) 微信小程序与云开发评选系统",
   "main": "miniprogram/app.js",
   "scripts": {
-    "test": "node tests/bracket.test.js && node tests/storage.test.js && node tests/cloud.test.js && node tests/e2e_simulation.js",
-    "test:unit": "node tests/bracket.test.js && node tests/storage.test.js && node tests/cloud.test.js",
+    "test": "node tests/bracket.test.js && node tests/storage.test.js && node tests/api.test.js && node tests/cloud.test.js && node tests/e2e_simulation.js",
+    "test:unit": "node tests/bracket.test.js && node tests/storage.test.js && node tests/api.test.js && node tests/cloud.test.js",
     "test:e2e": "node tests/e2e_simulation.js",
     "preview": "python3 -m http.server 3000 -d preview"
   },

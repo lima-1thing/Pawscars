@@ -44,7 +44,7 @@
     </view>
 
     <!-- 空状态 -->
-    <view wx:else class="empty-state">
+    <view wx:elif="{{loaded}}" class="empty-state">
       <text class="empty-icon">🐶</text>
       <text class="empty-title">你还没有提名参赛毛孩</text>
       <text wx:if="{{canNominate}}" class="empty-sub">快去为自家的毛孩子报名参加 Pawscars 吧！</text>

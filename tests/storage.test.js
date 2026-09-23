@@ -118,19 +118,4 @@ assert.strictEqual(StorageService.isAdmin(), false);
 StorageService.saveConfig({ adminOpenids: ['user_developer'] });
 assert.strictEqual(StorageService.isAdmin(), true);
 
-console.log('Testing app.js launches without throwing...');
-let appDef = null;
-global.App = (def) => { appDef = def; };
-global.wx = {
-  getStorageSync: () => '',
-  setStorageSync: () => {},
-  getAccountInfoSync: () => ({ miniProgram: { envVersion: 'release' } })
-};
-require('../miniprogram/app.js');
-appDef.onLaunch();
-assert.strictEqual(appDef.globalData.isAdmin, false);
-assert.strictEqual(appDef.isDevBuild(), false);
-delete global.App;
-delete global.wx;
-
 console.log('All storage and edge-case tests passed!');

@@ -334,3 +334,31 @@
 .dev-card {
   border: 1.5px dashed #E0DACD;
 }
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.host-avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #F4C0D1;
+}
+
+.avatar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #612D3A;
+}
+
+.avatar-change {
+  font-size: 12px;
+  font-weight: 600;
+  color: #993C1D;
+}

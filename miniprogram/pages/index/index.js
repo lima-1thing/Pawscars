@@ -1,4 +1,4 @@
-const StorageService = require('../../utils/storage');
+const api = require('../../utils/api');
 const { formatCountdown } = require('../../utils/time');
 
 const VOTE_PHASES = {
@@ -22,7 +22,14 @@ Page({
     clickCount: 0
   },
 
-  onShow() {
+  async onShow() {
+    try {
+      await getApp().ready;
+      // 回到首页时刷新配置，及时反映管理员推进的阶段
+      await api.refresh();
+    } catch (e) {
+      return;
+    }
     this.loadData();
     // 倒计时每分钟刷新一次
     this.clearTimer();
@@ -45,7 +52,7 @@ Page({
   },
 
   loadData() {
-    const config = StorageService.getConfig();
+    const { config, categories } = api.getState();
     const phase = config.currentPhase;
     let phaseKind = 'awards';
     if (phase === 'nominate') phaseKind = 'nominate';
@@ -53,7 +60,7 @@ Page({
 
     this.setData({
       config,
-      categories: StorageService.getCategories(),
+      categories,
       phaseKind,
       votePhaseInfo: VOTE_PHASES[phase] || null,
       hostAvatar: config.hostAvatar || '',
@@ -63,10 +70,12 @@ Page({
   },
 
   refreshCountdown() {
-    const phase = StorageService.getPhase();
+    const { config } = api.getState();
+    if (!config) return;
+    const phase = config.currentPhase;
     this.setData({
-      phaseOpen: StorageService.isPhaseOpen(phase),
-      countdownText: formatCountdown(StorageService.getPhaseDeadline(phase))
+      phaseOpen: api.isPhaseOpen(phase),
+      countdownText: formatCountdown((config.phaseDeadlines || {})[phase])
     });
   },
 
