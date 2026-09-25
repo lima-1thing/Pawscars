@@ -1,7 +1,7 @@
 /**
  * Pawscars Storage & State Layer
  * 本地 Mock 存储实现（单机演示用）：所有数据只保存在当前设备。
- * 多人真实活动需要改为调用 cloudfunctions/ 下的云函数（服务端做同样的校验与结算）。
+ * 多人真实活动使用 gcloud-functions/ 后台（服务端做同样的校验与结算），见 utils/api.js。
  */
 
 const { DEFAULT_CONFIG, DEFAULT_CATEGORIES, DEFAULT_ENTRIES, DEFAULT_CONGRATS } = require('./mock-data');
