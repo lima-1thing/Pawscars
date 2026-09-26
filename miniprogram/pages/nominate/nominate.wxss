@@ -287,3 +287,12 @@
   border-radius: 10px;
   background: #FBEAF0;
 }
+
+.recrop-btn {
+  width: 200px;
+  margin: 8px auto 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #993C1D;
+}

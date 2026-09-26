@@ -1,0 +1,39 @@
+<view wx:if="{{visible}}" class="cropper-mask" catchtouchmove="noop">
+  <view class="cropper-title">调整照片</view>
+  <view class="cropper-hint">拖动调整位置，双指或滑块缩放；框内即为展示的正方形照片</view>
+
+  <!-- 裁剪框：框外内容被隐藏，图片始终铺满框 -->
+  <view
+    class="crop-frame"
+    style="width:{{frame}}px;height:{{frame}}px;"
+    bindtouchstart="onTouchStart"
+    catchtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchEnd"
+  >
+    <image wx:if="{{!loading}}" class="crop-image" src="{{src}}" style="{{imgStyle}}" />
+    <view wx:else class="crop-loading">加载中…</view>
+    <!-- 三分线辅助构图 -->
+    <view class="grid-line grid-v1"></view>
+    <view class="grid-line grid-v2"></view>
+    <view class="grid-line grid-h1"></view>
+    <view class="grid-line grid-h2"></view>
+  </view>
+
+  <view class="zoom-row" style="width:{{frame}}px;">
+    <text class="zoom-icon">－</text>
+    <slider class="zoom-slider" min="{{minZoom}}" max="{{maxZoom}}" step="1" value="{{zoomPercent}}"
+      activeColor="#F9E27A" backgroundColor="rgba(255,255,255,0.25)" block-size="20"
+      bindchanging="onZoomSlider" bindchange="onZoomSlider" />
+    <text class="zoom-icon">＋</text>
+  </view>
+
+  <view class="cropper-actions" style="width:{{frame}}px;">
+    <button class="paw-btn paw-btn-outline crop-btn" bindtap="onCancel">取消</button>
+    <button class="paw-btn paw-btn-outline crop-btn" bindtap="onReset">还原</button>
+    <button class="paw-btn paw-btn-primary crop-btn" bindtap="onConfirm" loading="{{exporting}}">确定</button>
+  </view>
+
+  <!-- 离屏画布：导出裁剪结果 -->
+  <canvas type="2d" id="cropCanvas" class="crop-canvas"></canvas>
+</view>

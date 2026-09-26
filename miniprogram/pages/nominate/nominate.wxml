@@ -12,7 +12,7 @@
       <view class="form-item">
         <view class="item-label">
           <text class="label-title">毛孩照片</text>
-          <text class="label-hint">（单张 JPG/PNG，≤5MB，自动裁剪为正方形）</text>
+          <text class="label-hint">（单张 JPG/PNG，可拖动缩放裁剪为正方形）</text>
         </view>
         <view class="photo-upload-box" bindtap="onChoosePhoto">
           <block wx:if="{{photoUrl}}">
@@ -27,6 +27,7 @@
             </view>
           </block>
         </view>
+        <view wx:if="{{photoUrl && originalPhoto}}" class="recrop-btn" bindtap="onRecrop">✂️ 重新裁剪</view>
       </view>
 
       <!-- 2. 宠物名输入 -->
@@ -111,4 +112,7 @@
       </view>
     </view>
   </scroll-view>
+
+  <!-- 照片裁剪（正方形） -->
+  <image-cropper visible="{{cropperVisible}}" src="{{cropperSrc}}" bind:confirm="onCropConfirm" bind:cancel="onCropCancel" />
 </view>

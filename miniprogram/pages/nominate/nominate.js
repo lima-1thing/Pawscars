@@ -2,14 +2,15 @@ const { validatePetName } = require('../../utils/validator');
 const api = require('../../utils/api');
 const { formatDateTime } = require('../../utils/time');
 
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const ALLOWED_EXT = /\.(jpe?g|png)$/i;
+// 原图上限（裁剪后会重新压缩为 ≤1080px 的 JPG 再上传）
+const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
+const ALLOWED_EXT = /\.(jpe?g|png|heic|webp)$/i;
 
 /**
- * 选择一张照片 → 校验格式与大小 → 裁剪为正方形
- * @returns {Promise<string>} 裁剪后的临时路径；用户取消返回空字符串
+ * 从相册或相机选择一张照片，校验格式与大小
+ * @returns {Promise<string>} 临时路径；用户取消返回空字符串
  */
-function pickSquarePhoto() {
+function pickPhoto() {
   return new Promise((resolve, reject) => {
     wx.chooseMedia({
       count: 1,
@@ -22,16 +23,10 @@ function pickSquarePhoto() {
         if (!ALLOWED_EXT.test(file.tempFilePath)) {
           return reject(new Error('仅支持 JPG / PNG 格式的照片'));
         }
-        if (file.size > MAX_PHOTO_BYTES) {
-          return reject(new Error('照片需小于 5MB，请换一张'));
+        if (file.size > MAX_SOURCE_BYTES) {
+          return reject(new Error('照片太大了，请换一张'));
         }
-        if (!wx.cropImage) return resolve(file.tempFilePath); // 低版本基础库：展示时居中裁剪
-        wx.cropImage({
-          src: file.tempFilePath,
-          cropScale: '1:1',
-          success: (cropRes) => resolve(cropRes.tempFilePath),
-          fail: (err) => (/cancel/.test(err.errMsg || '') ? resolve('') : resolve(file.tempFilePath))
-        });
+        resolve(file.tempFilePath);
       },
       fail: (err) => (/cancel/.test(err.errMsg || '') ? resolve('') : reject(new Error('无法打开相册，请检查权限')))
     });
@@ -49,7 +44,10 @@ Page({
     isFormReady: false,
     entryGroups: [],
     entryCount: 0,
-    submitting: false
+    submitting: false,
+    originalPhoto: '',
+    cropperVisible: false,
+    cropperSrc: ''
   },
 
   async onShow() {
@@ -89,23 +87,52 @@ Page({
     this.setData({ entryGroups, entryCount: entries.length });
   },
 
+  // 选好照片后进入裁剪；cropTarget 记录裁剪结果用于新报名还是替换已有报名
+  openCropper(src, target) {
+    this.cropTarget = target;
+    this.setData({ cropperSrc: src, cropperVisible: true });
+  },
+
   async onChoosePhoto() {
     if (!this.data.phaseOpen) return;
     try {
-      const path = await pickSquarePhoto();
-      if (path) this.setData({ photoUrl: path }, () => this.checkFormReady());
+      const path = await pickPhoto();
+      if (!path) return;
+      this.setData({ originalPhoto: path });
+      this.openCropper(path, { type: 'new' });
     } catch (e) {
       wx.showToast({ title: e.message, icon: 'none' });
     }
   },
 
+  // 用原图重新调整裁剪范围，无需重新选择
+  onRecrop() {
+    if (this.data.originalPhoto) this.openCropper(this.data.originalPhoto, { type: 'new' });
+  },
+
   async onReplacePhoto(e) {
     const { id } = e.currentTarget.dataset;
     try {
-      const path = await pickSquarePhoto();
-      if (!path) return;
-      wx.showLoading({ title: '上传中', mask: true });
-      await api.updateEntryPhoto(id, path);
+      const path = await pickPhoto();
+      if (path) this.openCropper(path, { type: 'replace', entryId: id });
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    }
+  },
+
+  async onCropConfirm(e) {
+    const { path } = e.detail;
+    const target = this.cropTarget || { type: 'new' };
+    this.setData({ cropperVisible: false });
+
+    if (target.type === 'new') {
+      this.setData({ photoUrl: path }, () => this.checkFormReady());
+      return;
+    }
+
+    wx.showLoading({ title: '上传中', mask: true });
+    try {
+      await api.updateEntryPhoto(target.entryId, path);
       wx.hideLoading();
       wx.showToast({ title: '照片已更新', icon: 'success' });
       this.refreshMyEntries();
@@ -113,6 +140,10 @@ Page({
       wx.hideLoading();
       wx.showToast({ title: err.message || '更新失败', icon: 'none' });
     }
+  },
+
+  onCropCancel() {
+    this.setData({ cropperVisible: false });
   },
 
   onInputPetName(e) {
@@ -196,7 +227,8 @@ Page({
       photoUrl: '',
       selectedCatMap: {},
       pledgeAgreed: false,
-      isFormReady: false
+      isFormReady: false,
+      originalPhoto: ''
     });
   }
 });

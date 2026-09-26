@@ -1,6 +1,9 @@
 const api = require('../../utils/api');
 
 Component({
+  // 使用 app.wxss 中的全局样式（如 paw-btn 按钮）
+  options: { addGlobalClass: true },
+
   properties: {
     visible: {
       type: Boolean,

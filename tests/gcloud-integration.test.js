@@ -94,6 +94,7 @@ const on = (phone, fn) => { current = phone; return fn(phone.api); };
   assert.deepStrictEqual(alice.requests, ['/login']);
   assert.strictEqual(alice.api.getState().user, null);
   assert.ok(alice.api.getState().categories[0].bg); // 本地配色已合并
+  assert.ok(alice.api.getState().config.hostIntro && alice.api.getState().config.rulesDetail); // 后台未设置的文案使用默认内容
   assert.ok(alice.storage.pawscars_api_token);
 
   // 同一台手机再次启动：复用已保存的令牌，不再重新登录

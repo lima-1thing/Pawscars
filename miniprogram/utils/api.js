@@ -5,7 +5,7 @@
  * 所有方法均返回 Promise；失败时抛出带中文提示的 Error。
  */
 const StorageService = require('./storage');
-const { DEFAULT_CATEGORIES } = require('./mock-data');
+const { DEFAULT_CATEGORIES, DEFAULT_CONFIG } = require('./mock-data');
 const { isPhaseOpen } = require('./bracket');
 const { BACKEND, API_BASE_URL } = require('../env');
 
@@ -15,6 +15,7 @@ const TOKEN_KEY = 'pawscars_api_token';
 const REQUEST_TIMEOUT = 15000;
 
 let mode = 'mock';
+let initialized = false; // 开发者工具热重载会重新加载本模块而不重跑 app.onLaunch，据此自动重新初始化
 let state = { config: null, categories: [], user: null, isAdmin: false };
 let token = '';
 
@@ -52,9 +53,20 @@ function loadToken() {
   }
 }
 
+// 后台未设置的展示文案沿用默认内容（管理员在后台修改后以后台为准）
+const DISPLAY_DEFAULT_FIELDS = ['title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
+
+function withDisplayDefaults(config) {
+  const merged = { ...config };
+  DISPLAY_DEFAULT_FIELDS.forEach(key => {
+    if (merged[key] === undefined || merged[key] === null || merged[key] === '') merged[key] = DEFAULT_CONFIG[key];
+  });
+  return merged;
+}
+
 function applyBootstrap(data) {
   state = {
-    config: data.config,
+    config: withDisplayDefaults(data.config),
     categories: withCategoryStyles(data.categories),
     user: data.user,
     isAdmin: data.isAdmin
@@ -185,6 +197,7 @@ const api = {
       try {
         await loadRemoteState();
         mode = 'gcloud';
+        initialized = true;
         return state;
       } catch (e) {
         if (!isDevBuild()) throw e;
@@ -193,6 +206,7 @@ const api = {
     }
     mode = 'mock';
     loadMockState();
+    initialized = true;
     return state;
   },
 
@@ -207,6 +221,7 @@ const api = {
   },
 
   async refresh() {
+    if (!initialized) return api.init();
     if (mode === 'gcloud') applyBootstrap(await request('/bootstrap'));
     else loadMockState();
     return state;

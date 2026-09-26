@@ -36,6 +36,15 @@
         <text wx:else class="gong-text">{{config.hostName[0] || '宫'}}</text>
       </view>
       <text class="gong-name">{{config.hostName || '宫师姐'}}</text>
+
+      <!-- 当前身份：已绑定显示活动ID（仅本机可见），未绑定引导去绑定 -->
+      <view class="user-chip {{userLdap ? '' : 'user-chip-unbound'}}" bindtap="onTapUserChip">
+        <block wx:if="{{userLdap}}">
+          <text class="user-chip-id">👤 {{userLdap}}</text>
+          <text wx:if="{{isAdmin}}" class="user-chip-admin">管理员</text>
+        </block>
+        <text wx:else>未绑定 · 去绑定 ›</text>
+      </view>
     </view>
 
     <!-- 阶段A：报名期 -->
