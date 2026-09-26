@@ -3,6 +3,12 @@
  */
 const assert = require('assert');
 
+// 测试不依赖真实 env.js：模拟"未配置后台地址"的情况
+require.cache[require.resolve('../miniprogram/env')] = {
+  id: 'env', filename: 'env', loaded: true,
+  exports: { BACKEND: 'gcloud', API_BASE_URL: '' }
+};
+
 (async () => {
   console.log('Testing app.js launch: release build refuses to run without a backend...');
   let appDef = null;

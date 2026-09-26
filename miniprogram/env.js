@@ -7,5 +7,6 @@
  */
 module.exports = {
   BACKEND: 'gcloud',
-  API_BASE_URL: ''
+  // Google Cloud 默认地址（服务 pawscars-api，us-east4）；需在小程序后台登记为合法域名
+  API_BASE_URL: 'https://pawscars-api-6c35zzyigq-uk.a.run.app'
 };

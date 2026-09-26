@@ -138,7 +138,12 @@ gcloud functions deploy pawscars-api \
 
 活动期间如需避免冷启动，可加 `--min-instances=1`（每月约几美元）。
 
-### 5. 自有域名
+### 5. 服务地址
+
+当前使用 Google Cloud 默认地址：`https://pawscars-api-6c35zzyigq-uk.a.run.app`（已写入 `miniprogram/env.js`，重新部署不会变化）。
+如需改用自有域名，按下面的步骤绑定，并同步修改 `API_BASE_URL`、定时任务地址和小程序合法域名。
+
+#### 可选：自有域名
 
 小程序只能访问在后台登记过的 HTTPS 域名，建议为函数绑定自己的域名（如 `api.<你的域名>`），不要直接使用 `*.run.app`：
 
@@ -179,9 +184,9 @@ gcloud scheduler jobs create http pawscars-advance-phase \
 
 | 类型 | 域名 |
 |---|---|
-| request 合法域名 | `https://api.<你的域名>` |
-| uploadFile 合法域名 | `https://api.<你的域名>` |
-| downloadFile 合法域名 | `https://api.<你的域名>`、`https://storage.googleapis.com`（证书绘制需要下载照片） |
+| request 合法域名 | `https://pawscars-api-6c35zzyigq-uk.a.run.app`（或自有域名） |
+| uploadFile 合法域名 | `https://pawscars-api-6c35zzyigq-uk.a.run.app`（或自有域名） |
+| downloadFile 合法域名 | `https://storage.googleapis.com`（证书绘制需要下载照片） |
 
 ## 接入小程序
 
