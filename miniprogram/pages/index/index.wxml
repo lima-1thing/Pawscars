@@ -72,11 +72,10 @@
 
       <view class="cta-callout">{{config.callToActionText}}</view>
 
-      <button class="paw-btn paw-btn-primary full-cta-btn {{phaseOpen ? '' : 'btn-disabled'}}" bindtap="onTapNominate">
-        {{phaseOpen ? '我要提名' : '报名已截止'}}
-      </button>
-      <button wx:if="{{!phaseOpen}}" class="paw-btn paw-btn-outline full-cta-btn sec-btn top-gap" bindtap="onTapMyNomination">
-        <text class="btn-icon">📋</text> 我的提名
+      <!-- 报名截止后主按钮改为查看我的提名 -->
+      <button wx:if="{{phaseOpen}}" class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapNominate">我要提名</button>
+      <button wx:else class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapMyNomination">
+        <text class="btn-icon">📋</text> 查看我的提名
       </button>
     </block>
 

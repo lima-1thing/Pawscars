@@ -369,7 +369,3 @@
   align-items: center;
   text-align: center;
 }
-
-.top-gap {
-  margin-top: 10px;
-}
