@@ -32,7 +32,7 @@ Cloud Scheduler ──每 10 分钟──▶ /cron/advance-phase：到截止时�
 |---|---|---|
 | `/login` | `{ code }` | `wx.login` 的 code 换 openid，返回 `token` 与启动数据 |
 | `/bootstrap` | – | 活动配置、门类、本人绑定的活动ID、是否管理员 |
-| `/bind` | `{ ldap }` | 绑定活动ID（仅字母、全局唯一、一个微信只能绑一个） |
+| `/bind` | `{ ldap }` | 绑定活动ID（字母开头、字母和数字、全局唯一、一个微信只能绑一个） |
 | `/upload` | multipart：`file`，`folder=entries\|host` | 上传照片（JPG/PNG ≤5MB，按文件头校验），返回 `url`；`host` 仅管理员 |
 | `/nominate` | `{ petName, photoUrl, categoryIds, pledged }` | 多选门类报名，冲突门类跳过 |
 | `/nominate/photo` | `{ entryId, photoUrl }` | 报名期内替换自己的照片 |

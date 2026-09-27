@@ -28,10 +28,10 @@ console.log('▶️ 【阶段一：身份绑定与毛孩提名报名】');
 StorageService.setPhase('nominate');
 
 // 测试 LDAP 规则拦截
-console.log('  1.1 校验非法 LDAP ID (含数字与特殊字符)...');
-const invalidCheck1 = validateLdap('Kevin888');
+console.log('  1.1 校验非法 LDAP ID (数字开头或含特殊字符)...');
+const invalidCheck1 = validateLdap('888Kevin');
 const invalidCheck2 = validateLdap('Tom_Cat');
-console.log(`      输入 'Kevin888' 校验结果: valid=${invalidCheck1.valid}, message="${invalidCheck1.message}"`);
+console.log(`      输入 '888Kevin' 校验结果: valid=${invalidCheck1.valid}, message="${invalidCheck1.message}"`);
 console.log(`      输入 'Tom_Cat'  校验结果: valid=${invalidCheck2.valid}, message="${invalidCheck2.message}"`);
 
 console.log('  1.2 模拟社群成员绑定合法活动ID...');

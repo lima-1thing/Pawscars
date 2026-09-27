@@ -10,7 +10,7 @@
       <view class="input-label">活动ID (LDAP)</view>
       <input 
         class="ldap-input {{hasError ? 'input-error' : ''}}" 
-        placeholder="例如：JENNIFER（仅限英文字母）" 
+        placeholder="例如：JENNIFER 或 LIMA0001（字母开头，字母和数字）" 
         value="{{ldapInput}}"
         bindinput="onInputLdap"
         maxlength="20"

@@ -36,7 +36,7 @@ export default {
           <h2 class="center">欢迎参加 Pawscars</h2>
           <p class="muted center">请先绑定你的社群活动ID (LDAP)</p>
           <label class="field-label">活动ID (LDAP)</label>
-          <input class="text-input" :class="{ invalid: error }" v-model="ldap" maxlength="20" placeholder="例如：JENNIFER（仅限英文字母）" @input="error = ''" @keyup.enter="submit">
+          <input class="text-input" :class="{ invalid: error }" v-model="ldap" maxlength="20" placeholder="例如：JENNIFER 或 LIMA0001（字母开头，字母和数字）" @input="error = ''" @keyup.enter="submit">
           <div v-if="error" class="error-msg">{{ error }}</div>
           <p class="hint">ℹ️ ID 用于评选身份标识与拉票辨识（展示时会自动隐去部分字母，如 JE******）。</p>
           <button class="btn btn-primary block" :disabled="submitting" @click="submit">{{ submitting ? '绑定中…' : '确认绑定' }}</button>

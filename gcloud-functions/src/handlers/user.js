@@ -54,14 +54,15 @@ async function loginWeb(ctx) {
 
 /**
  * POST /bind { ldap }
- * 规则：仅字母、至少 2 位；一个微信只能绑定一个ID；ID 全局唯一（以ID作文档 ID，由数据库保证）
+ * 规则：英文字母开头、只含字母和数字、2-20 位（与前端 validateLdap 一致）；
+ *       一个微信只能绑定一个ID；ID 全局唯一（以ID作文档 ID，由数据库保证）
  */
 async function bindUser(ctx) {
   const { ldap } = ctx.body;
   if (!ldap || typeof ldap !== 'string') throw new UserError('请输入活动ID');
   const clean = ldap.trim().toUpperCase();
-  if (clean.length < 2) throw new UserError('活动ID长度至少为2位字母');
-  if (!/^[A-Z]+$/.test(clean)) throw new UserError('活动ID仅支持英文字母，不能包含数字或特殊符号');
+  if (clean.length < 2 || clean.length > 20) throw new UserError('活动ID需为 2-20 位');
+  if (!/^[A-Z][A-Z0-9]*$/.test(clean)) throw new UserError('活动ID需以英文字母开头，只能包含字母和数字');
 
   const mine = await findBinding(ctx.db, ctx.openid);
   if (mine) {

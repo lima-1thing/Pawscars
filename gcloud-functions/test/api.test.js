@@ -149,12 +149,14 @@ async function login(openid) {
   assert.match(noWebBody.message, /未开放/);
 
   console.log('Testing ID binding...');
-  await fails(call('/bind', { token: u1, body: { ldap: 'LIMA0001' } }), /仅支持英文字母/);
+  await fails(call('/bind', { token: u1, body: { ldap: 'LIMA-01' } }), /字母开头/);
+  await fails(call('/bind', { token: u1, body: { ldap: '0001' } }), /字母开头/);
+  await fails(call('/bind', { token: u1, body: { ldap: 'A'.repeat(21) } }), /2-20/);
   assert.deepStrictEqual((await ok(call('/bind', { token: u1, body: { ldap: 'alice' } }))).user, { ldap: 'ALICE' });
   await fails(call('/bind', { token: u2, body: { ldap: 'ALICE' } }), /已被使用/);
   await fails(call('/bind', { token: u1, body: { ldap: 'BOB' } }), /你已绑定/);
   await ok(call('/bind', { token: u2, body: { ldap: 'zed' } }));
-  await ok(call('/bind', { token: admin, body: { ldap: 'admin' } }));
+  assert.deepStrictEqual((await ok(call('/bind', { token: admin, body: { ldap: 'lima0001' } }))).user, { ldap: 'LIMA0001' }); // 允许数字
 
   console.log('Testing photo upload...');
   const u3 = await login('o_u3');
