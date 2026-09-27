@@ -32,7 +32,10 @@ function fillWrappedText(ctx, text, centerX, y, maxWidth, lineHeight, maxLines) 
   lines.slice(0, maxLines).forEach((l, i) => ctx.fillText(l, centerX, y + i * lineHeight));
 }
 
-// 照片存储桶已配置跨域读取，canvas 才能导出图片
+// 照片存储桶已配置跨域读取，canvas 才能导出图片。
+// 页面里的 <img> 已按普通方式加载并缓存过同一张图（响应不含跨域头），
+// 这里加一个查询参数，让浏览器单独发起跨域请求，避免复用那份缓存而被拦截
+// （不能用 cors 作参数名：它是 Cloud Storage 的保留子资源，会返回 400）
 function loadImage(src) {
   return new Promise(resolve => {
     if (!src) return resolve(null);
@@ -40,7 +43,7 @@ function loadImage(src) {
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = src;
+    img.src = /^https?:/.test(src) ? `${src}${src.includes('?') ? '&' : '?'}canvas=1` : src;
   });
 }
 

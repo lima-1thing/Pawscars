@@ -1,7 +1,7 @@
 /**
  * 打包网页测试版：src/main.js → dist/app.js，并复制静态文件
  *   node build.mjs          生成 dist/
- *   node build.mjs --serve  本地预览 http://localhost:8000（修改后自动重新打包）
+ *   node build.mjs --serve  本地预览 http://localhost:5173（修改后自动重新打包；需在后台 WEB_ORIGINS 中登记）
  */
 import * as esbuild from 'esbuild';
 import { cpSync, mkdirSync, rmSync } from 'fs';
@@ -33,7 +33,7 @@ const options = {
 if (serve) {
   const ctx = await esbuild.context(options);
   await ctx.watch();
-  const { port } = await ctx.serve({ servedir: 'dist', port: 8000 });
+  const { port } = await ctx.serve({ servedir: 'dist', port: Number(process.env.PORT) || 5173 });
   console.log(`Serving http://localhost:${port}`);
 } else {
   await esbuild.build(options);

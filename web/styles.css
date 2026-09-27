@@ -88,10 +88,11 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
   display: flex; align-items: center; justify-content: space-between; background: var(--bg-banner);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
-.nav-left, .nav-right { display: flex; align-items: center; gap: 6px; z-index: 1; }
-.nav-center { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; line-height: 1.25; }
-.nav-title { font-size: 14px; font-weight: 600; color: #38242A; }
-.nav-subtitle { font-size: 11px; font-weight: 500; color: var(--coral-dark); }
+.nav-left, .nav-right { display: flex; align-items: center; gap: 6px; flex: none; }
+/* 标题占据左右按钮之间的剩余空间，过长时省略，避免与按钮重叠 */
+.nav-center { flex: 1; min-width: 0; padding: 0 8px; text-align: center; line-height: 1.25; }
+.nav-title { font-size: 14px; font-weight: 600; color: #38242A; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.nav-subtitle { font-size: 11px; font-weight: 500; color: var(--coral-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .icon-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--surface); font-size: 20px; line-height: 1; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
 .pill-btn { border: none; background: var(--surface); border-radius: 14px; padding: 5px 10px; font-size: 11px; font-weight: 500; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
 .rules-bubble { width: 36px; height: 32px; border: none; background: var(--surface); border-radius: 16px 16px 16px 4px; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
@@ -189,7 +190,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .row-head { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 8px; }
 .row-name { font-size: 15px; font-weight: 700; }
 .skip-note { margin: 0 16px; padding: 14px 16px; border-radius: 16px; font-size: 12px; font-weight: 500; }
-.swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 56px 10px; scrollbar-width: none; }
+/* 左右留白 = (容器宽 - 卡片宽) / 2，首尾卡片也能居中 */
+.swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px calc(50% - min(32vw, 140px)) 10px; scrollbar-width: none; }
 .swipe::-webkit-scrollbar { display: none; }
 .swipe-card { flex: none; width: min(64vw, 280px); scroll-snap-align: center; text-align: center; }
 .swipe-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
