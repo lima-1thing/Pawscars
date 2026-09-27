@@ -25,14 +25,14 @@ App({
   },
 
   /**
-   * 是否为开发版/体验版：身份切换、数据重置等调试工具只在这里开放
+   * 是否为开发版（开发者工具）：身份切换、数据重置等调试工具只在这里开放
    */
   isDevBuild() {
     return api.isDevBuild();
   },
 
   /**
-   * 可进入管理后台：openid 白名单管理员，或开发/体验版调试
+   * 可进入管理后台：openid 白名单管理员，或开发版调试
    */
   canAccessAdmin() {
     return api.getState().isAdmin || this.isDevBuild();

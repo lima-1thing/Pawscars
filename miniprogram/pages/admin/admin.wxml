@@ -130,7 +130,7 @@
       </view>
     </view>
 
-    <!-- 8. 开发调试工具（仅开发版/体验版可见） -->
+    <!-- 8. 开发调试工具（仅开发版可见） -->
     <view wx:if="{{isDevBuild && isMockMode}}" class="admin-section-card dev-card">
       <view class="section-title">🧪 开发调试 · 本地模式（正式版不显示）</view>
       <view class="desc-text">当前本机身份：<text class="highlight-text">{{currentLdap || '未绑定'}}</text></view>

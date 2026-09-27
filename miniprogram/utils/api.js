@@ -22,7 +22,8 @@ let token = '';
 function isDevBuild() {
   try {
     const { envVersion } = wx.getAccountInfoSync().miniProgram;
-    return envVersion === 'develop' || envVersion === 'trial';
+    // 只有开发者工具里的开发版才算调试环境；体验版与正式版行为一致，方便朋友测试真实效果
+    return envVersion === 'develop';
   } catch (e) {
     return false;
   }

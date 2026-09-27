@@ -99,7 +99,7 @@ python3 -m http.server 3000 -d preview
 6. 数据模式由 `miniprogram/env.js` 控制：
    - `BACKEND: 'gcloud'`（默认）：所有数据走 Google Cloud 后台（`gcloud-functions/`），照片上传到 Cloud Storage，适用于多人真实活动。`API_BASE_URL` 填后台部署后绑定的域名。
    - `BACKEND: 'mock'`：本地存储，数据只保存在本机，适合单人演示。
-   - 开发版/体验版中后台不可用（或未填 `API_BASE_URL`）时会自动退回本地存储；正式版不会退回，而是提示加载失败。
+   - 开发版（开发者工具）中后台不可用（或未填 `API_BASE_URL`）时会自动退回本地存储；体验版和正式版不会退回，而是提示加载失败。
 7. 本地联调：在 `gcloud-functions/` 中 `npm start` 启动后台，把 `API_BASE_URL` 设为 `http://localhost:8080`，并在开发者工具中勾选"不校验合法域名"。
 
 ### 后台部署与管理员
@@ -109,7 +109,7 @@ python3 -m http.server 3000 -d preview
 - 管理员**只按微信 openid 白名单判定**（`Activity/main_config.adminOpenids`），不接受活动ID（活动ID由用户自行输入，任何人都能冒用）。
 - `phaseDeadlines` 为毫秒时间戳；过了截止时间将拒绝报名/投票，并由定时任务自动推进到下一阶段。
 - `gcloud-functions/src/bracket.js` 是 `miniprogram/utils/bracket.js` 的副本，修改赛制算法时需同步复制（测试会校验两者一致）。
-- 开发版/体验版中管理后台对所有人开放并提供调试工具（本地模式下还有身份切换、数据重置）；正式版仅白名单管理员可见，所有管理操作均由后台再次校验。
+- 开发版（开发者工具）中管理后台对所有人开放并提供调试工具（本地模式下还有身份切换、数据重置）；体验版和正式版仅白名单管理员可见，所有管理操作均由后台再次校验。
 
 ---
 
