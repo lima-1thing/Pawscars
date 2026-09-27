@@ -43,7 +43,7 @@ async function callBackend(url, { body = {}, headers = {}, rawBody, contentType 
   };
   let statusCode = 200;
   let data = null;
-  const res = { status(s) { statusCode = s; return res; }, json(b) { data = b; return res; } };
+  const res = { status(s) { statusCode = s; return res; }, json(b) { data = b; return res; }, set() { return res; }, send() { return res; } };
   await handler(req, res);
   return { statusCode, data };
 }

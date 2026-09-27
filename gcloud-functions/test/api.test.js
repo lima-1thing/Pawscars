@@ -17,7 +17,9 @@ const CONFIG = {
   tokenSecret: 'token-secret',
   photoBucket: 'pawscars-photos',
   cronSecret: 'cron-secret',
-  tokenTtlHours: 1
+  tokenTtlHours: 1,
+  webInviteCode: 'PAW-TEST-2026',
+  webOrigins: ['https://lima-1thing.github.io']
 };
 const PHOTO_BASE = `https://storage.googleapis.com/${CONFIG.photoBucket}/`;
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), Buffer.alloc(32)]);
@@ -67,12 +69,15 @@ async function call(pathname, { body = {}, token, headers = {}, method = 'POST',
   };
   let status = 200;
   let json = null;
+  const resHeaders = {};
   const res = {
     status(s) { status = s; return res; },
-    json(b) { json = b; return res; }
+    json(b) { json = b; return res; },
+    send() { return res; },
+    set(k, v) { resHeaders[k.toLowerCase()] = v; return res; }
   };
   await app(req, res);
-  return { status, ...json };
+  return { status, headers: resHeaders, ...json };
 }
 
 const ok = async (promise) => {
@@ -121,6 +126,27 @@ async function login(openid) {
   assert.strictEqual(boot.config.adminOpenids, undefined);
   assert.strictEqual(boot.categories.length, 3);
   assert.strictEqual((await ok(call('/bootstrap', { token: admin }))).isAdmin, true);
+
+  console.log('Testing web login and CORS...');
+  await fails(call('/login/web', { body: { inviteCode: 'wrong' } }), /邀请码不正确/, 401);
+  const web1 = (await ok(call('/login/web', { body: { inviteCode: 'PAW-TEST-2026' } }))).token;
+  const web2 = (await ok(call('/login/web', { body: { inviteCode: ' PAW-TEST-2026 ' } }))).token;
+  assert.notStrictEqual(web1, web2); // 每次登录都是新的网页身份
+  assert.strictEqual((await ok(call('/bootstrap', { token: web1 }))).isAdmin, false);
+  const pre = await call('/login/web', { method: 'OPTIONS', headers: { origin: 'https://lima-1thing.github.io' } });
+  assert.strictEqual(pre.status, 204);
+  assert.strictEqual(pre.headers['access-control-allow-origin'], 'https://lima-1thing.github.io');
+  assert.match(pre.headers['access-control-allow-headers'], /Authorization/);
+  const evil = await call('/login/web', { method: 'OPTIONS', headers: { origin: 'https://evil.example' } });
+  assert.strictEqual(evil.headers['access-control-allow-origin'], undefined);
+  assert.strictEqual(evil.status, 405);
+  const noWeb = createApp({ config: { ...CONFIG, webInviteCode: '' }, db, storage, wx });
+  let noWebStatus = 0;
+  let noWebBody = null;
+  const noWebRes = { status(x) { noWebStatus = x; return noWebRes; }, json(b) { noWebBody = b; return noWebRes; }, set() { return noWebRes; }, send() { return noWebRes; } };
+  await noWeb({ method: 'POST', path: '/login/web', body: { inviteCode: '' }, headers: {}, get: () => undefined }, noWebRes);
+  assert.strictEqual(noWebStatus, 403);
+  assert.match(noWebBody.message, /未开放/);
 
   console.log('Testing ID binding...');
   await fails(call('/bind', { token: u1, body: { ldap: 'LIMA0001' } }), /仅支持英文字母/);
