@@ -6,6 +6,7 @@ const MAX_PICKS = 8;
 Page({
   data: {
     phaseOpen: true,
+    allSubmitted: false,
     categoryList: [],
     confirmVisible: false,
     pendingGroups: [],
@@ -44,7 +45,12 @@ Page({
       };
     });
 
-    this.setData({ phaseOpen, categoryList });
+    this.setData({
+      phaseOpen,
+      categoryList,
+      // 所有需要初选的门类都已提交（免初选的门类不算），底部按钮改为完成状态
+      allSubmitted: categoryList.every(c => !c.needsVote || c.isLocked)
+    });
   },
 
   updateCategory(catId, updater) {
@@ -162,6 +168,10 @@ Page({
         if (res.confirm) wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });
       }
     });
+  },
+
+  onGoMyNominations() {
+    wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });
   },
 
   noop() {},

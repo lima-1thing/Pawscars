@@ -65,7 +65,11 @@
 
   <!-- 底部吸底提交按钮 -->
   <view wx:if="{{phaseOpen}}" class="bottom-bar">
-    <button class="paw-btn paw-btn-primary submit-vote-btn" bindtap="onOpenConfirm">选好了！冲鸭</button>
+    <view wx:if="{{allSubmitted}}" class="done-bar">
+      <text class="done-text">✅ 初选已全部提交，等待 8 强揭晓</text>
+      <button class="paw-btn paw-btn-outline submit-vote-btn" bindtap="onGoMyNominations">查看我的提名</button>
+    </view>
+    <button wx:else class="paw-btn paw-btn-primary submit-vote-btn" bindtap="onOpenConfirm">选好了！冲鸭</button>
   </view>
 
   <!-- 提交确认页：分门类展示已选缩略图 -->
