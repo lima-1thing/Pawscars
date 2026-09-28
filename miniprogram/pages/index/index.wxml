@@ -79,7 +79,7 @@
       </button>
     </block>
 
-    <!-- 阶段B：投票期（初选 / 8进4 / 4强德比） -->
+    <!-- 阶段B：投票期（初选 / 决赛） -->
     <block wx:elif="{{phaseKind === 'vote'}}">
       <view class="speech-bubble">
         <view class="status-stage-tag">投票进行中 · {{votePhaseInfo.step}}</view>
@@ -93,8 +93,7 @@
 
       <view class="stage-stepper-row">
         <view class="step-pill {{config.currentPhase === 'vote_initial' ? 'pill-active' : ''}}">初选</view>
-        <view class="step-pill {{config.currentPhase === 'vote_match_8' ? 'pill-active' : ''}}">8进4</view>
-        <view class="step-pill {{config.currentPhase === 'vote_match_4' ? 'pill-active' : ''}}">4强德比</view>
+        <view class="step-pill {{config.currentPhase === 'vote_final' ? 'pill-active' : ''}}">决赛</view>
       </view>
 
       <view class="voting-action-group">

@@ -1,25 +1,22 @@
-import { api, STAGE_KNOCKOUT, STAGE_DERBY } from '../api';
+import { api } from '../api';
 import { go, route } from '../router';
 import { toast, dialog } from '../ui';
 import { maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
 import RulesModal from '../components/rules-modal';
 
-const PHASE_STAGE = { vote_match_8: STAGE_KNOCKOUT, vote_match_4: STAGE_DERBY };
-
 export default {
-  name: 'VoteMatchPage',
+  name: 'VoteFinalPage',
   components: { NavBar, RulesModal },
   data() {
-    return { stage: '', phaseOpen: true, tabs: [], current: route.query.cat || '', matches: [], idx: 0, match: null,
+    return { inFinal: true, phaseOpen: true, tabs: [], current: route.query.cat || '', pairs: [], idx: 0, pair: null,
       chosen: '', submitting: false, view: 'loading', rules: false };
   },
   computed: {
     subtitle() {
-      if (!this.stage) return 'PK 对局';
-      if (this.view === 'voting') return `${this.stage} · 第 ${this.idx + 1}/${this.matches.length} 场`;
-      if (this.view === 'completed') return `${this.stage} · 已完成`;
-      return this.stage;
+      if (this.view === 'voting') return `决赛 · 第 ${this.idx + 1}/${this.pairs.length} 场`;
+      if (this.view === 'completed') return '决赛 · 已完成';
+      return '决赛';
     }
   },
   created() { this.load(); },
@@ -27,10 +24,16 @@ export default {
     async load() {
       try {
         await api.refresh();
-        this.stage = PHASE_STAGE[api.getState().config.currentPhase] || '';
-        if (!this.stage) { this.view = 'closed'; this.tabs = api.getState().categories; return; }
-        const { phaseOpen, categories } = await api.getMatchState(this.stage);
+        if (api.getState().config.currentPhase !== 'vote_final') {
+          this.inFinal = false;
+          this.phaseOpen = false;
+          this.tabs = api.getState().categories;
+          this.view = 'closed';
+          return;
+        }
+        const { phaseOpen, categories } = await api.getFinalState();
         this.phaseOpen = phaseOpen;
+        // 本页缓存：各门类本人的决赛对局
         this.byCat = Object.fromEntries(categories.map(c => [c.id, c]));
         this.buildTabs();
         if (!this.tabs.some(t => t.id === this.current)) this.current = (this.tabs.find(t => t.remaining > 0) || this.tabs[0] || {}).id;
@@ -39,50 +42,51 @@ export default {
     },
     buildTabs() {
       this.tabs = api.getState().categories.map(c => {
-        const d = this.byCat[c.id];
-        const remaining = d ? d.matches.filter(m => !d.myVotes[m.id]).length : 0;
-        const status = !d || !d.matches.length ? '无需投票' : (remaining ? `待投 ${remaining}` : '已投完');
+        const pairs = (this.byCat[c.id] || {}).pairs || [];
+        const remaining = pairs.filter(p => !p.myVote).length;
+        const status = !pairs.length ? '无需投票' : (remaining ? `待投 ${remaining}` : '已投完');
         return { ...c, remaining, status };
       });
     },
     showCategory() {
       const d = this.byCat[this.current];
       if (!d || !d.generated) { this.view = 'notGenerated'; return; }
-      if (!d.matches.length) { this.view = 'noMatches'; return; }
-      this.matches = d.matches;
-      const next = d.matches.findIndex(m => !d.myVotes[m.id]);
+      if (!d.pairs.length) { this.view = 'noMatches'; return; }
+      this.pairs = d.pairs;
+      // 从第一场未投的对局继续（支持中途退出后接着投）
+      const next = d.pairs.findIndex(p => !p.myVote);
       if (next === -1) { this.view = 'completed'; return; }
       if (!this.phaseOpen) { this.view = 'closed'; return; }
       this.show(next);
     },
     show(i) {
-      const m = this.matches[i];
+      const p = this.pairs[i];
       this.idx = i;
-      this.match = { ...m, maskA: maskLdap(m.entryA.ownerLdap), maskB: maskLdap(m.entryB.ownerLdap) };
+      this.pair = { ...p, maskA: maskLdap(p.entryA.ownerLdap), maskB: maskLdap(p.entryB.ownerLdap) };
       this.chosen = '';
       this.view = 'voting';
     },
     pickTab(id) { if (id !== this.current) { this.current = id; this.showCategory(); } },
     async choose(side) {
-      if (this.chosen || this.submitting || !this.match) return;
+      if (this.chosen || this.submitting || !this.pair) return;
       this.submitting = true;
       try {
-        await api.submitMatchVote(this.match.id, side);
+        await api.submitFinalVote(this.current, this.pair.index, side);
       } catch (e) {
+        // 已投过：视为本场完成；其他错误：停留在本场并提示重试
         if (!/已投过/.test(e.message)) {
           this.submitting = false;
           dialog({ title: '投票没有成功', content: `${e.message}，请重试。`, confirmText: '好的' });
           return;
         }
       }
-      const d = this.byCat[this.current];
-      d.myVotes[this.match.id] = side;
+      this.pairs[this.idx].myVote = side;
       this.chosen = side;
       this.submitting = false;
       setTimeout(() => {
         this.buildTabs();
-        const next = this.matches.findIndex((m, i) => i > this.idx && !d.myVotes[m.id]);
-        if (next !== -1) this.show(next); else { this.view = 'completed'; this.match = null; }
+        const next = this.pairs.findIndex((p, i) => i > this.idx && !p.myVote);
+        if (next !== -1) this.show(next); else { this.view = 'completed'; this.pair = null; }
       }, 650);
     },
     nextCategory() {
@@ -91,8 +95,8 @@ export default {
       this.pickTab(next.id);
     },
     async share() {
-      const url = `${location.origin}${location.pathname}#/vote-match?cat=${this.current}`;
-      const text = this.match ? `【${this.match.entryA.petName} VS ${this.match.entryB.petName}】火热对决中，帮忙投一票！` : 'Pawscars PK 对决进行中，快来投票！';
+      const url = `${location.origin}${location.pathname}#/vote-final?cat=${this.current}`;
+      const text = this.pair ? `【${this.pair.entryA.petName} VS ${this.pair.entryB.petName}】决赛火热进行中，帮忙投一票！` : 'Pawscars 决赛 PK 进行中，快来投票！';
       try {
         if (navigator.share) await navigator.share({ title: text, url });
         else { await navigator.clipboard.writeText(`${text} ${url}`); toast('链接已复制，快去群里拉票吧！'); }
@@ -110,46 +114,46 @@ export default {
         </button>
       </div>
 
-      <template v-if="view === 'voting' && match">
+      <template v-if="view === 'voting' && pair">
         <div class="pk-hint">点击为TA投票</div>
         <div class="duel">
           <template v-for="side in ['A', 'B']" :key="side">
             <div v-if="side === 'B'" class="vs">VS</div>
             <button class="duel-card" :class="{ chosen: chosen === side }" @click="choose(side)">
-              <div class="duel-name">{{ match['entry' + side].petName }}</div>
+              <div class="duel-name">{{ pair['entry' + side].petName }}</div>
               <div class="duel-photo">
-                <img :src="match['entry' + side].photoUrl" :alt="match['entry' + side].petName">
+                <img :src="pair['entry' + side].photoUrl" :alt="pair['entry' + side].petName">
                 <span v-if="chosen === side" class="tick">✓</span>
-                <span class="mask-tag">主人 {{ match['mask' + side] }}</span>
+                <span class="mask-tag">主人 {{ pair['mask' + side] }}</span>
               </div>
             </button>
           </template>
         </div>
-        <div class="center pad"><button class="btn btn-outline" @click="share">🔗 分享本场PK拉票</button></div>
+        <div class="center pad"><button class="btn btn-outline" @click="share">🔗 分享决赛拉票</button></div>
       </template>
 
       <div v-else-if="view === 'completed'" class="empty">
-        <div class="big-emoji">🎉</div><b>本门类{{ stage }}投票已完成</b>
-        <p class="muted">你的每一票都已记录，结果将在本阶段截止后公布。</p>
+        <div class="big-emoji">🎉</div><b>本门类决赛投票已完成</b>
+        <p class="muted">你的每一票都已记录，冠亚季军将在决赛截止后揭晓。</p>
         <button class="btn btn-primary" @click="nextCategory">再投下一个门类</button>
         <button class="btn btn-outline" @click="go('/')">返回首页</button>
       </div>
       <div v-else-if="view === 'noMatches'" class="empty">
-        <div class="big-emoji">🕊️</div><b>本门类本轮无需投票</b>
-        <p class="muted">晋级名额不足以组成对决（或全部轮空晋级），可以去其他门类看看。</p>
+        <div class="big-emoji">🕊️</div><b>本门类无需投票</b>
+        <p class="muted">本门类决赛选手不足 2 只，无需 PK，可以去其他门类看看。</p>
         <button class="btn btn-primary" @click="nextCategory">去其他门类</button>
       </div>
       <div v-else-if="view === 'closed'" class="empty">
-        <div class="big-emoji">⏰</div><b>{{ stage ? '本阶段投票已截止' : '当前不在 PK 投票阶段' }}</b>
+        <div class="big-emoji">⏰</div><b>{{ inFinal ? '决赛投票已截止' : '当前不在决赛投票阶段' }}</b>
         <p class="muted">结果公布后可在首页或"我的提名"查看。</p>
         <button class="btn btn-primary" @click="go('/')">返回首页</button>
       </div>
       <div v-else-if="view === 'notGenerated'" class="empty">
-        <div class="big-emoji">⏳</div><b>对阵表生成中</b>
-        <p class="muted">管理员正在结算上一阶段结果，请稍后再来！</p>
+        <div class="big-emoji">⏳</div><b>决赛名单生成中</b>
+        <p class="muted">管理员正在结算初选结果，请稍后再来！</p>
         <button class="btn btn-primary" @click="go('/')">返回首页</button>
       </div>
-      <div v-else class="empty"><p class="muted">对阵加载中…</p></div>
+      <div v-else class="empty"><p class="muted">对局加载中…</p></div>
       <RulesModal :visible="rules" @close="rules = false" />
     </div>`
 };

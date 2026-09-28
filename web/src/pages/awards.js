@@ -7,7 +7,7 @@ import RulesModal from '../components/rules-modal';
 import CertModal from '../components/cert-modal';
 
 const RANKS = [{ key: 'champion', text: '冠军' }, { key: 'runnerUp', text: '亚军' }, { key: 'thirdPlace', text: '季军' }];
-const fmt = (e) => e && { ...e, masked: maskLdap(e.ownerLdap), score: e.totalVotes !== undefined ? `${e.wins || 0} 胜 · ${e.totalVotes || 0} 票` : '' };
+const fmt = (e) => e && { ...e, masked: maskLdap(e.ownerLdap), score: e.games ? `${e.wins} 胜 / ${e.games} 场 · 胜率 ${Math.round(e.winRate * 100)}%` : (e.games === 0 ? '暂无对局' : '') };
 
 export default {
   name: 'AwardsPage',
@@ -100,7 +100,7 @@ export default {
               :style="current && c.id === current.id ? { background: c.bg, color: c.textColor } : {}" @click="pick(c)">{{ c.icon }} {{ c.name }}</button>
           </div>
           <div v-if="state === 'empty'" class="podium-empty">本门类无人参赛</div>
-          <div v-else-if="state === 'pending'" class="podium-empty">结果将在 4 强德比结束后生成</div>
+          <div v-else-if="state === 'pending'" class="podium-empty">结果将在决赛结束后生成</div>
           <div v-else-if="state === 'loading'" class="podium-empty">结果加载中…</div>
           <div v-else class="podium">
             <div v-for="slot in [['runnerUp', '🥈', 'silver', 2], ['champion', '🏆', 'gold', 1], ['thirdPlace', '🥉', 'bronze', 3]]" :key="slot[0]" class="slot">

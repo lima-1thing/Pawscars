@@ -1,8 +1,8 @@
 /**
- * 投票：初选（每人每门类一次）与 PK（每人每场一次）
+ * 投票：初选（每人每门类一次）与决赛 PK（每人每场一次，只能投系统分配给自己的对局）
  * 投票记录与计数在同一批次原子写入；记录以确定性 ID 创建，重复提交整批失败
  */
-const { COL, STAGE_DERBY, MAX_INITIAL_PICKS, isPhaseOpen } = require('../activity');
+const { COL, MAX_INITIAL_PICKS, isPhaseOpen } = require('../activity');
 const { requireBinding } = require('./user');
 const { UserError } = require('../errors');
 
@@ -39,40 +39,40 @@ async function submitInitial(ctx) {
   return { message: '初选选票提交成功' };
 }
 
-async function submitMatch(ctx) {
-  const { matchId, chosenSide } = ctx.body;
+async function submitFinal(ctx) {
+  const { categoryId, pairIndex, chosenSide } = ctx.body;
   if (chosenSide !== 'A' && chosenSide !== 'B') throw new UserError('投票参数无效');
+  if (!isPhaseOpen(ctx.activity, 'vote_final')) throw new UserError('决赛投票已截止');
 
-  const match = typeof matchId === 'string' ? await ctx.db.get(COL.MATCH, matchId) : null;
-  if (!match) throw new UserError('对阵不存在，请刷新后重试');
-  if (!match.entryA || !match.entryB) throw new UserError('轮空场次无需投票');
-  const phase = match.stage === STAGE_DERBY ? 'vote_match_4' : 'vote_match_8';
-  if (!isPhaseOpen(ctx.activity, phase)) throw new UserError('本阶段投票已截止');
+  const assignId = `${ctx.openid}_${categoryId}`;
+  const assignment = typeof categoryId === 'string' ? await ctx.db.get(COL.FINAL_PAIRS, assignId) : null;
+  const pair = assignment && Number.isInteger(pairIndex) ? assignment.pairs[pairIndex] : null;
+  if (!pair) throw new UserError('对局不存在，请刷新后重试');
 
   const now = Date.now();
-  const counter = chosenSide === 'A'
-    ? { votesA: ctx.db.increment(1), lastVoteTimeA: now }
-    : { votesB: ctx.db.increment(1), lastVoteTimeB: now };
+  const winner = chosenSide === 'A' ? pair.a : pair.b;
+  const loser = chosenSide === 'A' ? pair.b : pair.a;
   const ok = await ctx.db.commit([
     {
       type: 'create',
-      col: COL.VOTE,
-      id: `${ctx.openid}_${matchId}`,
-      data: { openid: ctx.openid, matchId, chosenSide, timestamp: now }
+      col: COL.FINAL_VOTE,
+      id: `${assignId}_${pairIndex}`,
+      data: { openid: ctx.openid, categoryId, pairIndex, chosenSide, winner, loser, timestamp: now }
     },
-    { type: 'update', col: COL.MATCH, id: matchId, data: counter }
+    { type: 'update', col: COL.ENTRY, id: winner, data: { finalWins: ctx.db.increment(1), finalGames: ctx.db.increment(1), lastFinalWinTime: now } },
+    { type: 'update', col: COL.ENTRY, id: loser, data: { finalGames: ctx.db.increment(1) } }
   ]);
-  if (!ok) throw new UserError('本场对局您已投过票，不可重复提交');
-  return { message: 'PK投票成功' };
+  if (!ok) throw new UserError('本场对决您已投过票，不可重复提交');
+  return { message: '决赛投票成功' };
 }
 
 /**
- * POST /vote { voteType: 'initial' | 'match', ... }
+ * POST /vote { voteType: 'initial' | 'final', ... }
  */
 async function submitVote(ctx) {
   await requireBinding(ctx);
   if (ctx.body.voteType === 'initial') return submitInitial(ctx);
-  if (ctx.body.voteType === 'match') return submitMatch(ctx);
+  if (ctx.body.voteType === 'final') return submitFinal(ctx);
   throw new UserError('未知投票类型');
 }
 

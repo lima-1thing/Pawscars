@@ -3,10 +3,10 @@ const { validateLdap, validatePetName, validateCongrats } = require('../miniprog
 const { maskLdap } = require('../miniprogram/utils/mask');
 const {
   resolveInitialRound,
-  generateQuarterFinalMatches,
-  resolveMatchWinner,
-  generateDerbyMatches,
-  resolveDerbyRankings
+  countPairCoverage,
+  generateFinalPairs,
+  resolveFinalRankings,
+  computeEntryProgress
 } = require('../miniprogram/utils/bracket');
 
 console.log('Testing Validator...');
@@ -70,35 +70,57 @@ const top8Ids = initialResult.top8.map(e => e.id);
 assert.strictEqual(top8Ids.includes('8'), true);
 assert.strictEqual(top8Ids.includes('9'), false);
 
-console.log('Testing 8-to-4 Pairing (Alphabetical sorting A-Z)...');
-// Top 8 sorted by ownerLdap:
-// ALICE (3), BOBBY (4), CHARLIE (5), DAVID (6), EMILY (7), FRANK (8), JENNIFER (1), ZHANG (2)
-const qfMatches = generateQuarterFinalMatches(initialResult.top8, 'food');
-assert.strictEqual(qfMatches.length, 4);
-assert.strictEqual(qfMatches[0].entryA.ownerLdap, 'ALICE');
-assert.strictEqual(qfMatches[0].entryB.ownerLdap, 'BOBBY');
-assert.strictEqual(qfMatches[1].entryA.ownerLdap, 'CHARLIE');
-assert.strictEqual(qfMatches[1].entryB.ownerLdap, 'DAVID');
-assert.strictEqual(qfMatches[2].entryA.ownerLdap, 'EMILY');
-assert.strictEqual(qfMatches[2].entryB.ownerLdap, 'FRANK');
-assert.strictEqual(qfMatches[3].entryA.ownerLdap, 'JENNIFER');
-assert.strictEqual(qfMatches[3].entryB.ownerLdap, 'ZHANG');
+console.log('Testing final-round pair generation fairness...');
+// 固定种子的伪随机数，保证测试可重复
+const seeded = (seed) => () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const finalistIds = initialResult.top8.map(e => e.id);
+const pairKey = (p) => [p.a, p.b].sort().join('-');
+const assigned = [];
+for (let voter = 1; voter <= 70; voter++) {
+  // 依次分配：每位投票人参考之前所有人的覆盖情况
+  const pairs = generateFinalPairs(finalistIds, { rng: seeded(voter), coverage: countPairCoverage(assigned) });
+  assigned.push(pairs);
+  assert.strictEqual(pairs.length, 8); // 每人每门类最多 8 场
+  const appear = {};
+  pairs.forEach(p => {
+    assert.notStrictEqual(p.a, p.b);
+    [p.a, p.b].forEach(id => { appear[id] = (appear[id] || 0) + 1; });
+  });
+  // 每只毛孩恰好出场 2 次，且同一人不会遇到重复对局
+  assert.deepStrictEqual(Object.values(appear).sort(), Array(8).fill(2));
+  assert.strictEqual(new Set(pairs.map(pairKey)).size, 8);
+  // 7 位投票人即可覆盖全部 28 种两两组合
+  if (voter === 7) assert.strictEqual(Object.keys(countPairCoverage(assigned)).length, 28);
+}
+// 70 位投票人：每种组合被覆盖的次数非常接近（期望 20 次）
+const coverage = Object.values(countPairCoverage(assigned));
+assert.strictEqual(coverage.length, 28);
+assert.ok(Math.max(...coverage) - Math.min(...coverage) <= 3, `coverage spread too wide: ${coverage}`);
+// 选手不足 8 只：场次等于人数；2 只一场；1 只无需投票
+assert.strictEqual(generateFinalPairs(['a', 'b', 'c', 'd', 'e']).length, 5);
+assert.strictEqual(generateFinalPairs(['a', 'b', 'c']).length, 3);
+assert.strictEqual(generateFinalPairs(['a', 'b']).length, 1);
+assert.strictEqual(generateFinalPairs(['a']).length, 0);
 
-console.log('Testing 4-strong Derby matches...');
-const final4 = [qfMatches[0].entryA, qfMatches[1].entryA, qfMatches[2].entryA, qfMatches[3].entryA];
-const derbyMatches = generateDerbyMatches(final4, 'food');
-assert.strictEqual(derbyMatches.length, 6);
+console.log('Testing final rankings by win rate...');
+const fin = [
+  { id: 'x', ownerLdap: 'XAVI' }, { id: 'y', ownerLdap: 'YAN' }, { id: 'z', ownerLdap: 'ZOE' }, { id: 'w', ownerLdap: 'WEN' }
+];
+const ranking = resolveFinalRankings(fin, {
+  x: { wins: 3, games: 4, lastWinTime: 50 },   // 75%
+  y: { wins: 2, games: 2, lastWinTime: 90 },   // 100%，但场次少
+  z: { wins: 3, games: 4, lastWinTime: 40 },   // 75%，同胜场更早达到 → 排在 x 前
+  w: { wins: 0, games: 4 }
+});
+assert.deepStrictEqual(ranking.fullRankings.map(r => r.id), ['y', 'z', 'x', 'w']);
+assert.strictEqual(ranking.champion.id, 'y');
+assert.strictEqual(ranking.thirdPlace.id, 'x');
+assert.strictEqual(resolveFinalRankings([], {}).isEmpty, true);
+assert.strictEqual(resolveFinalRankings([fin[0]], {}).champion.id, 'x'); // 只有 1 只直接夺冠
 
-console.log('Testing Derby Rankings...');
-// Simulate votes on derby matches
-derbyMatches[0].votesA = 10; derbyMatches[0].votesB = 5; // A wins
-derbyMatches[1].votesA = 10; derbyMatches[1].votesB = 5; // C wins
-derbyMatches[2].votesA = 10; derbyMatches[2].votesB = 5; // A wins
-derbyMatches[3].votesA = 5;  derbyMatches[3].votesB = 10; // D wins
-derbyMatches[4].votesA = 10; derbyMatches[4].votesB = 5; // A wins
-derbyMatches[5].votesA = 5;  derbyMatches[5].votesB = 10; // C wins
-
-const derbyRankings = resolveDerbyRankings(final4, derbyMatches);
-assert.strictEqual(derbyRankings.champion.ownerLdap, 'ALICE'); // 3 wins
+console.log('Testing private progress text...');
+assert.strictEqual(computeEntryProgress({ entry: { id: 'x' }, phase: 'vote_final', finalists: fin, finalStats: { x: { wins: 3, games: 4 } } }).detail, '当前战绩：3 胜 / 4 场 · 胜率 75%');
+assert.strictEqual(computeEntryProgress({ entry: { id: 'q', initialVotes: 2 }, phase: 'vote_final', finalists: fin, finalStats: {} }).title, '止步初选');
+assert.strictEqual(computeEntryProgress({ entry: { id: 'y' }, phase: 'awards', finalists: fin, finalStats: { y: { wins: 2, games: 2 } } }).title, '冠军 🥇');
 
 console.log('All algorithm and bracket tests passed successfully!');

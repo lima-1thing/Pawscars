@@ -10,7 +10,7 @@ import HomePage from './pages/home';
 import BindPage from './pages/bind';
 import NominatePage from './pages/nominate';
 import VoteInitialPage from './pages/vote-initial';
-import VoteMatchPage from './pages/vote-match';
+import VoteFinalPage from './pages/vote-final';
 import AwardsPage from './pages/awards';
 import MyPage from './pages/my';
 import AdminPage from './pages/admin';
@@ -20,7 +20,7 @@ const PAGES = {
   '/bind': BindPage,
   '/nominate': NominatePage,
   '/vote-initial': VoteInitialPage,
-  '/vote-match': VoteMatchPage,
+  '/vote-final': VoteFinalPage,
   '/awards': AwardsPage,
   '/my': MyPage,
   '/admin': AdminPage

@@ -36,10 +36,10 @@ Cloud Scheduler ──每 10 分钟──▶ /cron/advance-phase：到截止时�
 | `/upload` | multipart：`file`，`folder=entries\|host` | 上传照片（JPG/PNG ≤5MB，按文件头校验），返回 `url`；`host` 仅管理员 |
 | `/nominate` | `{ petName, photoUrl, categoryIds, pledged }` | 多选门类报名，冲突门类跳过 |
 | `/nominate/photo` | `{ entryId, photoUrl }` | 报名期内替换自己的照片 |
-| `/vote` | `{ voteType: 'initial', categoryId, selectedEntryIds }` 或 `{ voteType: 'match', matchId, chosenSide }` | 每人每门类/每场一票 |
+| `/vote` | `{ voteType: 'initial', categoryId, selectedEntryIds }` 或 `{ voteType: 'final', categoryId, pairIndex, chosenSide }` | 初选每人每门类一次；决赛只能投分配给自己的对局，每场一票 |
 | `/congrats` | `{ content }` | 颁奖阶段发贺词，每人一条 |
 | `/data/initialState` | – | 初选候选（按主人ID排序、已打码）与本人已选 |
-| `/data/matchState` | `{ stage: '8进4' \| '4强德比' }` | 可投对阵（**不含票数**）与本人已投 |
+| `/data/finalState` | – | 本人在各门类的决赛对局（首次打开时随机生成并固定，**不含票数**）与已投记录 |
 | `/data/myNominations` | – | 本人报名与私密进度（含自己的票数） |
 | `/data/awards` | `{ categoryId }` | 颁奖结果（颁奖前仅管理员可见） |
 | `/data/congrats` | – | 贺词墙 |
@@ -50,7 +50,7 @@ Cloud Scheduler ──每 10 分钟──▶ /cron/advance-phase：到截止时�
 - 管理员只按 `Activity/main_config.adminOpenids` 中的 openid 判定；该名单不能通过接口修改，也不会下发给前端。
 - openid 只来自服务端校验过的登录令牌，前端无法伪造。
 - 公共接口返回的主人ID在服务端打码，不包含 openid 和实时票数。
-- 投票记录与计数在同一批次原子写入，并以 `openid_门类` / `openid_对局` 作为文档 ID，重复提交整批失败。
+- 投票记录与计数在同一批次原子写入，并以 `openid_门类` / `openid_门类_场次` 作为文档 ID，重复提交整批失败。
 
 ## 本地开发与测试
 

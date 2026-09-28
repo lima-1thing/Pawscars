@@ -8,9 +8,6 @@ import { isPhaseOpen, DEFAULT_CATEGORIES, DEFAULT_CONFIG } from './shared';
 const TOKEN_KEY = 'pawscars_web_token';
 const DISPLAY_DEFAULT_FIELDS = ['title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
 
-export const STAGE_KNOCKOUT = '8进4';
-export const STAGE_DERBY = '4强德比';
-
 let state = { config: null, categories: [], user: null, isAdmin: false };
 let token = '';
 let onUnauthorized = () => {};
@@ -81,8 +78,6 @@ async function uploadPhoto(blob, folder) {
 }
 
 export const api = {
-  STAGE_KNOCKOUT,
-  STAGE_DERBY,
 
   /** 注册令牌失效时的回调（跳回邀请码页） */
   setUnauthorizedHandler(fn) { onUnauthorized = fn; },
@@ -137,8 +132,9 @@ export const api = {
   async getMyNominations() { return (await request('/data/myNominations')).entries; },
   getInitialState: () => request('/data/initialState'),
   submitInitialVote: (categoryId, selectedEntryIds) => request('/vote', { voteType: 'initial', categoryId, selectedEntryIds }),
-  getMatchState: (stage) => request('/data/matchState', { stage }),
-  submitMatchVote: (matchId, chosenSide) => request('/vote', { voteType: 'match', matchId, chosenSide }),
+  /** 本人在各门类的决赛对局（首次进入时由后台随机生成并固定） */
+  getFinalState: () => request('/data/finalState'),
+  submitFinalVote: (categoryId, pairIndex, chosenSide) => request('/vote', { voteType: 'final', categoryId, pairIndex, chosenSide }),
   async getAwards(categoryId) { return (await request('/data/awards', { categoryId })).result; },
   getCongrats: () => request('/data/congrats'),
   submitCongrats: (content) => request('/congrats', { content }),

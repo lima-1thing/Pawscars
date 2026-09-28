@@ -52,32 +52,31 @@ const DEFAULT_CONFIG = {
     </svg>
   `),
   hostIntro: '为庆祝纽约🐶群活跃七周年，宫师姐决定邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
-  rulesSummary: '赛制：报名 → 8强投票 → 8进4淘汰赛 → 4强巅峰德比',
+  rulesSummary: '赛制：报名 → 初选（8强）→ 决赛（冠亚季军）',
   callToActionText: '准备好让全体🐶友欣赏你家毛孩了吗？',
   rulesDetail: `
 一、活动概述与赛制：
-Pawscars 模拟奥斯卡分类评选，按三大特色门类进行，每阶段 7 天，合计约 28 天。
+本届 Pawscars 有三大门类，进行两轮投票评选，每个阶段 3 天。
 
-二、四个阶段流程：
-1. 报名期（7天）：提交毛孩照片，选择参赛门类（支持多选）。
-2. 初选（7天）：三门类同页横向划屏，每类最多选 8 张。按被选总次数取前 8 强。打平按更早达到该票数的时间戳胜出。不足 8 强直接进入淘汰赛或循环赛。
-3. 8进4淘汰赛（7天）：8 强按主人 LDAP 字母顺序 (A→Z) 两两配对（1v2、3v4、5v6、7v8），4 场 1V1 单败淘汰。
-4. 4强德比（7天）：4 强进行 6 场循环赛 (C(4,2))，按胜场与总票数决出冠亚季军。
-5. 颁奖盛典：公布冠亚季军领奖台，生成专属获奖证书，开启全员贺词墙。
+二、比赛流程：
+1. 报名期（3天）：提交毛孩照片，选择参赛门类（支持多选参赛门类、支持提名多个毛孩）。
+2. 初选（3天）：三门类分别投票（所有 Xooglers/Googlers 都可以参与投票），每个门类最多选 8 只，按被选总次数取前 8 强。
+3. 决赛（3天）：每个门类的 8 强两两 PK。每位投票人在每个门类会随机分到最多 8 场对决，每只毛孩出场次数相同，点选你更喜欢的一方；按胜率决出冠亚季军。
+4. 颁奖盛典：公布冠亚季军领奖台，生成专属获奖证书，开启全员贺词墙。
 
 三、打平裁定原则：
 全阶段统一按“谁先达到该票数的时刻更早”判定胜负。
   `.trim(),
-  // 当前阶段: 'nominate' (报名期), 'vote_initial' (初选), 'vote_match_8' (8进4), 'vote_match_4' (4强德比), 'awards' (颁奖)
+  // 当前阶段: 'nominate' (报名期), 'vote_initial' (初选), 'vote_final' (决赛), 'awards' (颁奖)
   currentPhase: 'nominate',
-  // 各阶段截止时间（毫秒时间戳），管理员可在后台调整；每阶段默认 7 天
+  // 各阶段截止时间（毫秒时间戳），管理员可在后台调整；每阶段默认 3 天
   phaseDeadlines: {
-    nominate: DAY_START + 7 * DAY_MS,
-    vote_initial: DAY_START + 14 * DAY_MS,
-    vote_match_8: DAY_START + 21 * DAY_MS,
-    vote_match_4: DAY_START + 28 * DAY_MS,
+    nominate: DAY_START + 3 * DAY_MS,
+    vote_initial: DAY_START + 6 * DAY_MS,
+    vote_final: DAY_START + 9 * DAY_MS,
     awards: 0
   },
+
   // 管理员白名单：只填写微信 openid（绑定活动ID后可在 Firestore 的 UserBinding 记录中查到），
   // 不要填写活动ID——活动ID由用户自行输入，任何人都可以冒用
   adminOpenids: []

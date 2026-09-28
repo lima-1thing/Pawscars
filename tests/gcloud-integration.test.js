@@ -145,15 +145,16 @@ const on = (phone, fn) => { current = phone; return fn(phone.api); };
   assert.strictEqual(food.needsVote, false);
   assert.ok(food.entries.every(e => e.ownerLdap.includes('*') && e.ownerOpenid === undefined));
 
-  await on(admin, api => api.admin('setPhase', { targetPhase: 'vote_match_8' }));
-  const pk = (await on(bob, api => api.getMatchState(api.STAGE_KNOCKOUT))).categories.find(c => c.id === 'food');
-  assert.ok(pk.generated && pk.matches.length === 2 && pk.matches.every(m => m.votesA === undefined));
-  const match = pk.matches.find(m => m.entryA.id === entryId || m.entryB.id === entryId);
-  const side = match.entryA.id === entryId ? 'A' : 'B';
-  await on(bob, api => api.submitMatchVote(match.id, side));
-  await assert.rejects(on(bob, api => api.submitMatchVote(match.id, side)), /已投过/);
+  await on(admin, api => api.admin('setPhase', { targetPhase: 'vote_final' }));
+  const fin = (await on(bob, api => api.getFinalState())).categories.find(c => c.id === 'food');
+  assert.ok(fin.generated && fin.pairs.length === 5); // 5 只决赛选手，每人 5 场
+  assert.ok(fin.pairs.every(p => p.entryA.ownerLdap.includes('*') && p.entryA.ownerOpenid === undefined && p.myVote === null));
+  for (const p of fin.pairs) {
+    await on(bob, api => api.submitFinalVote('food', p.index, p.entryB.id === entryId ? 'B' : 'A'));
+  }
+  await assert.rejects(on(bob, api => api.submitFinalVote('food', fin.pairs[0].index, 'A')), /已投过/);
   mine = await on(alice, api => api.getMyNominations());
-  assert.match(mine[0].progress.detail, /我方 1 票/);
+  assert.match(mine[0].progress.detail, /2 胜 \/ 2 场/);
 
   console.log('Testing awards, certificate data and congratulations...');
   assert.strictEqual(await on(bob, api => api.getAwards('food')), null);

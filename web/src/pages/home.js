@@ -5,9 +5,8 @@ import { formatCountdown } from '../shared';
 import RulesModal from '../components/rules-modal';
 
 const VOTE_PHASES = {
-  vote_initial: { step: '阶段一', name: '初选打投' },
-  vote_match_8: { step: '阶段二', name: '8强淘汰赛' },
-  vote_match_4: { step: '阶段三', name: '4强巅峰德比' }
+  vote_initial: { step: '第一轮', name: '初选打投' },
+  vote_final: { step: '第二轮', name: '8强决赛' }
 };
 
 export default {
@@ -42,7 +41,7 @@ export default {
     nominate() { if (this.phaseOpen && this.requireUser()) go('/nominate'); },
     vote() {
       if (!this.phaseOpen) { toast('本阶段投票已截止，请等待结果公布'); return; }
-      if (this.requireUser()) go(this.phase === 'vote_initial' ? '/vote-initial' : '/vote-match');
+      if (this.requireUser()) go(this.phase === 'vote_initial' ? '/vote-initial' : '/vote-final');
     },
     my() { if (this.requireUser()) go('/my'); },
     congrats() { if (this.requireUser()) go('/awards?focus=congrats'); },
@@ -100,8 +99,7 @@ export default {
           </div>
           <div class="stepper">
             <span :class="{ on: phase === 'vote_initial' }">初选</span>
-            <span :class="{ on: phase === 'vote_match_8' }">8进4</span>
-            <span :class="{ on: phase === 'vote_match_4' }">4强德比</span>
+            <span :class="{ on: phase === 'vote_final' }">决赛</span>
           </div>
           <div class="stack">
             <button class="btn btn-primary block" :class="{ dim: !phaseOpen }" @click="vote">{{ phaseOpen ? '我要投票' : '投票已截止' }}</button>

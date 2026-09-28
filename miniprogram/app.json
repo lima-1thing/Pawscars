@@ -4,7 +4,7 @@
     "pages/auth/auth",
     "pages/nominate/nominate",
     "pages/vote-initial/vote-initial",
-    "pages/vote-match/vote-match",
+    "pages/vote-final/vote-final",
     "pages/awards/awards",
     "pages/my-nominations/my-nominations",
     "pages/admin/admin"

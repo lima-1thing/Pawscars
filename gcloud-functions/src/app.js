@@ -6,7 +6,7 @@
  *   POST /login/web           { inviteCode }            无需登录（网页测试版，需配置 WEB_INVITE_CODE）
  *   POST /bootstrap
  *   POST /bind                { ldap }
- *   POST /data/:query         initialState | matchState | myNominations | awards | congrats
+ *   POST /data/:query         initialState | finalState | myNominations | awards | congrats
  *   POST /nominate            { petName, photoUrl, categoryIds, pledged }
  *   POST /nominate/photo      { entryId, photoUrl }
  *   POST /vote                { voteType, ... }
@@ -28,7 +28,7 @@ const { runAdmin } = require('./handlers/admin');
 const { uploadPhoto } = require('./handlers/upload');
 const { advancePhase } = require('./handlers/cron');
 
-const READ_QUERIES = ['initialState', 'matchState', 'myNominations', 'awards', 'congrats'];
+const READ_QUERIES = ['initialState', 'finalState', 'myNominations', 'awards', 'congrats'];
 
 const ROUTES = {
   '/login': { handler: user.login, public: true },

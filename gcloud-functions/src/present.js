@@ -25,16 +25,6 @@ const publicEntry = (e) => e && ({
   ownerLdap: maskLdap(e.ownerLdap)
 });
 
-const publicMatch = (m) => ({
-  id: m.id,
-  categoryId: m.categoryId,
-  stage: m.stage,
-  stageIndex: m.stageIndex,
-  totalMatches: m.totalMatches,
-  entryA: publicEntry(m.entryA),
-  entryB: publicEntry(m.entryB)
-});
-
 const byOwnerLdap = (a, b) => (a.ownerLdap || '').toUpperCase().localeCompare((b.ownerLdap || '').toUpperCase());
 
-module.exports = { maskLdap, entrySnapshot, publicEntry, publicMatch, byOwnerLdap };
+module.exports = { maskLdap, entrySnapshot, publicEntry, byOwnerLdap };

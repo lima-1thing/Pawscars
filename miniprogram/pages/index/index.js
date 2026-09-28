@@ -2,9 +2,8 @@ const api = require('../../utils/api');
 const { formatCountdown } = require('../../utils/time');
 
 const VOTE_PHASES = {
-  vote_initial: { step: '阶段一', name: '初选打投' },
-  vote_match_8: { step: '阶段二', name: '8强淘汰赛' },
-  vote_match_4: { step: '阶段三', name: '4强巅峰德比' }
+  vote_initial: { step: '第一轮', name: '初选打投' },
+  vote_final: { step: '第二轮', name: '8强决赛' }
 };
 
 Page({
@@ -113,7 +112,7 @@ Page({
 
     const url = this.data.config.currentPhase === 'vote_initial'
       ? '/pages/vote-initial/vote-initial'
-      : '/pages/vote-match/vote-match';
+      : '/pages/vote-final/vote-final';
     wx.navigateTo({ url });
   },
 

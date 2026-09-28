@@ -5,8 +5,8 @@ import { formatDateTime } from '../shared';
 import NavBar from '../components/nav-bar';
 
 const PHASES = [
-  { key: 'nominate', label: '1. 报名期' }, { key: 'vote_initial', label: '2. 初选划屏' },
-  { key: 'vote_match_8', label: '3. 8进4淘汰赛' }, { key: 'vote_match_4', label: '4. 4强德比' }, { key: 'awards', label: '5. 颁奖盛典' }
+  { key: 'nominate', label: '1. 报名期' }, { key: 'vote_initial', label: '2. 初选（选出8强）' },
+  { key: 'vote_final', label: '3. 决赛（8强PK）' }, { key: 'awards', label: '4. 颁奖盛典' }
 ];
 const EDITABLE = ['title', 'hostName', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
 const pad = (n) => String(n).padStart(2, '0');
@@ -32,7 +32,7 @@ export default {
         this.config = s.config;
         this.categories = s.categories.map(c => ({ ...c, draft: c.name }));
         this.form = Object.fromEntries(EDITABLE.map(k => [k, s.config[k] || '']));
-        this.deadlines = Object.fromEntries(PHASES.slice(0, 4).map(p => [p.key, toLocalInput((s.config.phaseDeadlines || {})[p.key])]));
+        this.deadlines = Object.fromEntries(PHASES.slice(0, 3).map(p => [p.key, toLocalInput((s.config.phaseDeadlines || {})[p.key])]));
         this.stats = o.stats;
         this.entries = o.entries;
         this.congrats = o.congrats;
@@ -106,7 +106,7 @@ export default {
         <div class="card">
           <div class="card-title">⏰ 各阶段截止时间</div>
           <p class="muted small">过了截止时间将拒绝报名/投票，定时任务每 10 分钟检查一次并自动推进到下一阶段。</p>
-          <div v-for="p in phases.slice(0, 4)" :key="p.key" class="deadline-row">
+          <div v-for="p in phases.slice(0, 3)" :key="p.key" class="deadline-row">
             <span class="grow small"><b>{{ p.label }}</b></span>
             <input class="text-input dt" type="datetime-local" v-model="deadlines[p.key]" @change="saveDeadline(p.key)">
           </div>
@@ -115,9 +115,9 @@ export default {
           <div class="card-title">📊 赛事数据看板</div>
           <div class="metrics">
             <div><b>{{ stats.totalEntries }}</b><span>有效报名</span></div><div><b>{{ stats.totalVoters }}</b><span>投票人数</span></div>
-            <div><b>{{ stats.totalMatchVotes }}</b><span>PK 票数</span></div><div><b>{{ stats.totalCongrats }}</b><span>贺词</span></div>
+            <div><b>{{ stats.totalFinalVotes }}</b><span>决赛票数</span></div><div><b>{{ stats.totalCongrats }}</b><span>贺词</span></div>
           </div>
-          <div v-for="c in stats.perCategory" :key="c.id" class="stat-row"><b>{{ c.name }}</b><span>{{ c.entryCount }} 只参赛 · 初选 {{ c.initialVoterCount }} 人 · PK {{ c.pkVoterCount }} 人</span></div>
+          <div v-for="c in stats.perCategory" :key="c.id" class="stat-row"><b>{{ c.name }}</b><span>{{ c.entryCount }} 只参赛 · 初选 {{ c.initialVoterCount }} 人 · 决赛 {{ c.finalVoterCount }} 人</span></div>
         </div>
         <div class="card">
           <div class="card-title">📝 活动信息与文案</div>
