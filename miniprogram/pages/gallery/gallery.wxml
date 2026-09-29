@@ -1,0 +1,35 @@
+<view class="gallery-page">
+  <nav-bar title="已提名的毛孩" subtitle="共 {{total}} 条提名" showRules="{{false}}" />
+
+  <!-- 门类切换标签（显示各门类数量） -->
+  <view class="tabs-bar">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="id"
+      class="tab-pill {{currentId === item.id ? 'tab-active' : ''}}"
+      style="{{currentId === item.id ? 'background-color:' + item.bg + '; color:' + item.textColor : ''}}"
+      bindtap="onSwitchTab"
+      data-id="{{item.id}}"
+    >{{item.icon}} {{item.name}} · {{item.count}}</view>
+  </view>
+
+  <view wx:if="{{entries.length}}" class="grid">
+    <view wx:for="{{entries}}" wx:key="id" class="grid-cell" bindtap="onPreview" data-index="{{index}}">
+      <watermark-image
+        src="{{item.photoUrl}}"
+        petName="{{item.petName}}"
+        ownerLdap="{{item.ownerLdap}}"
+        customStyle="width: 214rpx; height: 214rpx;"
+      />
+    </view>
+  </view>
+  <view wx:elif="{{loaded}}" class="empty">
+    <text class="empty-icon">🐾</text>
+    <text class="empty-text">这个门类还没有毛孩报名</text>
+  </view>
+
+  <view class="hint">点击照片可放大查看 · 主人ID已打码</view>
+  <view wx:if="{{canNominate}}" class="bottom-bar">
+    <button class="paw-btn paw-btn-primary cta" bindtap="onGoNominate">我也要提名</button>
+  </view>
+</view>

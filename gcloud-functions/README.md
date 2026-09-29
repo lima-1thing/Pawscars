@@ -39,6 +39,7 @@ Cloud Scheduler ──每 10 分钟──▶ /cron/advance-phase：到截止时�
 | `/vote` | `{ voteType: 'initial', categoryId, selectedEntryIds }` 或 `{ voteType: 'final', categoryId, pairIndex, chosenSide }` | 初选每人每门类一次；决赛只能投分配给自己的对局，每场一票 |
 | `/congrats` | `{ content }` | 颁奖阶段发贺词，每人一条 |
 | `/data/initialState` | – | 初选候选（按主人ID排序、已打码）与本人已选 |
+| `/data/gallery` | – | 各门类已提名的毛孩（最新在前、已打码、不含票数），任何阶段可查看 |
 | `/data/finalState` | – | 本人在各门类的决赛对局（首次打开时随机生成并固定，**不含票数**）与已投记录 |
 | `/data/myNominations` | – | 本人报名与私密进度（含自己的票数） |
 | `/data/awards` | `{ categoryId }` | 颁奖结果（颁奖前仅管理员可见） |

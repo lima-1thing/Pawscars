@@ -77,6 +77,7 @@
       <button wx:else class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapMyNomination">
         <text class="btn-icon">📋</text> 查看我的提名
       </button>
+      <view class="gallery-link" bindtap="onTapGallery">👀 看看已提名的毛孩 ›</view>
     </block>
 
     <!-- 阶段B：投票期（初选 / 决赛） -->

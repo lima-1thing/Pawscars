@@ -310,3 +310,17 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 @media (min-width: 481px) {
   body { padding: 0; }
 }
+
+/* 已提名的毛孩 */
+.gallery-link { display: block; margin: 8px auto 0; }
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px 16px; }
+.gallery-tile { width: 100%; height: auto; aspect-ratio: 1; padding: 0; border: none; cursor: zoom-in; }
+.viewer { background: rgba(10, 8, 8, 0.92); padding: 16px; }
+.viewer-figure { margin: 0; max-width: min(92vw, 440px); text-align: center; color: #FFFFFF; }
+.viewer-figure img { width: 100%; border-radius: 16px; }
+.viewer-figure figcaption { margin-top: 10px; font-size: 14px; }
+.viewer-figure .muted { color: rgba(255, 255, 255, 0.6); }
+.viewer-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.18); color: #FFFFFF; font-size: 26px; line-height: 1; }
+.viewer-nav.left { left: 10px; }
+.viewer-nav.right { right: 10px; }
+.viewer-close { position: fixed; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.18); color: #FFFFFF; font-size: 22px; }

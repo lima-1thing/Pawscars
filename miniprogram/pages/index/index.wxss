@@ -372,3 +372,11 @@
   align-items: center;
   text-align: center;
 }
+
+.gallery-link {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #993C1D;
+  padding: 10px 0 2px;
+}

@@ -1,5 +1,6 @@
 import { api } from '../api';
 import { toast, dialog, withLoading } from '../ui';
+import { go } from '../router';
 import { validatePetName, formatDateTime, maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
 import ImageCropper from '../components/image-cropper';
@@ -95,6 +96,7 @@ export default {
         } else toast('提名成功！');
       } catch (e) { toast(e.message); } finally { this.submitting = false; }
     },
+    go,
     reset() {
       this.petName = ''; this.selected = {}; this.pledge = false; this.photoBlob = null; this.photoUrl = ''; this.originalUrl = '';
     }
@@ -103,6 +105,7 @@ export default {
     <div>
       <NavBar title="我要提名" subtitle="提交参赛毛孩" :show-rules="false" />
       <div class="page">
+        <div class="right"><button class="link-btn small" @click="go('/gallery')">👀 看看大家都提名了哪些毛孩 ›</button></div>
         <div v-if="!phaseOpen" class="card closed-note"><b>报名已截止</b><span class="muted">下方为你已提交的提名，现已锁定为只读。</span></div>
         <div v-else class="card">
           <div class="field-label">毛孩照片 <span class="muted small">（单张，可拖动缩放裁剪为正方形）</span></div>
@@ -128,7 +131,7 @@ export default {
         </div>
 
         <div v-if="entryCount" class="section">
-          <div class="section-title">已提名的毛孩 ({{ entryCount }})</div>
+          <div class="section-title">我提名的毛孩 ({{ entryCount }})</div>
           <div v-for="g in groups" :key="g.id" class="entry-group">
             <div class="group-title" :style="{ color: g.textColor }"><span class="dot" :style="{ background: g.bg }"></span>{{ g.icon }} {{ g.name }}</div>
             <div class="entry-row">

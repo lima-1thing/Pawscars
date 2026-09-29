@@ -270,6 +270,20 @@ const api = {
     })));
   },
 
+  /**
+   * 已提名的毛孩：各门类全部有效报名（最新在前、已打码），任何阶段可查看
+   * @returns {{ categories: [{ id, entries }] }}
+   */
+  async getGallery() {
+    if (mode === 'gcloud') return request('/data/gallery');
+    return mockCall(() => ({
+      categories: state.categories.map(cat => ({
+        id: cat.id,
+        entries: [...StorageService.getEntries(cat.id)].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      }))
+    }));
+  },
+
   // ---------------- 初选 ----------------
   /**
    * @returns {{ phaseOpen, categories: [{ id, needsVote, entries, mySelection }] }}

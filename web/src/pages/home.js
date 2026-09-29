@@ -85,6 +85,7 @@ export default {
           <p class="callout">{{ config.callToActionText }}</p>
           <button v-if="phaseOpen" class="btn btn-primary block" @click="nominate">我要提名</button>
           <button v-else class="btn btn-primary block" @click="my">📋 查看我的提名</button>
+          <button class="link-btn gallery-link" @click="go('/gallery')">👀 看看已提名的毛孩 ›</button>
         </template>
 
         <template v-else-if="phaseKind === 'vote'">

@@ -26,6 +26,16 @@ async function initialState(ctx) {
   return { categories, phaseOpen: isPhaseOpen(ctx.activity, 'vote_initial') };
 }
 
+// 已提名的毛孩：各门类全部有效报名（最新在前，已打码，不含票数），任何阶段都可查看
+async function gallery(ctx) {
+  const categories = [];
+  for (const cat of ctx.activity.categories) {
+    const entries = (await activeEntries(ctx.db, cat.id)).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    categories.push({ id: cat.id, entries: entries.map(publicEntry) });
+  }
+  return { categories };
+}
+
 // 决赛页：本人在各门类的对局（首次进入时随机生成并固定，不含任何票数）
 async function finalState(ctx) {
   const open = isPhaseOpen(ctx.activity, 'vote_final');
@@ -114,4 +124,4 @@ async function congrats(ctx) {
   };
 }
 
-module.exports = { initialState, finalState, myNominations, awards, congrats };
+module.exports = { initialState, gallery, finalState, myNominations, awards, congrats };

@@ -131,6 +131,9 @@ const on = (phone, fn) => { current = phone; return fn(phone.api); };
   for (const [i, ldap] of ['CAT', 'DAN', 'EVE', 'FAY'].entries()) {
     await db.set('Entry', `x${i}`, { categoryId: 'food', petName: `宠物${i}`, ownerLdap: ldap, ownerOpenid: `o_x${i}`, photoUrl: PHOTO_BASE + 'p', status: 'active', initialVotes: 0, createdAt: i });
   }
+  const gallery = (await on(bob, api => api.getGallery())).categories.find(c => c.id === 'food');
+  assert.strictEqual(gallery.entries.length, 5); // 其他用户在报名期也能看到全部已提名毛孩
+  assert.ok(gallery.entries.every(e => e.ownerLdap.includes('*') && e.ownerOpenid === undefined));
   let mine = await on(alice, api => api.getMyNominations());
   assert.strictEqual(mine[0].ownerLdap, 'AL***');
   assert.strictEqual(mine[0].progress.title, '报名成功');

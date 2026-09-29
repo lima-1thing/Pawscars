@@ -129,6 +129,8 @@ export const api = {
     await request('/nominate/photo', { entryId, photoUrl });
   },
 
+  /** 已提名的毛孩：各门类全部有效报名（最新在前、已打码），任何阶段可查看 */
+  getGallery: () => request('/data/gallery'),
   async getMyNominations() { return (await request('/data/myNominations')).entries; },
   getInitialState: () => request('/data/initialState'),
   submitInitialVote: (categoryId, selectedEntryIds) => request('/vote', { voteType: 'initial', categoryId, selectedEntryIds }),

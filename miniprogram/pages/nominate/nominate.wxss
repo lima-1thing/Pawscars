@@ -296,3 +296,11 @@
   font-weight: 600;
   color: #993C1D;
 }
+
+.gallery-link {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: #993C1D;
+  margin-bottom: 8px;
+}

@@ -146,6 +146,10 @@ Page({
     this.setData({ cropperVisible: false });
   },
 
+  onTapGallery() {
+    wx.navigateTo({ url: '/pages/gallery/gallery' });
+  },
+
   onInputPetName(e) {
     this.setData({ petName: e.detail.value }, () => this.checkFormReady());
   },

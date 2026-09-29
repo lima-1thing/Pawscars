@@ -9,6 +9,7 @@ import InvitePage from './pages/invite';
 import HomePage from './pages/home';
 import BindPage from './pages/bind';
 import NominatePage from './pages/nominate';
+import GalleryPage from './pages/gallery';
 import VoteInitialPage from './pages/vote-initial';
 import VoteFinalPage from './pages/vote-final';
 import AwardsPage from './pages/awards';
@@ -19,6 +20,7 @@ const PAGES = {
   '/': HomePage,
   '/bind': BindPage,
   '/nominate': NominatePage,
+  '/gallery': GalleryPage,
   '/vote-initial': VoteInitialPage,
   '/vote-final': VoteFinalPage,
   '/awards': AwardsPage,

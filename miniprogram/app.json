@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/auth/auth",
     "pages/nominate/nominate",
+    "pages/gallery/gallery",
     "pages/vote-initial/vote-initial",
     "pages/vote-final/vote-final",
     "pages/awards/awards",

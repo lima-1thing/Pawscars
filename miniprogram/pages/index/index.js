@@ -134,6 +134,10 @@ Page({
     }
   },
 
+  onTapGallery() {
+    wx.navigateTo({ url: '/pages/gallery/gallery' });
+  },
+
   onTapMyNomination() {
     if (!getApp().checkUserBinding()) return;
     wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });

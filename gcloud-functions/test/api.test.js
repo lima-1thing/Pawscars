@@ -187,6 +187,11 @@ async function login(openid) {
   assert.strictEqual(mine[0].ownerOpenid, undefined);
   assert.strictEqual(mine[0].progress.title, '报名成功');
 
+  const gal = (await ok(call('/data/gallery', { token: u2 }))).categories.find(c => c.id === 'food');
+  assert.strictEqual(gal.entries.length, 5); // 报名期即可查看全部已提名毛孩
+  assert.deepStrictEqual(gal.entries.map(e => e.id), [myEntryId, 'x3', 'x2', 'x1', 'x0']); // 最新提名在前
+  assert.ok(gal.entries.every(e => e.ownerLdap.includes('*') && e.ownerOpenid === undefined && e.initialVotes === undefined));
+
   console.log('Testing admin config updates...');
   await fails(call('/admin/updateConfig', { token: admin, body: { hostAvatar: 'https://evil.example/a.png' } }), /上传主持人头像/);
   await ok(call('/admin/updateConfig', { token: admin, body: { hostAvatar: hostUrl, title: '新标题', adminOpenids: ['o_u1'] } }));

@@ -47,6 +47,8 @@ require.cache[require.resolve('../miniprogram/env')] = {
 
   const nom = await api.submitNominations({ petName: '新宠', photoPath: 'tmp.jpg', categoryIds: ['food'] });
   assert.strictEqual(nom.addedEntries.length, 1);
+  const gal = (await api.getGallery()).categories.find(c => c.id === 'food');
+  assert.strictEqual(gal.entries[0].petName, '新宠'); // 最新提名在前
   const mine = await api.getMyNominations();
   assert.ok(mine.every(e => e.progress && e.progress.title));
 
