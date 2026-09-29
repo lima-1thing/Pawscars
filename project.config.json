@@ -1,6 +1,5 @@
 {
   "miniprogramRoot": "miniprogram/",
-  "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
     "urlCheck": false,
     "es6": true,
@@ -37,7 +36,6 @@
   "appid": "wxf02b8c1f2c026a7c",
   "projectname": "Pawscars",
   "libVersion": "3.3.4",
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {},
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},

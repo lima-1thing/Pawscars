@@ -174,6 +174,21 @@
   z-index: 99;
 }
 
+.done-bar {
+  width: 100%;
+  max-width: 335px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.done-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #085041;
+}
+
 .submit-vote-btn {
   width: 100%;
   max-width: 335px;

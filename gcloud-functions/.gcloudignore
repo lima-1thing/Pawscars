@@ -1,0 +1,6 @@
+# 部署时不上传的文件
+.gcloudignore
+.git
+node_modules/
+test/
+README.md

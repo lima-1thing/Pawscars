@@ -17,6 +17,8 @@ Page({
     votePhaseInfo: null,
     awardsYear: new Date().getFullYear(),
     hostAvatar: '',
+    userLdap: '',
+    isAdmin: false,
     canAccessAdmin: false,
     rulesModalVisible: false,
     clickCount: 0
@@ -52,7 +54,7 @@ Page({
   },
 
   loadData() {
-    const { config, categories } = api.getState();
+    const { config, categories, user, isAdmin } = api.getState();
     const phase = config.currentPhase;
     let phaseKind = 'awards';
     if (phase === 'nominate') phaseKind = 'nominate';
@@ -64,6 +66,8 @@ Page({
       phaseKind,
       votePhaseInfo: VOTE_PHASES[phase] || null,
       hostAvatar: config.hostAvatar || '',
+      userLdap: user ? user.ldap : '',
+      isAdmin: !!isAdmin,
       canAccessAdmin: getApp().canAccessAdmin()
     });
     this.refreshCountdown();
@@ -120,6 +124,15 @@ Page({
   onTapSendCongrats() {
     if (!getApp().checkUserBinding()) return;
     wx.navigateTo({ url: '/pages/awards/awards?focus=congrats' });
+  },
+
+  // 身份标签：已绑定查看我的提名，未绑定去绑定活动ID
+  onTapUserChip() {
+    if (this.data.userLdap) {
+      wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });
+    } else {
+      wx.navigateTo({ url: '/pages/auth/auth' });
+    }
   },
 
   onTapMyNomination() {

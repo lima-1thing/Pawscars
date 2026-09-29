@@ -224,7 +224,7 @@ Page({
     });
   },
 
-  // ---------------- 开发调试工具（仅开发版/体验版 + 本地模式） ----------------
+  // ---------------- 开发调试工具（仅开发版 + 本地模式） ----------------
   async onSwitchId(e) {
     if (!this.data.isDevBuild || !this.data.isMockMode) return;
     const { id } = e.currentTarget.dataset;

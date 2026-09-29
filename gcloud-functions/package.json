@@ -1,0 +1,21 @@
+{
+  "name": "pawscars-gcloud-functions",
+  "version": "1.0.0",
+  "description": "Pawscars backend on Google Cloud Functions (2nd gen) + Firestore + Cloud Storage",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "functions-framework --target=api",
+    "test": "node test/api.test.js",
+    "test:emulator": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8792 node test/api.test.js"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.2.0",
+    "@google-cloud/functions-framework": "^5.0.5",
+    "@google-cloud/storage": "^8.2.0",
+    "busboy": "^1.6.0"
+  }
+}

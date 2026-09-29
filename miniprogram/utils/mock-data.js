@@ -78,7 +78,7 @@ Pawscars 模拟奥斯卡分类评选，按三大特色门类进行，每阶段 7
     vote_match_4: DAY_START + 28 * DAY_MS,
     awards: 0
   },
-  // 管理员白名单：只填写微信 openid（在云开发控制台或云函数日志中获取），
+  // 管理员白名单：只填写微信 openid（绑定活动ID后可在 Firestore 的 UserBinding 记录中查到），
   // 不要填写活动ID——活动ID由用户自行输入，任何人都可以冒用
   adminOpenids: []
 };
