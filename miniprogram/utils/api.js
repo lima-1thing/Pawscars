@@ -9,8 +9,6 @@ const { DEFAULT_CATEGORIES, DEFAULT_CONFIG } = require('./mock-data');
 const { isPhaseOpen } = require('./bracket');
 const { BACKEND, API_BASE_URL } = require('../env');
 
-const STAGE_KNOCKOUT = '8进4';
-const STAGE_DERBY = '4强德比';
 const TOKEN_KEY = 'pawscars_api_token';
 const REQUEST_TIMEOUT = 15000;
 
@@ -190,8 +188,6 @@ const mockCall = (fn) => new Promise((resolve, reject) => {
 });
 
 const api = {
-  STAGE_KNOCKOUT,
-  STAGE_DERBY,
 
   async init() {
     if (BACKEND === 'gcloud') {
@@ -274,6 +270,20 @@ const api = {
     })));
   },
 
+  /**
+   * 已提名的毛孩：各门类全部有效报名（最新在前、已打码），任何阶段可查看
+   * @returns {{ categories: [{ id, entries }] }}
+   */
+  async getGallery() {
+    if (mode === 'gcloud') return request('/data/gallery');
+    return mockCall(() => ({
+      categories: state.categories.map(cat => ({
+        id: cat.id,
+        entries: [...StorageService.getEntries(cat.id)].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      }))
+    }));
+  },
+
   // ---------------- 初选 ----------------
   /**
    * @returns {{ phaseOpen, categories: [{ id, needsVote, entries, mySelection }] }}
@@ -303,33 +313,29 @@ const api = {
     return mockCall(() => StorageService.submitInitialVote(categoryId, selectedEntryIds));
   },
 
-  // ---------------- PK 对局 ----------------
+  // ---------------- 决赛（8 强两两 PK） ----------------
   /**
-   * @returns {{ phaseOpen, categories: [{ id, generated, matches, myVotes }] }}
+   * 本人在各门类的决赛对局（首次进入时由后台随机生成并固定）
+   * @returns {{ phaseOpen, categories: [{ id, generated, pairs: [{ index, entryA, entryB, myVote }] }] }}
    */
-  async getMatchState(stage) {
-    if (mode === 'gcloud') return request('/data/matchState', { stage });
-    const phase = stage === STAGE_DERBY ? 'vote_match_4' : 'vote_match_8';
+  async getFinalState() {
+    if (mode === 'gcloud') return request('/data/finalState');
     return mockCall(() => ({
-      phaseOpen: StorageService.isPhaseOpen(phase),
-      categories: state.categories.map(cat => {
-        const matches = StorageService.getVotableMatches(cat.id, stage);
-        const myVotes = {};
-        matches.forEach(m => {
-          const v = StorageService.getUserMatchVote(m.id);
-          if (v) myVotes[m.id] = v.chosenSide;
-        });
-        return { id: cat.id, generated: StorageService.getQualifiers(cat.id) !== null, matches, myVotes };
-      })
+      phaseOpen: StorageService.isPhaseOpen('vote_final'),
+      categories: state.categories.map(cat => ({
+        id: cat.id,
+        generated: StorageService.getQualifiers(cat.id) !== null,
+        pairs: StorageService.getMyFinalPairs(cat.id)
+      }))
     }));
   },
 
-  async submitMatchVote(matchId, chosenSide) {
+  async submitFinalVote(categoryId, pairIndex, chosenSide) {
     if (mode === 'gcloud') {
-      await request('/vote', { voteType: 'match', matchId, chosenSide });
+      await request('/vote', { voteType: 'final', categoryId, pairIndex, chosenSide });
       return;
     }
-    return mockCall(() => StorageService.submitMatchVote(matchId, chosenSide));
+    return mockCall(() => StorageService.submitFinalVote(categoryId, pairIndex, chosenSide));
   },
 
   // ---------------- 颁奖 & 贺词 ----------------

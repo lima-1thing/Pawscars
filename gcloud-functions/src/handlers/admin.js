@@ -56,24 +56,21 @@ const actions = {
     const entries = await ctx.db.query(COL.ENTRY, [['status', '==', 'active']]);
     const congrats = await ctx.db.query(COL.CONGRATS, [['status', '==', 'active']]);
     const initial = await ctx.db.query(COL.INITIAL, []);
-    const votes = await ctx.db.query(COL.VOTE, []);
-    const matches = await ctx.db.query(COL.MATCH, []);
-    const matchCategory = {};
-    matches.forEach(m => { matchCategory[m.id] = m.categoryId; });
+    const finalVotes = await ctx.db.query(COL.FINAL_VOTE, []);
 
     const perCategory = ctx.activity.categories.map(cat => ({
       id: cat.id,
       name: cat.name,
       entryCount: entries.filter(e => e.categoryId === cat.id).length,
       initialVoterCount: initial.filter(s => s.categoryId === cat.id).length,
-      pkVoterCount: new Set(votes.filter(v => matchCategory[v.matchId] === cat.id).map(v => v.openid)).size
+      finalVoterCount: new Set(finalVotes.filter(v => v.categoryId === cat.id).map(v => v.openid)).size
     }));
 
     return {
       stats: {
         totalEntries: entries.length,
-        totalVoters: new Set([...initial.map(s => s.openid), ...votes.map(v => v.openid)]).size,
-        totalMatchVotes: votes.length,
+        totalVoters: new Set([...initial.map(s => s.openid), ...finalVotes.map(v => v.openid)]).size,
+        totalFinalVotes: finalVotes.length,
         totalCongrats: congrats.length,
         perCategory
       },

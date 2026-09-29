@@ -4,7 +4,7 @@
 
 /**
  * 校验活动ID (LDAP)
- * 规则：仅允许英文字母 (A-Z, a-z)，不能包含数字、空格或任何特殊字符
+ * 规则：英文字母开头，只能包含英文字母和数字（如 LIMA0001），2-20 位；不能有空格或特殊符号
  * @param {string} id 
  * @returns {{ valid: boolean, message: string }}
  */
@@ -13,11 +13,11 @@ function validateLdap(id) {
     return { valid: false, message: '请输入你的活动ID (LDAP)' };
   }
   const trimmed = id.trim();
-  if (trimmed.length < 2) {
-    return { valid: false, message: '活动ID长度至少为2位字母' };
+  if (trimmed.length < 2 || trimmed.length > 20) {
+    return { valid: false, message: '活动ID需为 2-20 位' };
   }
-  if (!/^[A-Za-z]+$/.test(trimmed)) {
-    return { valid: false, message: '活动ID仅支持英文字母，不能包含数字或特殊符号' };
+  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(trimmed)) {
+    return { valid: false, message: '活动ID需以英文字母开头，只能包含字母和数字' };
   }
   return { valid: true, message: '' };
 }

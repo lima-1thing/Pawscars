@@ -12,7 +12,7 @@ const RANKS = [
 const formatEntry = (e) => (e ? {
   ...e,
   maskedLdap: maskLdap(e.ownerLdap),
-  scoreText: e.totalVotes !== undefined ? `${e.wins || 0} 胜 · ${e.totalVotes || 0} 票` : ''
+  scoreText: e.games ? `${e.wins} 胜 / ${e.games} 场 · 胜率 ${Math.round(e.winRate * 100)}%` : (e.games === 0 ? '暂无对局' : '')
 } : null);
 
 Page({

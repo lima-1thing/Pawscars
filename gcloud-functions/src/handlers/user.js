@@ -2,7 +2,8 @@
  * 登录、启动数据与活动ID绑定
  */
 const { COL, publicConfig, isAdmin } = require('../activity');
-const { signToken } = require('../token');
+const crypto = require('crypto');
+const { signToken, safeEqual } = require('../token');
 const { UserError } = require('../errors');
 
 async function findBinding(db, openid) {
@@ -39,15 +40,29 @@ async function login(ctx) {
 }
 
 /**
+ * POST /login/web { inviteCode } → { token, ...bootstrap }
+ * 网页测试版登录：凭邀请码为该浏览器生成一个独立身份（web_ 开头，与微信 openid 互不相通）
+ */
+async function loginWeb(ctx) {
+  const code = ctx.config.webInviteCode;
+  if (!code) throw new UserError('网页版未开放', 403);
+  if (!safeEqual(String(ctx.body.inviteCode || '').trim(), code)) throw new UserError('邀请码不正确', 401);
+  const openid = `web_${crypto.randomBytes(12).toString('hex')}`;
+  const token = signToken(openid, ctx.config.tokenSecret, ctx.config.tokenTtlHours);
+  return { token, ...(await bootstrap({ ...ctx, openid })) };
+}
+
+/**
  * POST /bind { ldap }
- * 规则：仅字母、至少 2 位；一个微信只能绑定一个ID；ID 全局唯一（以ID作文档 ID，由数据库保证）
+ * 规则：英文字母开头、只含字母和数字、2-20 位（与前端 validateLdap 一致）；
+ *       一个微信只能绑定一个ID；ID 全局唯一（以ID作文档 ID，由数据库保证）
  */
 async function bindUser(ctx) {
   const { ldap } = ctx.body;
   if (!ldap || typeof ldap !== 'string') throw new UserError('请输入活动ID');
   const clean = ldap.trim().toUpperCase();
-  if (clean.length < 2) throw new UserError('活动ID长度至少为2位字母');
-  if (!/^[A-Z]+$/.test(clean)) throw new UserError('活动ID仅支持英文字母，不能包含数字或特殊符号');
+  if (clean.length < 2 || clean.length > 20) throw new UserError('活动ID需为 2-20 位');
+  if (!/^[A-Z][A-Z0-9]*$/.test(clean)) throw new UserError('活动ID需以英文字母开头，只能包含字母和数字');
 
   const mine = await findBinding(ctx.db, ctx.openid);
   if (mine) {
@@ -62,4 +77,4 @@ async function bindUser(ctx) {
   return { user: { ldap: clean } };
 }
 
-module.exports = { login, bootstrap, bindUser, requireBinding, findBinding };
+module.exports = { login, loginWeb, bootstrap, bindUser, requireBinding, findBinding };

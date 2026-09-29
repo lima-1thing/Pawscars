@@ -47,6 +47,8 @@ require.cache[require.resolve('../miniprogram/env')] = {
 
   const nom = await api.submitNominations({ petName: '新宠', photoPath: 'tmp.jpg', categoryIds: ['food'] });
   assert.strictEqual(nom.addedEntries.length, 1);
+  const gal = (await api.getGallery()).categories.find(c => c.id === 'food');
+  assert.strictEqual(gal.entries[0].petName, '新宠'); // 最新提名在前
   const mine = await api.getMyNominations();
   assert.ok(mine.every(e => e.progress && e.progress.title));
 
@@ -63,13 +65,13 @@ require.cache[require.resolve('../miniprogram/env')] = {
     assert.deepStrictEqual((await api.getInitialState()).categories.find(c => c.id === 'food').mySelection, [food.entries[0].id]);
   }
 
-  await api.admin('setPhase', { targetPhase: 'vote_match_8' });
-  const pk = await api.getMatchState(api.STAGE_KNOCKOUT);
-  const foodPk = pk.categories.find(c => c.id === 'food');
-  assert.strictEqual(foodPk.generated, true);
-  await api.submitMatchVote(foodPk.matches[0].id, 'A');
-  assert.strictEqual((await api.getMatchState(api.STAGE_KNOCKOUT)).categories.find(c => c.id === 'food').myVotes[foodPk.matches[0].id], 'A');
-  await assert.rejects(api.submitMatchVote(foodPk.matches[0].id, 'B'), /已投过/);
+  await api.admin('setPhase', { targetPhase: 'vote_final' });
+  const fin = (await api.getFinalState()).categories.find(c => c.id === 'food');
+  assert.strictEqual(fin.generated, true);
+  assert.ok(fin.pairs.length > 0 && fin.pairs.every(p => p.myVote === null));
+  await api.submitFinalVote('food', fin.pairs[0].index, 'A');
+  assert.strictEqual((await api.getFinalState()).categories.find(c => c.id === 'food').pairs[0].myVote, 'A');
+  await assert.rejects(api.submitFinalVote('food', fin.pairs[0].index, 'B'), /已投过/);
 
   await api.admin('setPhase', { targetPhase: 'awards' });
   const awards = await api.getAwards('food');

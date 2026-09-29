@@ -4,7 +4,7 @@
     <view class="cat-dog-row">
       <!-- 左：猫头装饰圈 (52px, powder blue背景) -->
       <view class="avatar-circle">
-        <text class="pet-deco-emoji">🐱</text>
+        <image class="pet-deco-img" src="/images/banner-cat.jpg" mode="aspectFill" />
       </view>
 
       <!-- 中：活动主标题 -->
@@ -15,7 +15,7 @@
 
       <!-- 右：狗头装饰圈 (52px, powder blue背景) -->
       <view class="avatar-circle">
-        <text class="pet-deco-emoji">🐶</text>
+        <image class="pet-deco-img" src="/images/banner-dog.jpg" mode="aspectFill" />
       </view>
     </view>
 
@@ -77,9 +77,10 @@
       <button wx:else class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapMyNomination">
         <text class="btn-icon">📋</text> 查看我的提名
       </button>
+      <view class="gallery-link" bindtap="onTapGallery">👀 看看已提名的毛孩 ›</view>
     </block>
 
-    <!-- 阶段B：投票期（初选 / 8进4 / 4强德比） -->
+    <!-- 阶段B：投票期（初选 / 决赛） -->
     <block wx:elif="{{phaseKind === 'vote'}}">
       <view class="speech-bubble">
         <view class="status-stage-tag">投票进行中 · {{votePhaseInfo.step}}</view>
@@ -93,8 +94,7 @@
 
       <view class="stage-stepper-row">
         <view class="step-pill {{config.currentPhase === 'vote_initial' ? 'pill-active' : ''}}">初选</view>
-        <view class="step-pill {{config.currentPhase === 'vote_match_8' ? 'pill-active' : ''}}">8进4</view>
-        <view class="step-pill {{config.currentPhase === 'vote_match_4' ? 'pill-active' : ''}}">4强德比</view>
+        <view class="step-pill {{config.currentPhase === 'vote_final' ? 'pill-active' : ''}}">决赛</view>
       </view>
 
       <view class="voting-action-group">

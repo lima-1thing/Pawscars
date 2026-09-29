@@ -3,9 +3,10 @@
  * 所有接口返回 { success: true, data } 或 { success: false, message }
  *
  *   POST /login               { code }                  无需登录
+ *   POST /login/web           { inviteCode }            无需登录（网页测试版，需配置 WEB_INVITE_CODE）
  *   POST /bootstrap
  *   POST /bind                { ldap }
- *   POST /data/:query         initialState | matchState | myNominations | awards | congrats
+ *   POST /data/:query         initialState | gallery | finalState | myNominations | awards | congrats
  *   POST /nominate            { petName, photoUrl, categoryIds, pledged }
  *   POST /nominate/photo      { entryId, photoUrl }
  *   POST /vote                { voteType, ... }
@@ -27,10 +28,11 @@ const { runAdmin } = require('./handlers/admin');
 const { uploadPhoto } = require('./handlers/upload');
 const { advancePhase } = require('./handlers/cron');
 
-const READ_QUERIES = ['initialState', 'matchState', 'myNominations', 'awards', 'congrats'];
+const READ_QUERIES = ['initialState', 'gallery', 'finalState', 'myNominations', 'awards', 'congrats'];
 
 const ROUTES = {
   '/login': { handler: user.login, public: true },
+  '/login/web': { handler: user.loginWeb, public: true },
   '/bootstrap': { handler: user.bootstrap },
   '/bind': { handler: user.bindUser },
   '/nominate': { handler: nominations.create },
@@ -61,6 +63,17 @@ function bearerToken(req) {
 function createApp(deps) {
   return async function api(req, res) {
     const send = (status, body) => res.status(status).json(body);
+
+    // 网页测试版跨域：只对 WEB_ORIGINS 中登记的来源放行
+    const origin = req.get('origin');
+    if (origin && deps.config.webOrigins && deps.config.webOrigins.includes(origin)) {
+      res.set('Access-Control-Allow-Origin', origin);
+      res.set('Vary', 'Origin');
+      res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.set('Access-Control-Max-Age', '3600');
+      if (req.method === 'OPTIONS') return res.status(204).send('');
+    }
 
     if (req.method !== 'POST') return send(405, { success: false, message: 'Method Not Allowed' });
     const route = resolveRoute(req.path);

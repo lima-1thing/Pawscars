@@ -17,7 +17,9 @@ const CONFIG = {
   tokenSecret: 'token-secret',
   photoBucket: 'pawscars-photos',
   cronSecret: 'cron-secret',
-  tokenTtlHours: 1
+  tokenTtlHours: 1,
+  webInviteCode: 'PAW-TEST-2026',
+  webOrigins: ['https://lima-1thing.github.io']
 };
 const PHOTO_BASE = `https://storage.googleapis.com/${CONFIG.photoBucket}/`;
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), Buffer.alloc(32)]);
@@ -67,12 +69,15 @@ async function call(pathname, { body = {}, token, headers = {}, method = 'POST',
   };
   let status = 200;
   let json = null;
+  const resHeaders = {};
   const res = {
     status(s) { status = s; return res; },
-    json(b) { json = b; return res; }
+    json(b) { json = b; return res; },
+    send() { return res; },
+    set(k, v) { resHeaders[k.toLowerCase()] = v; return res; }
   };
   await app(req, res);
-  return { status, ...json };
+  return { status, headers: resHeaders, ...json };
 }
 
 const ok = async (promise) => {
@@ -122,13 +127,36 @@ async function login(openid) {
   assert.strictEqual(boot.categories.length, 3);
   assert.strictEqual((await ok(call('/bootstrap', { token: admin }))).isAdmin, true);
 
+  console.log('Testing web login and CORS...');
+  await fails(call('/login/web', { body: { inviteCode: 'wrong' } }), /邀请码不正确/, 401);
+  const web1 = (await ok(call('/login/web', { body: { inviteCode: 'PAW-TEST-2026' } }))).token;
+  const web2 = (await ok(call('/login/web', { body: { inviteCode: ' PAW-TEST-2026 ' } }))).token;
+  assert.notStrictEqual(web1, web2); // 每次登录都是新的网页身份
+  assert.strictEqual((await ok(call('/bootstrap', { token: web1 }))).isAdmin, false);
+  const pre = await call('/login/web', { method: 'OPTIONS', headers: { origin: 'https://lima-1thing.github.io' } });
+  assert.strictEqual(pre.status, 204);
+  assert.strictEqual(pre.headers['access-control-allow-origin'], 'https://lima-1thing.github.io');
+  assert.match(pre.headers['access-control-allow-headers'], /Authorization/);
+  const evil = await call('/login/web', { method: 'OPTIONS', headers: { origin: 'https://evil.example' } });
+  assert.strictEqual(evil.headers['access-control-allow-origin'], undefined);
+  assert.strictEqual(evil.status, 405);
+  const noWeb = createApp({ config: { ...CONFIG, webInviteCode: '' }, db, storage, wx });
+  let noWebStatus = 0;
+  let noWebBody = null;
+  const noWebRes = { status(x) { noWebStatus = x; return noWebRes; }, json(b) { noWebBody = b; return noWebRes; }, set() { return noWebRes; }, send() { return noWebRes; } };
+  await noWeb({ method: 'POST', path: '/login/web', body: { inviteCode: '' }, headers: {}, get: () => undefined }, noWebRes);
+  assert.strictEqual(noWebStatus, 403);
+  assert.match(noWebBody.message, /未开放/);
+
   console.log('Testing ID binding...');
-  await fails(call('/bind', { token: u1, body: { ldap: 'LIMA0001' } }), /仅支持英文字母/);
+  await fails(call('/bind', { token: u1, body: { ldap: 'LIMA-01' } }), /字母开头/);
+  await fails(call('/bind', { token: u1, body: { ldap: '0001' } }), /字母开头/);
+  await fails(call('/bind', { token: u1, body: { ldap: 'A'.repeat(21) } }), /2-20/);
   assert.deepStrictEqual((await ok(call('/bind', { token: u1, body: { ldap: 'alice' } }))).user, { ldap: 'ALICE' });
   await fails(call('/bind', { token: u2, body: { ldap: 'ALICE' } }), /已被使用/);
   await fails(call('/bind', { token: u1, body: { ldap: 'BOB' } }), /你已绑定/);
   await ok(call('/bind', { token: u2, body: { ldap: 'zed' } }));
-  await ok(call('/bind', { token: admin, body: { ldap: 'admin' } }));
+  assert.deepStrictEqual((await ok(call('/bind', { token: admin, body: { ldap: 'lima0001' } }))).user, { ldap: 'LIMA0001' }); // 允许数字
 
   console.log('Testing photo upload...');
   const u3 = await login('o_u3');
@@ -159,6 +187,11 @@ async function login(openid) {
   assert.strictEqual(mine[0].ownerOpenid, undefined);
   assert.strictEqual(mine[0].progress.title, '报名成功');
 
+  const gal = (await ok(call('/data/gallery', { token: u2 }))).categories.find(c => c.id === 'food');
+  assert.strictEqual(gal.entries.length, 5); // 报名期即可查看全部已提名毛孩
+  assert.deepStrictEqual(gal.entries.map(e => e.id), [myEntryId, 'x3', 'x2', 'x1', 'x0']); // 最新提名在前
+  assert.ok(gal.entries.every(e => e.ownerLdap.includes('*') && e.ownerOpenid === undefined && e.initialVotes === undefined));
+
   console.log('Testing admin config updates...');
   await fails(call('/admin/updateConfig', { token: admin, body: { hostAvatar: 'https://evil.example/a.png' } }), /上传主持人头像/);
   await ok(call('/admin/updateConfig', { token: admin, body: { hostAvatar: hostUrl, title: '新标题', adminOpenids: ['o_u1'] } }));
@@ -180,33 +213,48 @@ async function login(openid) {
   await fails(call('/vote', { token: u2, body: { voteType: 'initial', categoryId: 'food', selectedEntryIds: [myEntryId] } }), /已锁定/);
   assert.strictEqual((await get('Entry', myEntryId)).initialVotes, 1);
 
-  console.log('Testing knockout stage...');
-  await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_match_8' } }));
+  console.log('Testing final round (per-voter random pairs)...');
+  await fails(call('/vote', { token: u2, body: { voteType: 'final', categoryId: 'food', pairIndex: 0, chosenSide: 'A' } }), /已截止/);
+  await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_final' } }));
   assert.strictEqual((await ok(call('/data/awards', { token: u2, body: { categoryId: 'food' } }))).result, null);
-  const pk = (await ok(call('/data/matchState', { token: u2, body: { stage: '8进4' } }))).categories.find(c => c.id === 'food');
-  assert.strictEqual(pk.generated, true);
-  assert.strictEqual(pk.matches.length, 2); // 5 只：2 场对决 + 1 个轮空（不下发）
-  assert.ok(pk.matches.every(m => m.votesA === undefined && m.entryA.ownerOpenid === undefined));
-  const match = pk.matches.find(m => m.entryA.id === myEntryId || m.entryB.id === myEntryId);
-  const mySide = match.entryA.id === myEntryId ? 'A' : 'B';
-  await fails(call('/vote', { token: u2, body: { voteType: 'match', matchId: match.id, chosenSide: 'C' } }), /参数无效/);
-  await ok(call('/vote', { token: u2, body: { voteType: 'match', matchId: match.id, chosenSide: mySide } }));
-  await fails(call('/vote', { token: u2, body: { voteType: 'match', matchId: match.id, chosenSide: mySide } }), /已投过/);
-  const pkAfter = (await ok(call('/data/matchState', { token: u2, body: { stage: '8进4' } }))).categories.find(c => c.id === 'food');
-  assert.strictEqual(pkAfter.myVotes[match.id], mySide);
-  mine = (await ok(call('/data/myNominations', { token: u1 }))).entries;
-  assert.match(mine[0].progress.detail, /我方 1 票/);
-  // 重复推进不会清票
-  await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_match_8' } }));
-  assert.strictEqual((await all('Match')).filter(m => m.stage === '8进4').reduce((s, m) => s + (m.votesA || 0) + (m.votesB || 0), 0), 1);
+  let fin = (await ok(call('/data/finalState', { token: u2 }))).categories.find(c => c.id === 'food');
+  assert.strictEqual(fin.generated, true);
+  assert.strictEqual(fin.pairs.length, 5); // 5 只决赛选手：5 场，每只出场 2 次
+  const appearances = {};
+  fin.pairs.forEach(p => { [p.entryA.id, p.entryB.id].forEach(id => { appearances[id] = (appearances[id] || 0) + 1; }); });
+  assert.deepStrictEqual(Object.values(appearances), [2, 2, 2, 2, 2]);
+  assert.ok(fin.pairs.every(p => p.entryA.ownerLdap.includes('*') && p.entryA.ownerOpenid === undefined && p.myVote === null));
+  // 对局固定：再次打开不会重新生成
+  const again = (await ok(call('/data/finalState', { token: u2 }))).categories.find(c => c.id === 'food');
+  assert.deepStrictEqual(again.pairs.map(p => [p.entryA.id, p.entryB.id]), fin.pairs.map(p => [p.entryA.id, p.entryB.id]));
 
-  console.log('Testing derby, awards and congratulations...');
-  await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_match_4' } }));
-  assert.strictEqual((await all('Match')).filter(m => m.stage === '4强德比').length, 3); // 3 强循环赛
+  await fails(call('/vote', { token: u2, body: { voteType: 'final', categoryId: 'food', pairIndex: 0, chosenSide: 'C' } }), /参数无效/);
+  await fails(call('/vote', { token: u2, body: { voteType: 'final', categoryId: 'food', pairIndex: 99, chosenSide: 'A' } }), /对局不存在/);
+  await fails(call('/vote', { token: u3, body: { voteType: 'final', categoryId: 'food', pairIndex: 0, chosenSide: 'A' } }), /请先绑定/);
+  // 只能投分配给自己的对局：admin 还没有打开决赛页，没有对局
+  await fails(call('/vote', { token: admin, body: { voteType: 'final', categoryId: 'food', pairIndex: 0, chosenSide: 'A' } }), /对局不存在/);
+  for (const p of fin.pairs) {
+    const side = p.entryB.id === myEntryId ? 'B' : 'A'; // 有我的宠物就投它
+    await ok(call('/vote', { token: u2, body: { voteType: 'final', categoryId: 'food', pairIndex: p.index, chosenSide: side } }));
+  }
+  await fails(call('/vote', { token: u2, body: { voteType: 'final', categoryId: 'food', pairIndex: 0, chosenSide: 'A' } }), /已投过/);
+  fin = (await ok(call('/data/finalState', { token: u2 }))).categories.find(c => c.id === 'food');
+  assert.ok(fin.pairs.every(p => p.myVote));
+  const games = (await all('Entry')).filter(e => e.categoryId === 'food').reduce((sum, e) => sum + (e.finalGames || 0), 0);
+  assert.strictEqual(games, 10); // 5 场 × 2 只
+  mine = (await ok(call('/data/myNominations', { token: u1 }))).entries;
+  assert.match(mine[0].progress.detail, /2 胜 \/ 2 场/);
+  // 重复推进不会清票
+  await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_final' } }));
+  assert.strictEqual((await all('FinalVote')).length, 5);
+
+  console.log('Testing awards ranking and congratulations...');
   await fails(call('/congrats', { token: u1, body: { content: '恭喜' } }), /颁奖典礼开始后/);
   await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'awards' } }));
   const awards = (await ok(call('/data/awards', { token: u2, body: { categoryId: 'food' } }))).result;
   assert.ok(awards.champion && awards.champion.ownerLdap.includes('*'));
+  assert.strictEqual(awards.champion.winRate, 1); // 按胜率排名，冠军全胜
+  assert.ok(awards.champion.winRate >= awards.runnerUp.winRate && awards.runnerUp.winRate >= awards.thirdPlace.winRate);
   await ok(call('/congrats', { token: u1, body: { content: '恭喜所有毛孩！' } }));
   await fails(call('/congrats', { token: u1, body: { content: '再来一条' } }), /仅限/);
   const wall = await ok(call('/data/congrats', { token: u1 }));
@@ -222,10 +270,12 @@ async function login(openid) {
   await ok(call('/admin/unbindUser', { token: admin, body: { ldap: 'zed' } }));
   assert.strictEqual((await ok(call('/bootstrap', { token: u2 }))).user, null);
 
-  console.log('Testing rollback to nomination clears stages and votes...');
+  console.log('Testing rollback to nomination clears final and initial data...');
   await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'nominate' } }));
-  assert.strictEqual((await all('Match')).length, 0);
-  assert.strictEqual((await all('Vote')).length, 0);
+  assert.strictEqual((await all('Bracket')).length, 0);
+  assert.strictEqual((await all('FinalAssignment')).length, 0);
+  assert.strictEqual((await all('FinalVote')).length, 0);
+  assert.strictEqual((await get('Entry', myEntryId)).finalGames, 0);
   assert.strictEqual((await all('InitialSelection')).length, 0);
   assert.strictEqual((await get('Entry', myEntryId)).initialVotes, 0);
 

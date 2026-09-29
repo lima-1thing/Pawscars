@@ -8,15 +8,13 @@ const COL = {
   USER: 'UserBinding',
   ENTRY: 'Entry',
   INITIAL: 'InitialSelection',
-  MATCH: 'Match',
-  VOTE: 'Vote',
-  BRACKET: 'Bracket',
+  BRACKET: 'Bracket',               // 每门类的决赛名单
+  FINAL_PAIRS: 'FinalAssignment',   // 每位投票人每门类的决赛对局（openid_categoryId）
+  FINAL_VOTE: 'FinalVote',          // 决赛投票（openid_categoryId_index）
   CONGRATS: 'CongratsMessage'
 };
 
 const CONFIG_ID = 'main_config';
-const STAGE_KNOCKOUT = '8进4';
-const STAGE_DERBY = '4强德比';
 const MAX_INITIAL_PICKS = 8;
 
 const DEFAULT_CATEGORIES = [
@@ -58,8 +56,6 @@ const isAdmin = (config, openid) => !!openid && (config.adminOpenids || []).incl
 module.exports = {
   COL,
   CONFIG_ID,
-  STAGE_KNOCKOUT,
-  STAGE_DERBY,
   MAX_INITIAL_PICKS,
   EDITABLE_CONFIG_FIELDS,
   loadConfig,

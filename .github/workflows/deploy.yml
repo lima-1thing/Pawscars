@@ -45,13 +45,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build web test version
+        run: |
+          npm ci --prefix web
+          npm run build --prefix web
+
+      # 站点根目录：网页测试版（web/dist）；/demo/：早期单机演示版（preview/）
+      - name: Assemble site
+        run: |
+          mkdir -p site/demo
+          cp -r web/dist/. site/
+          cp -r preview/. site/demo/
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './preview'
+          path: './site'
 
       - name: Deploy to GitHub Pages
         id: deployment

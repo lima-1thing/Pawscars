@@ -6,13 +6,7 @@
 const StorageService = require('../miniprogram/utils/storage');
 const { validateLdap, validatePetName, validateCongrats } = require('../miniprogram/utils/validator');
 const { maskLdap } = require('../miniprogram/utils/mask');
-const {
-  resolveInitialRound,
-  generateQuarterFinalMatches,
-  resolveMatchWinner,
-  generateDerbyMatches,
-  resolveDerbyRankings
-} = require('../miniprogram/utils/bracket');
+
 
 console.log('====================================================');
 console.log('       🏆 PAWSCARS 赛事全流程端到端仿真测试 🏆        ');
@@ -28,10 +22,10 @@ console.log('▶️ 【阶段一：身份绑定与毛孩提名报名】');
 StorageService.setPhase('nominate');
 
 // 测试 LDAP 规则拦截
-console.log('  1.1 校验非法 LDAP ID (含数字与特殊字符)...');
-const invalidCheck1 = validateLdap('Kevin888');
+console.log('  1.1 校验非法 LDAP ID (数字开头或含特殊字符)...');
+const invalidCheck1 = validateLdap('888Kevin');
 const invalidCheck2 = validateLdap('Tom_Cat');
-console.log(`      输入 'Kevin888' 校验结果: valid=${invalidCheck1.valid}, message="${invalidCheck1.message}"`);
+console.log(`      输入 '888Kevin' 校验结果: valid=${invalidCheck1.valid}, message="${invalidCheck1.message}"`);
 console.log(`      输入 'Tom_Cat'  校验结果: valid=${invalidCheck2.valid}, message="${invalidCheck2.message}"`);
 
 console.log('  1.2 模拟社群成员绑定合法活动ID...');
@@ -141,70 +135,48 @@ try {
 }
 
 // ----------------------------------------------------------------
-// 阶段三：8进4单败淘汰赛 (Quarterfinals Phase)
+// 阶段三：决赛（8 强两两 PK，每人每门类随机分到最多 8 场）
 // ----------------------------------------------------------------
-console.log('\n▶️ 【阶段三：8进4淘汰赛（按主人ID字母顺序 A-Z 依次配对）】');
-// 推进至 8进4
-StorageService.setPhase('vote_match_8');
-const qfMatches = StorageService.getMatches('food', '8进4');
-console.log(`  3.1 系统自动按初选票数与平局规则决出 8 强，并按主人ID字母顺序 (A-Z) 依次配对 4 场 1V1：`);
+console.log('\n▶️ 【阶段三：决赛（8 强两两 PK，按胜率决出冠亚季军）】');
+StorageService.setPhase('vote_final');
+const finalists = StorageService.getFinalists('food');
+console.log(`  3.1 初选结算出 8 强：${finalists.map(e => `${e.petName}(${e.initialVotes}票)`).join('、')}`);
 
-qfMatches.forEach((m, idx) => {
-  console.log(`      第 ${idx + 1} 场: 【${m.entryA.petName} (主人: ${maskLdap(m.entryA.ownerLdap)})】 VS 【${m.entryB.petName} (主人: ${maskLdap(m.entryB.ownerLdap)})】`);
+// 每位投票人进入决赛页时随机生成自己的对局；模拟投票偏好：团子 > 旺财 > 肉包 > 其余按名单顺序
+const preference = ['团子', '旺财', '肉包'];
+const score = (e) => { const i = preference.indexOf(e.petName); return i === -1 ? 100 + finalists.findIndex(f => f.id === e.id) : i; };
+// 28 位投票人（接近一个社群的规模），均衡分配下每种两两组合约被覆盖 8 次
+const voters = Array.from({ length: 28 }, (_, i) => `VOTER${String.fromCharCode(65 + (i % 26))}${i}`);
+voters.forEach(voter => {
+  StorageService.bindUser(voter);
+  StorageService.getMyFinalPairs('food').forEach(p => {
+    StorageService.submitFinalVote('food', p.index, score(p.entryA) <= score(p.entryB) ? 'A' : 'B');
+  });
 });
-
-// 模拟 8进4 投票
-console.log('  3.2 模拟大众评审进行 1V1 单选投票...');
-qfMatches.forEach((m, idx) => {
-  // 模拟对局胜负：A胜或B胜
-  StorageService.bindUser('JENNIFER');
-  StorageService.submitMatchVote(m.id, 'A');
-  StorageService.bindUser('ZHANG');
-  StorageService.submitMatchVote(m.id, idx % 2 === 0 ? 'A' : 'B');
-  StorageService.bindUser('ALICE');
-  StorageService.submitMatchVote(m.id, 'A');
-});
+const stats = StorageService.getFinalStats('food');
+console.log(`  3.2 ${voters.length} 位投票人各完成 8 场 PK，每只决赛毛孩出场次数：${finalists.map(f => stats[f.id].games).join(' / ')}`);
 
 // ----------------------------------------------------------------
-// 阶段四：4强巅峰德比循环赛 (Semifinals Derby Phase)
+// 阶段四：颁奖盛典与贺词墙 (Awards Phase)
 // ----------------------------------------------------------------
-console.log('\n▶️ 【阶段四：4强巅峰德比（6场循环赛 C(4,2)，按胜场排定金银铜牌）】');
-StorageService.setPhase('vote_match_4');
-const derbyMatches = StorageService.getMatches('food', '4强德比');
-console.log(`  4.1 8进4胜者晋级 4 强，系统自动生成 6 场循环赛固定对阵：`);
-
-derbyMatches.forEach((m, idx) => {
-  console.log(`      第 ${idx + 1} 场: ${m.entryA.petName} (${maskLdap(m.entryA.ownerLdap)}) VS ${m.entryB.petName} (${maskLdap(m.entryB.ownerLdap)})`);
-});
-
-console.log('  4.2 模拟 7 天自由投票期内的德比计票...');
-derbyMatches.forEach((m, idx) => {
-  StorageService.bindUser('ALICE');
-  StorageService.submitMatchVote(m.id, idx % 3 === 0 ? 'B' : 'A');
-  StorageService.bindUser('BOBBY');
-  StorageService.submitMatchVote(m.id, 'A');
-  StorageService.bindUser('CHARLIE');
-  StorageService.submitMatchVote(m.id, 'A');
-});
-
-// ----------------------------------------------------------------
-// 阶段五：颁奖盛典与贺词墙 (Awards Phase)
-// ----------------------------------------------------------------
-console.log('\n▶️ 【阶段五：颁奖盛典与全员贺词墙】');
+console.log('\n▶️ 【阶段四：颁奖盛典与全员贺词墙】');
 StorageService.setPhase('awards');
 const awardsResult = StorageService.getAwardsResult('food');
+const assert = require('assert');
+assert.deepStrictEqual([awardsResult.champion, awardsResult.runnerUp, awardsResult.thirdPlace].map(e => e.petName), ['团子', '旺财', '肉包']);
+assert.ok(finalists.every(f => stats[f.id].games === voters.length * 2));
 
-console.log('  5.1 德比循环赛结果结算完成：');
+console.log('  4.1 决赛按胜率结算完成：');
 console.log(`      🥇 冠军（金牌）：【${awardsResult.champion.petName}】 主人: ${maskLdap(awardsResult.champion.ownerLdap)}`);
 console.log(`      🥈 亚军（银牌）：【${awardsResult.runnerUp.petName}】 主人: ${maskLdap(awardsResult.runnerUp.ownerLdap)}`);
 console.log(`      🥉 季军（铜牌）：【${awardsResult.thirdPlace.petName}】 主人: ${maskLdap(awardsResult.thirdPlace.ownerLdap)}`);
 
-console.log('  5.2 模拟生成专属奥斯卡获奖证书...');
+console.log('  4.2 模拟生成专属奥斯卡获奖证书...');
 console.log(`      [证书文案] "PAWSCARS 2026 首届毛孩奥斯卡荣誉盛典"`);
 console.log(`      [获奖毛孩] ${awardsResult.champion.petName} · 干饭王者 冠军`);
 console.log(`      [大会主持] 宫师姐 敬颁`);
 
-console.log('  5.3 测试颁奖期贺词墙（每人限发1条留言，≤50字）...');
+console.log('  4.3 测试颁奖期贺词墙（每人限发1条留言，≤50字）...');
 StorageService.bindUser('EMILY');
 const msg1 = StorageService.submitCongrats('太激动了！大家家的毛孩都太萌了，感谢群友们的支持！🎉');
 console.log(`      EMILY 发表贺词: "${msg1.content}" (署名打码: ${maskLdap(msg1.ownerLdap)})`);
@@ -220,9 +192,9 @@ const msg2 = StorageService.submitCongrats('首届 Pawscars 超级好玩，恭�
 console.log(`      FRANK 发表贺词: "${msg2.content}" (署名打码: ${maskLdap(msg2.ownerLdap)})`);
 
 // ----------------------------------------------------------------
-// 阶段六：私密“我的提名”查询验证
+// 阶段五：私密“我的提名”查询验证
 // ----------------------------------------------------------------
-console.log('\n▶️ 【阶段六：私密“我的提名”状态追踪验证】');
+console.log('\n▶️ 【阶段五：私密“我的提名”状态追踪验证】');
 const jenniferNoms = StorageService.getMyNominations('JENNIFER');
 console.log(`  JENNIFER 查询本人提名的所有毛孩当前战绩：`);
 jenniferNoms.forEach(e => {

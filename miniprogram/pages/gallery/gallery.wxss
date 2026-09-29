@@ -1,0 +1,79 @@
+.gallery-page {
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.tabs-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tab-pill {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: #F4F2EC;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tab-active {
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 三列网格：(750 - 2×32 左右边距 - 2×22 间距) / 3 ≈ 214rpx */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22rpx;
+  padding: 16px 32rpx 0;
+}
+
+.grid-cell {
+  width: 214rpx;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 0;
+  gap: 8px;
+}
+
+.empty-icon {
+  font-size: 40px;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, #FDFBF7 80%, rgba(253, 251, 247, 0));
+}
+
+.cta {
+  width: 100%;
+}

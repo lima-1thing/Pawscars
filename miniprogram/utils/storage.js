@@ -6,14 +6,14 @@
 
 const { DEFAULT_CONFIG, DEFAULT_CATEGORIES, DEFAULT_ENTRIES, DEFAULT_CONGRATS } = require('./mock-data');
 const {
-  resolveInitialRound,
-  buildKnockoutStage,
-  getKnockoutWinners,
-  generateDerbyMatches,
-  resolveFinalRankings,
-  computeEntryProgress,
+  PHASE_ORDER,
+  FINALIST_COUNT,
   isPhaseOpen,
-  PHASE_ORDER
+  resolveInitialRound,
+  countPairCoverage,
+  generateFinalPairs,
+  resolveFinalRankings,
+  computeEntryProgress
 } = require('./bracket');
 const { validatePetName, validateCongrats } = require('./validator');
 
@@ -23,14 +23,13 @@ const STORAGE_KEYS = {
   ENTRIES: 'pawscars_entries',
   USER_BINDING: 'pawscars_user_binding',
   INITIAL_VOTES: 'pawscars_initial_votes',
-  MATCH_VOTES: 'pawscars_match_votes',
-  MATCHES: 'pawscars_matches',
+  QUALIFIERS: 'pawscars_qualifiers',     // { [categoryId]: 决赛名单 }
+  FINAL_PAIRS: 'pawscars_final_pairs',   // { [openid_categoryId]: [{ a, b }] } 每位投票人的决赛对局
+  FINAL_VOTES: 'pawscars_final_votes',   // { [openid_categoryId_index]: 投票记录 }
   CONGRATS: 'pawscars_congrats'
 };
 
-const STAGE_KNOCKOUT = '8进4';
-const STAGE_DERBY = '4强德比';
-const MAX_INITIAL_PICKS = 8;
+const MAX_INITIAL_PICKS = FINALIST_COUNT;
 
 const memoryStore = {};
 
@@ -65,19 +64,12 @@ function initStorage() {
   if (!getStorage(STORAGE_KEYS.ENTRIES, null)) setStorage(STORAGE_KEYS.ENTRIES, DEFAULT_ENTRIES);
   if (!getStorage(STORAGE_KEYS.CONGRATS, null)) setStorage(STORAGE_KEYS.CONGRATS, DEFAULT_CONGRATS);
   if (!getStorage(STORAGE_KEYS.INITIAL_VOTES, null)) setStorage(STORAGE_KEYS.INITIAL_VOTES, []);
-  if (!getStorage(STORAGE_KEYS.MATCH_VOTES, null)) setStorage(STORAGE_KEYS.MATCH_VOTES, {});
-  if (!getStorage(STORAGE_KEYS.MATCHES, null)) setStorage(STORAGE_KEYS.MATCHES, {});
+  if (!getStorage(STORAGE_KEYS.QUALIFIERS, null)) setStorage(STORAGE_KEYS.QUALIFIERS, {});
+  if (!getStorage(STORAGE_KEYS.FINAL_PAIRS, null)) setStorage(STORAGE_KEYS.FINAL_PAIRS, {});
+  if (!getStorage(STORAGE_KEYS.FINAL_VOTES, null)) setStorage(STORAGE_KEYS.FINAL_VOTES, {});
 }
 
 initStorage();
-
-function stageKey(categoryId, stage) {
-  return `${categoryId}_${stage}`;
-}
-
-function qualifiersKey(categoryId) {
-  return `${categoryId}_qualifiers`;
-}
 
 function isActive(entry) {
   return entry && entry.status !== 'deleted';
@@ -85,8 +77,6 @@ function isActive(entry) {
 
 const StorageService = {
   PHASE_ORDER,
-  STAGE_KNOCKOUT,
-  STAGE_DERBY,
 
   // ---------------------------------------------------------------
   // 活动配置
@@ -331,70 +321,90 @@ const StorageService = {
   },
 
   // ---------------------------------------------------------------
-  // 阶段二/三：对阵与 PK 投票
+  // 阶段二：决赛（8 强两两 PK）
   // ---------------------------------------------------------------
-  getMatches(categoryId, stage) {
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    return allMatches[stageKey(categoryId, stage)] || [];
+  /**
+   * 决赛名单；初选尚未结算返回 null
+   */
+  getQualifiers(categoryId) {
+    return getStorage(STORAGE_KEYS.QUALIFIERS, {})[categoryId] || null;
+  },
+
+  getFinalists(categoryId) {
+    return this.getQualifiers(categoryId) || [];
   },
 
   /**
-   * 用户可投票的对阵（排除轮空场）
+   * 决赛战绩：{ [entryId]: { wins, games, lastWinTime } }
    */
-  getVotableMatches(categoryId, stage) {
-    return this.getMatches(categoryId, stage).filter(m => m.entryA && m.entryB);
+  getFinalStats(categoryId) {
+    const stats = {};
+    this.getEntries(categoryId).forEach(e => {
+      stats[e.id] = { wins: e.finalWins || 0, games: e.finalGames || 0, lastWinTime: e.lastFinalWinTime || 0 };
+    });
+    return stats;
   },
 
-  getQualifiers(categoryId) {
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    return allMatches[qualifiersKey(categoryId)] || null;
+  /**
+   * 当前用户在某门类的决赛对局（首次进入时随机生成并固定）
+   * @returns {Array<{ index, entryA, entryB, myVote }>}
+   */
+  getMyFinalPairs(categoryId) {
+    const user = this.getUserBinding();
+    const finalists = this.getFinalists(categoryId);
+    if (!user || finalists.length < 2) return [];
+
+    const all = getStorage(STORAGE_KEYS.FINAL_PAIRS, {});
+    const key = `${user.openid}_${categoryId}`;
+    if (!all[key]) {
+      if (!this.isPhaseOpen('vote_final')) return [];
+      // 参考本门类已分配的对局，让全部两两组合被均匀覆盖
+      const existing = Object.keys(all).filter(k => k.endsWith(`_${categoryId}`)).map(k => all[k]);
+      all[key] = generateFinalPairs(finalists.map(f => f.id), { coverage: countPairCoverage(existing) });
+      setStorage(STORAGE_KEYS.FINAL_PAIRS, all);
+    }
+
+    const byId = {};
+    finalists.forEach(f => { byId[f.id] = f; });
+    const votes = getStorage(STORAGE_KEYS.FINAL_VOTES, {});
+    return all[key].map((p, index) => {
+      const v = votes[`${key}_${index}`];
+      return { index, entryA: byId[p.a], entryB: byId[p.b], myVote: v ? v.chosenSide : null };
+    }).filter(p => p.entryA && p.entryB);
   },
 
-  submitMatchVote(matchId, chosenSide) {
+  submitFinalVote(categoryId, pairIndex, chosenSide) {
     const user = this.getUserBinding();
     if (!user) throw new Error('请先绑定活动ID');
     if (chosenSide !== 'A' && chosenSide !== 'B') throw new Error('投票参数无效');
+    this.assertPhaseOpen('vote_final', '决赛投票已截止');
 
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    let match = null;
-    Object.keys(allMatches).some(key => {
-      const list = allMatches[key];
-      match = Array.isArray(list) ? list.find(m => m && m.id === matchId) : null;
-      return !!match;
-    });
-    if (!match) throw new Error('对阵不存在，请刷新后重试');
-    if (!match.entryA || !match.entryB) throw new Error('轮空场次无需投票');
+    const key = `${user.openid}_${categoryId}`;
+    const pair = (getStorage(STORAGE_KEYS.FINAL_PAIRS, {})[key] || [])[pairIndex];
+    if (!pair) throw new Error('对局不存在，请刷新后重试');
 
-    const phase = match.stage === STAGE_DERBY ? 'vote_match_4' : 'vote_match_8';
-    this.assertPhaseOpen(phase, '本阶段投票已截止');
-
-    const matchVotes = getStorage(STORAGE_KEYS.MATCH_VOTES, {});
-    const voteKey = `${user.openid}_${matchId}`;
-    if (matchVotes[voteKey]) {
-      throw new Error('本场对决您已投过票，不可重复提交');
-    }
+    const votes = getStorage(STORAGE_KEYS.FINAL_VOTES, {});
+    const voteKey = `${key}_${pairIndex}`;
+    if (votes[voteKey]) throw new Error('本场对决您已投过票，不可重复提交');
 
     const now = Date.now();
-    matchVotes[voteKey] = { openid: user.openid, matchId, chosenSide, timestamp: now };
-    setStorage(STORAGE_KEYS.MATCH_VOTES, matchVotes);
+    const winner = chosenSide === 'A' ? pair.a : pair.b;
+    const loser = chosenSide === 'A' ? pair.b : pair.a;
+    votes[voteKey] = { openid: user.openid, categoryId, pairIndex, chosenSide, winner, loser, timestamp: now };
+    setStorage(STORAGE_KEYS.FINAL_VOTES, votes);
 
-    if (chosenSide === 'A') {
-      match.votesA = (match.votesA || 0) + 1;
-      match.lastVoteTimeA = now;
-    } else {
-      match.votesB = (match.votesB || 0) + 1;
-      match.lastVoteTimeB = now;
-    }
-    setStorage(STORAGE_KEYS.MATCHES, allMatches);
-
-    return matchVotes[voteKey];
-  },
-
-  getUserMatchVote(matchId) {
-    const user = this.getUserBinding();
-    if (!user) return null;
-    const matchVotes = getStorage(STORAGE_KEYS.MATCH_VOTES, {});
-    return matchVotes[`${user.openid}_${matchId}`] || null;
+    const entries = getStorage(STORAGE_KEYS.ENTRIES, DEFAULT_ENTRIES);
+    entries.forEach(e => {
+      if (e.id === winner) {
+        e.finalWins = (e.finalWins || 0) + 1;
+        e.finalGames = (e.finalGames || 0) + 1;
+        e.lastFinalWinTime = now;
+      } else if (e.id === loser) {
+        e.finalGames = (e.finalGames || 0) + 1;
+      }
+    });
+    setStorage(STORAGE_KEYS.ENTRIES, entries);
+    return votes[voteKey];
   },
 
   // ---------------------------------------------------------------
@@ -437,8 +447,8 @@ const StorageService = {
   // ---------------------------------------------------------------
   /**
    * 切换活动阶段。
-   * - 向后推进：按顺序补齐所需的结算与对阵（已生成的不会重复生成，票数不会被清空）
-   * - 向前回退：清除目标阶段之后的对阵与投票记录，保证重新推进时数据一致
+   * - 推进到决赛：结算初选、生成决赛名单（已生成的不会重复生成，票数不会被清空）
+   * - 向前回退：清除目标阶段之后的名单与投票记录，保证重新推进时数据一致
    */
   setPhase(targetPhase) {
     const targetIdx = PHASE_ORDER.indexOf(targetPhase);
@@ -446,100 +456,67 @@ const StorageService = {
 
     const categories = this.getCategories();
     this.clearStagesAfter(targetPhase, categories);
-
-    categories.forEach(cat => {
-      if (targetIdx >= PHASE_ORDER.indexOf('vote_match_8')) this.ensureKnockout(cat.id);
-      if (targetIdx >= PHASE_ORDER.indexOf('vote_match_4')) this.ensureDerby(cat.id);
-    });
-
+    if (targetIdx >= PHASE_ORDER.indexOf('vote_final')) {
+      categories.forEach(cat => this.ensureQualifiers(cat.id));
+    }
     return this.saveConfig({ currentPhase: targetPhase });
   },
 
   clearStagesAfter(targetPhase, categories) {
     const targetIdx = PHASE_ORDER.indexOf(targetPhase);
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    const matchVotes = getStorage(STORAGE_KEYS.MATCH_VOTES, {});
-    const removedMatchIds = new Set();
+    const catIds = new Set(categories.map(c => c.id));
 
-    const dropStage = (key) => {
-      (allMatches[key] || []).forEach(m => m && removedMatchIds.add(m.id));
-      delete allMatches[key];
-    };
+    if (targetIdx < PHASE_ORDER.indexOf('vote_final')) {
+      const qualifiers = getStorage(STORAGE_KEYS.QUALIFIERS, {});
+      catIds.forEach(id => { delete qualifiers[id]; });
+      setStorage(STORAGE_KEYS.QUALIFIERS, qualifiers);
 
-    categories.forEach(cat => {
-      if (targetIdx < PHASE_ORDER.indexOf('vote_match_4')) dropStage(stageKey(cat.id, STAGE_DERBY));
-      if (targetIdx < PHASE_ORDER.indexOf('vote_match_8')) {
-        dropStage(stageKey(cat.id, STAGE_KNOCKOUT));
-        delete allMatches[qualifiersKey(cat.id)];
-      }
+      const dropByCategory = (store) => {
+        const data = getStorage(store, {});
+        Object.keys(data).forEach(k => {
+          const catId = data[k] && data[k].categoryId;
+          if (catId ? catIds.has(catId) : [...catIds].some(id => k.endsWith(`_${id}`))) delete data[k];
+        });
+        setStorage(store, data);
+      };
+      dropByCategory(STORAGE_KEYS.FINAL_PAIRS);
+      dropByCategory(STORAGE_KEYS.FINAL_VOTES);
+    }
+
+    const entries = getStorage(STORAGE_KEYS.ENTRIES, DEFAULT_ENTRIES);
+    entries.forEach(e => {
+      if (!catIds.has(e.categoryId)) return;
+      if (targetIdx < PHASE_ORDER.indexOf('vote_final')) { e.finalWins = 0; e.finalGames = 0; e.lastFinalWinTime = 0; }
+      if (targetPhase === 'nominate') { e.initialVotes = 0; e.lastVoteTime = 0; }
     });
-
-    Object.keys(matchVotes).forEach(key => {
-      if (removedMatchIds.has(matchVotes[key].matchId)) delete matchVotes[key];
-    });
-
-    setStorage(STORAGE_KEYS.MATCHES, allMatches);
-    setStorage(STORAGE_KEYS.MATCH_VOTES, matchVotes);
+    setStorage(STORAGE_KEYS.ENTRIES, entries);
 
     // 回到报名期：初选选票一并作废
-    if (targetPhase === 'nominate') {
-      setStorage(STORAGE_KEYS.INITIAL_VOTES, []);
-      const entries = getStorage(STORAGE_KEYS.ENTRIES, DEFAULT_ENTRIES);
-      entries.forEach(e => { e.initialVotes = 0; e.lastVoteTime = 0; });
-      setStorage(STORAGE_KEYS.ENTRIES, entries);
-    }
+    if (targetPhase === 'nominate') setStorage(STORAGE_KEYS.INITIAL_VOTES, []);
   },
 
   /**
-   * 结算初选并生成淘汰赛（幂等：已生成则直接返回）
+   * 结算初选、生成决赛名单（幂等：已生成则直接返回）
    */
-  ensureKnockout(categoryId) {
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    if (allMatches[qualifiersKey(categoryId)]) return;
+  ensureQualifiers(categoryId) {
+    const qualifiers = getStorage(STORAGE_KEYS.QUALIFIERS, {});
+    if (qualifiers[categoryId]) return;
 
-    const entries = this.getEntries(categoryId);
     const votesFlat = [];
     getStorage(STORAGE_KEYS.INITIAL_VOTES, [])
       .filter(v => v.categoryId === categoryId)
       .forEach(v => v.selectedEntryIds.forEach(eid => votesFlat.push({ entryId: eid, timestamp: v.timestamp })));
 
-    const { top8 } = resolveInitialRound(entries, votesFlat);
-    const { matches } = buildKnockoutStage(top8, categoryId);
-
-    allMatches[qualifiersKey(categoryId)] = top8;
-    allMatches[stageKey(categoryId, STAGE_KNOCKOUT)] = matches;
-    setStorage(STORAGE_KEYS.MATCHES, allMatches);
+    qualifiers[categoryId] = resolveInitialRound(this.getEntries(categoryId), votesFlat).top8;
+    setStorage(STORAGE_KEYS.QUALIFIERS, qualifiers);
   },
 
   /**
-   * 结算淘汰赛并生成德比循环赛（幂等）
-   */
-  ensureDerby(categoryId) {
-    this.ensureKnockout(categoryId);
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    const key = stageKey(categoryId, STAGE_DERBY);
-    if (allMatches[key]) return;
-
-    allMatches[key] = generateDerbyMatches(this.getFinalists(categoryId), categoryId);
-    setStorage(STORAGE_KEYS.MATCHES, allMatches);
-  },
-
-  /**
-   * 进入德比循环赛的名单：有淘汰赛则取胜者（含轮空），否则为全部晋级者
-   */
-  getFinalists(categoryId) {
-    const knockout = this.getMatches(categoryId, STAGE_KNOCKOUT);
-    if (knockout.length > 0) return getKnockoutWinners(knockout);
-    return this.getQualifiers(categoryId) || [];
-  },
-
-  /**
-   * 颁奖结果：只从德比循环赛结算得出；尚未结算返回 null
+   * 颁奖结果：按决赛胜率排名；初选尚未结算返回 null
    */
   getAwardsResult(categoryId) {
-    const allMatches = getStorage(STORAGE_KEYS.MATCHES, {});
-    if (!allMatches[stageKey(categoryId, STAGE_DERBY)]) return null;
-    return resolveFinalRankings(this.getFinalists(categoryId), allMatches[stageKey(categoryId, STAGE_DERBY)]);
+    if (!this.getQualifiers(categoryId)) return null;
+    return resolveFinalRankings(this.getFinalists(categoryId), this.getFinalStats(categoryId));
   },
 
   /**
@@ -551,9 +528,8 @@ const StorageService = {
       entry,
       phase: this.getPhase(),
       needsInitialRound: this.needsInitialRound(catId),
-      qualifiers: this.getQualifiers(catId),
-      knockoutMatches: this.getMatches(catId, STAGE_KNOCKOUT),
-      derbyMatches: this.getMatches(catId, STAGE_DERBY)
+      finalists: this.getQualifiers(catId),
+      finalStats: this.getFinalStats(catId)
     });
   },
 
@@ -561,32 +537,22 @@ const StorageService = {
    * 管理员数据看板
    */
   getAdminStats() {
-    const categories = this.getCategories();
     const initialVotes = getStorage(STORAGE_KEYS.INITIAL_VOTES, []);
-    const matchVotes = Object.values(getStorage(STORAGE_KEYS.MATCH_VOTES, {}));
-    const allVoters = new Set([...initialVotes.map(v => v.openid), ...matchVotes.map(v => v.openid)]);
-
-    const perCategory = categories.map(cat => {
-      const matchIds = new Set([
-        ...this.getMatches(cat.id, STAGE_KNOCKOUT),
-        ...this.getMatches(cat.id, STAGE_DERBY)
-      ].map(m => m.id));
-      const pkVoters = new Set(matchVotes.filter(v => matchIds.has(v.matchId)).map(v => v.openid));
-      return {
-        id: cat.id,
-        name: cat.name,
-        entryCount: this.getEntries(cat.id).length,
-        initialVoterCount: initialVotes.filter(v => v.categoryId === cat.id).length,
-        pkVoterCount: pkVoters.size
-      };
-    });
+    const finalVotes = Object.values(getStorage(STORAGE_KEYS.FINAL_VOTES, {}));
+    const allVoters = new Set([...initialVotes.map(v => v.openid), ...finalVotes.map(v => v.openid)]);
 
     return {
       totalEntries: this.getEntries().filter(isActive).length,
       totalVoters: allVoters.size,
-      totalMatchVotes: matchVotes.length,
+      totalFinalVotes: finalVotes.length,
       totalCongrats: this.getCongrats().length,
-      perCategory
+      perCategory: this.getCategories().map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        entryCount: this.getEntries(cat.id).length,
+        initialVoterCount: initialVotes.filter(v => v.categoryId === cat.id).length,
+        finalVoterCount: new Set(finalVotes.filter(v => v.categoryId === cat.id).map(v => v.openid)).size
+      }))
     };
   },
 
@@ -620,8 +586,9 @@ const StorageService = {
     setStorage(STORAGE_KEYS.ENTRIES, DEFAULT_ENTRIES);
     setStorage(STORAGE_KEYS.CONGRATS, DEFAULT_CONGRATS);
     setStorage(STORAGE_KEYS.INITIAL_VOTES, []);
-    setStorage(STORAGE_KEYS.MATCH_VOTES, {});
-    setStorage(STORAGE_KEYS.MATCHES, {});
+    setStorage(STORAGE_KEYS.QUALIFIERS, {});
+    setStorage(STORAGE_KEYS.FINAL_PAIRS, {});
+    setStorage(STORAGE_KEYS.FINAL_VOTES, {});
     setStorage(STORAGE_KEYS.USER_BINDING, null);
   }
 };

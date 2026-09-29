@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "PK对局投票",
+  "navigationBarTitleText": "决赛投票",
   "navigationBarBackgroundColor": "#FBEAF0",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/nav-bar",

@@ -4,10 +4,9 @@ const { toPickerValues, fromPickerValues, formatDateTime } = require('../../util
 
 const PHASES = [
   { key: 'nominate', label: '1. 报名期' },
-  { key: 'vote_initial', label: '2. 初选划屏' },
-  { key: 'vote_match_8', label: '3. 8进4淘汰赛' },
-  { key: 'vote_match_4', label: '4. 4强德比' },
-  { key: 'awards', label: '5. 颁奖盛典' }
+  { key: 'vote_initial', label: '2. 初选（选出8强）' },
+  { key: 'vote_final', label: '3. 决赛（8强PK）' },
+  { key: 'awards', label: '4. 颁奖盛典' }
 ];
 
 const EDITABLE_FIELDS = ['title', 'hostName', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];

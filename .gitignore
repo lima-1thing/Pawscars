@@ -4,3 +4,4 @@ node_modules/
 *.log
 .system_generated/
 project.private.config.json
+web/dist/

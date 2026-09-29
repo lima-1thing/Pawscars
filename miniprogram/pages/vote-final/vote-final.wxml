@@ -25,15 +25,15 @@
   </view>
 
   <!-- 对决进行中 -->
-  <block wx:if="{{viewState === 'voting' && currentMatch}}">
+  <block wx:if="{{viewState === 'voting' && currentPair}}">
     <view class="pk-hint-text">点击为TA投票</view>
     <view class="match-duel-area">
       <view class="match-pet-card {{selectedSide === 'A' ? 'card-chosen' : ''}}" bindtap="onChoosePet" data-side="A">
-        <view class="match-pet-name">{{currentMatch.entryA.petName}}</view>
+        <view class="match-pet-name">{{currentPair.entryA.petName}}</view>
         <view class="photo-box">
-          <image class="pet-photo" src="{{currentMatch.entryA.photoUrl}}" mode="aspectFill" />
+          <image class="pet-photo" src="{{currentPair.entryA.photoUrl}}" mode="aspectFill" />
           <view wx:if="{{selectedSide === 'A'}}" class="chosen-tick-badge">✓</view>
-          <view class="watermark-tag">主人 {{currentMatch.maskedLdapA}}</view>
+          <view class="watermark-tag">主人 {{currentPair.maskedLdapA}}</view>
         </view>
       </view>
 
@@ -42,11 +42,11 @@
       </view>
 
       <view class="match-pet-card {{selectedSide === 'B' ? 'card-chosen' : ''}}" bindtap="onChoosePet" data-side="B">
-        <view class="match-pet-name">{{currentMatch.entryB.petName}}</view>
+        <view class="match-pet-name">{{currentPair.entryB.petName}}</view>
         <view class="photo-box">
-          <image class="pet-photo" src="{{currentMatch.entryB.photoUrl}}" mode="aspectFill" />
+          <image class="pet-photo" src="{{currentPair.entryB.photoUrl}}" mode="aspectFill" />
           <view wx:if="{{selectedSide === 'B'}}" class="chosen-tick-badge">✓</view>
-          <view class="watermark-tag">主人 {{currentMatch.maskedLdapB}}</view>
+          <view class="watermark-tag">主人 {{currentPair.maskedLdapB}}</view>
         </view>
       </view>
     </view>
@@ -54,7 +54,7 @@
     <!-- 次级按钮：分享本场PK（生成带对局标题与照片的分享卡片） -->
     <view class="bottom-action-wrap">
       <button class="paw-btn paw-btn-outline share-btn" open-type="share">
-        <text class="share-icon">🔗</text> 分享本场PK拉票
+        <text class="share-icon">🔗</text> 分享决赛拉票
       </button>
     </view>
   </block>
@@ -62,8 +62,8 @@
   <!-- 本门类已全部投完 -->
   <view wx:elif="{{viewState === 'completed'}}" class="completed-box">
     <view class="congrats-trophy">🎉</view>
-    <view class="completed-title">本门类{{stage}}投票已完成</view>
-    <view class="completed-desc">你的每一票都已记录，结果将在本阶段截止后公布。</view>
+    <view class="completed-title">本门类决赛投票已完成</view>
+    <view class="completed-desc">你的每一票都已记录，冠亚季军将在决赛截止后揭晓。</view>
     <view class="completed-btns">
       <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">再投下一个门类</button>
       <button class="paw-btn paw-btn-outline comp-btn" bindtap="onGoHome">返回首页</button>
@@ -74,14 +74,14 @@
   <view wx:elif="{{viewState === 'noMatches'}}" class="no-matches-box">
     <text class="no-match-icon">🕊️</text>
     <text class="no-match-title">本门类本轮无需投票</text>
-    <text class="no-match-desc">晋级名额不足以组成对决（或全部轮空晋级），可以去其他门类看看。</text>
+    <text class="no-match-desc">本门类决赛选手不足 2 只，无需 PK，可以去其他门类看看。</text>
     <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">去其他门类</button>
   </view>
 
   <!-- 投票已截止 / 不在 PK 阶段 -->
   <view wx:elif="{{viewState === 'closed'}}" class="no-matches-box">
     <text class="no-match-icon">⏰</text>
-    <text class="no-match-title">{{stage ? '本阶段投票已截止' : '当前不在 PK 投票阶段'}}</text>
+    <text class="no-match-title">{{inFinal ? '决赛投票已截止' : '当前不在决赛投票阶段'}}</text>
     <text class="no-match-desc">结果公布后可在首页或"我的提名"查看。</text>
     <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
   </view>
@@ -90,7 +90,7 @@
   <view wx:elif="{{viewState === 'notGenerated'}}" class="no-matches-box">
     <text class="no-match-icon">⏳</text>
     <text class="no-match-title">对阵表生成中</text>
-    <text class="no-match-desc">管理员正在结算上一阶段结果，请稍后再来！</text>
+    <text class="no-match-desc">管理员正在结算初选结果，请稍后再来！</text>
     <button class="paw-btn paw-btn-primary comp-btn" bindtap="onGoHome">返回首页</button>
   </view>
 

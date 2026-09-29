@@ -14,7 +14,10 @@ function loadConfig(env = process.env) {
     tokenSecret: env.TOKEN_SECRET,
     photoBucket: env.PHOTO_BUCKET,
     cronSecret: env.CRON_SECRET,
-    tokenTtlHours: Number(env.TOKEN_TTL_HOURS) || 24 * 30
+    tokenTtlHours: Number(env.TOKEN_TTL_HOURS) || 24 * 30,
+    // 网页测试版（可选）：设置邀请码后开放 /login/web；WEB_ORIGINS 为允许跨域访问的网页来源，逗号分隔
+    webInviteCode: env.WEB_INVITE_CODE || '',
+    webOrigins: (env.WEB_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
   };
 }
 
