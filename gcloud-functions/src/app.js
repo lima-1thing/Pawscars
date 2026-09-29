@@ -3,7 +3,8 @@
  * 所有接口返回 { success: true, data } 或 { success: false, message }
  *
  *   POST /login               { code }                  无需登录
- *   POST /login/web           { inviteCode }            无需登录（网页测试版，需配置 WEB_INVITE_CODE）
+ *   POST /login/web           { inviteCode }            无需登录（网页匿名登录；开启 Google 登录后停用）
+ *   POST /login/google        { credential, inviteCode? } 无需登录（网页 Google 登录；可带旧令牌以关联原身份）
  *   POST /bootstrap
  *   POST /bind                { ldap }
  *   POST /data/:query         initialState | gallery | finalState | myNominations | awards | congrats
@@ -33,6 +34,7 @@ const READ_QUERIES = ['initialState', 'gallery', 'finalState', 'myNominations', 
 const ROUTES = {
   '/login': { handler: user.login, public: true },
   '/login/web': { handler: user.loginWeb, public: true },
+  '/login/google': { handler: user.loginGoogle, public: true },
   '/bootstrap': { handler: user.bootstrap },
   '/bind': { handler: user.bindUser },
   '/nominate': { handler: nominations.create },

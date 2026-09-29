@@ -17,6 +17,8 @@ function loadConfig(env = process.env) {
     tokenTtlHours: Number(env.TOKEN_TTL_HOURS) || 24 * 30,
     // 网页测试版（可选）：设置邀请码后开放 /login/web；WEB_ORIGINS 为允许跨域访问的网页来源，逗号分隔
     webInviteCode: env.WEB_INVITE_CODE || '',
+    // Google 账号登录（可选）：设置 OAuth 客户端 ID 后，网页版改用 Google 账号识别身份，匿名的 /login/web 停用
+    googleClientId: env.GOOGLE_CLIENT_ID || '',
     webOrigins: (env.WEB_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
   };
 }

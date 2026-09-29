@@ -6,11 +6,12 @@ import NavBar from '../components/nav-bar';
 export default {
   name: 'MyPage',
   components: { NavBar },
-  data() { return { loaded: false, entries: [], ldap: '', canNominate: false }; },
+  data() { return { loaded: false, entries: [], ldap: '', canNominate: false, googleEmail: null }; },
   async created() {
     const { user, categories } = api.getState();
     if (!user) { go('/bind'); return; }
     this.ldap = user.ldap;
+    this.googleEmail = api.getState().googleEmail;
     this.canNominate = api.isPhaseOpen('nominate');
     const catMap = Object.fromEntries(categories.map(c => [c.id, c]));
     try {
@@ -18,12 +19,21 @@ export default {
     } catch (e) { toast(e.message); }
     this.loaded = true;
   },
-  methods: { go },
+  methods: {
+    go,
+    logout() {
+      api.logout();
+      location.hash = '#/';
+      location.reload();
+    }
+  },
   template: `
     <div>
       <NavBar title="我的提名" subtitle="参赛毛孩状态追踪" :show-my="false" :show-rules="false" />
       <div class="page">
-        <div class="card user-card"><span class="big-emoji">🐾</span><div><b>活动ID: {{ ldap }}</b><div class="muted small">（私密页面，仅你本人可见实时票数与晋级状态）</div></div></div>
+        <div class="card user-card"><span class="big-emoji">🐾</span><div class="grow"><b>活动ID: {{ ldap }}</b><div class="muted small">（私密页面，仅你本人可见实时票数与晋级状态）</div>
+          <div v-if="googleEmail" class="muted small">Google 账号：{{ googleEmail }}</div></div>
+          <button class="link-btn small" @click="logout">退出登录</button></div>
         <div v-for="e in entries" :key="e.id" class="card nom-card">
           <div class="photo-tile sm"><img :src="e.photoUrl" :alt="e.petName"></div>
           <div class="grow">

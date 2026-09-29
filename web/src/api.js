@@ -8,7 +8,7 @@ import { isPhaseOpen, DEFAULT_CATEGORIES, DEFAULT_CONFIG } from './shared';
 const TOKEN_KEY = 'pawscars_web_token';
 const DISPLAY_DEFAULT_FIELDS = ['title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
 
-let state = { config: null, categories: [], user: null, isAdmin: false };
+let state = { config: null, categories: [], user: null, isAdmin: false, googleEmail: null };
 let token = '';
 let onUnauthorized = () => {};
 
@@ -37,7 +37,8 @@ function applyBootstrap(data) {
     config: withDisplayDefaults(data.config),
     categories: withCategoryStyles(data.categories),
     user: data.user,
-    isAdmin: !!data.isAdmin
+    isAdmin: !!data.isAdmin,
+    googleEmail: data.googleEmail || null
   };
   return state;
 }
@@ -53,7 +54,7 @@ async function send(path, init) {
   }
   let body = {};
   try { body = await res.json(); } catch (e) { body = {}; }
-  if (res.status === 401 && path !== '/login/web') {
+  if (res.status === 401 && !path.startsWith('/login/')) {
     token = '';
     store.set('');
     onUnauthorized();
@@ -97,6 +98,17 @@ export const api = {
 
   async loginWithInvite(inviteCode) {
     const data = await request('/login/web', { inviteCode });
+    token = data.token;
+    store.set(token);
+    return applyBootstrap(data);
+  },
+
+  /**
+   * Google 账号登录：已关联的账号直接回到原身份；首次使用需邀请码；
+   * 若本浏览器已有匿名身份（令牌），会把 Google 账号关联到这个身份上
+   */
+  async loginWithGoogle(credential, inviteCode) {
+    const data = await request('/login/google', { credential, inviteCode });
     token = data.token;
     store.set(token);
     return applyBootstrap(data);

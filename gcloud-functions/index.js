@@ -9,6 +9,7 @@ const { loadConfig } = require('./src/config');
 const { createFirestoreDb } = require('./src/db/firestore');
 const { createGcsStorage } = require('./src/storage');
 const { createWxClient } = require('./src/wechat');
+const { createGoogleVerifier } = require('./src/google');
 
 const config = loadConfig();
 
@@ -16,5 +17,6 @@ functions.http('api', createApp({
   config,
   db: createFirestoreDb(),
   storage: createGcsStorage(config.photoBucket),
-  wx: createWxClient(config)
+  wx: createWxClient(config),
+  google: config.googleClientId ? createGoogleVerifier(config.googleClientId) : null
 }));

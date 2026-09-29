@@ -3,7 +3,7 @@
  */
 const { COL, publicConfig, isAdmin } = require('../activity');
 const crypto = require('crypto');
-const { signToken, safeEqual } = require('../token');
+const { signToken, verifyToken, safeEqual } = require('../token');
 const { UserError } = require('../errors');
 
 async function findBinding(db, openid) {
@@ -22,11 +22,14 @@ async function requireBinding(ctx) {
 
 async function bootstrap(ctx) {
   const binding = await findBinding(ctx.db, ctx.openid);
+  const [google] = await ctx.db.query(COL.GOOGLE, [['openid', '==', ctx.openid]]);
   return {
     config: publicConfig(ctx.activity),
     categories: ctx.activity.categories,
     user: binding ? { ldap: binding.ldap } : null,
-    isAdmin: isAdmin(ctx.activity, ctx.openid)
+    isAdmin: isAdmin(ctx.activity, ctx.openid),
+    // 网页版：当前身份关联的 Google 账号（仅本人可见）
+    googleEmail: google ? (google.email || 'linked') : null
   };
 }
 
@@ -41,15 +44,54 @@ async function login(ctx) {
 
 /**
  * POST /login/web { inviteCode } → { token, ...bootstrap }
- * 网页测试版登录：凭邀请码为该浏览器生成一个独立身份（web_ 开头，与微信 openid 互不相通）
+ * 网页测试版匿名登录：凭邀请码为该浏览器生成一个独立身份（web_ 开头）。
+ * 开启 Google 登录后停用，避免换个浏览器就能得到新身份重复投票（已发出的令牌仍可用于关联 Google 账号）。
  */
 async function loginWeb(ctx) {
   const code = ctx.config.webInviteCode;
   if (!code) throw new UserError('网页版未开放', 403);
+  if (ctx.config.googleClientId) throw new UserError('请使用 Google 账号登录', 410);
   if (!safeEqual(String(ctx.body.inviteCode || '').trim(), code)) throw new UserError('邀请码不正确', 401);
   const openid = `web_${crypto.randomBytes(12).toString('hex')}`;
   const token = signToken(openid, ctx.config.tokenSecret, ctx.config.tokenTtlHours);
   return { token, ...(await bootstrap({ ...ctx, openid })) };
+}
+
+/**
+ * POST /login/google { credential, inviteCode? } （可带 Authorization: 已有的网页身份令牌）
+ * - 已关联过的 Google 账号：直接登录到原来的身份（任何设备都是同一个人）
+ * - 首次使用的 Google 账号：
+ *   · 浏览器里已有网页身份（带有效令牌）→ 把 Google 账号关联到这个身份，活动ID、报名、投票、管理员权限都保留；
+ *   · 否则需要邀请码，创建新身份 google_<sub>
+ * 一个 Google 账号只对应一个身份，一个身份也只能关联一个 Google 账号。
+ */
+async function loginGoogle(ctx) {
+  const { webInviteCode, googleClientId, tokenSecret, tokenTtlHours } = ctx.config;
+  if (!googleClientId) throw new UserError('未开启 Google 登录', 403);
+  const google = await ctx.google.verify(ctx.body.credential);
+  const linkId = `google_${google.sub}`;
+
+  let link = await ctx.db.get(COL.GOOGLE, linkId);
+  if (!link) {
+    const header = ctx.req.get('authorization') || '';
+    const existing = header.startsWith('Bearer ') ? verifyToken(header.slice(7), tokenSecret) : null;
+    let openid;
+    if (existing && !existing.startsWith('google_')) {
+      const [other] = await ctx.db.query(COL.GOOGLE, [['openid', '==', existing]]);
+      if (other) throw new UserError('当前身份已关联了另一个 Google 账号，请用那个账号登录');
+      openid = existing;
+    } else {
+      if (!webInviteCode || !safeEqual(String(ctx.body.inviteCode || '').trim(), webInviteCode)) {
+        throw new UserError('第一次参加请先输入邀请码', 401);
+      }
+      openid = linkId;
+    }
+    await ctx.db.commit([{ type: 'create', col: COL.GOOGLE, id: linkId, data: { openid, email: google.email, linkedAt: Date.now() } }]);
+    link = await ctx.db.get(COL.GOOGLE, linkId); // 并发时以先写入的为准
+  }
+
+  const token = signToken(link.openid, tokenSecret, tokenTtlHours);
+  return { token, ...(await bootstrap({ ...ctx, openid: link.openid })) };
 }
 
 /**
@@ -77,4 +119,4 @@ async function bindUser(ctx) {
   return { user: { ldap: clean } };
 }
 
-module.exports = { login, loginWeb, bootstrap, bindUser, requireBinding, findBinding };
+module.exports = { login, loginWeb, loginGoogle, bootstrap, bindUser, requireBinding, findBinding };

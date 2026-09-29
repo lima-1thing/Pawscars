@@ -192,6 +192,48 @@ async function login(openid) {
   assert.deepStrictEqual(gal.entries.map(e => e.id), [myEntryId, 'x3', 'x2', 'x1', 'x0']); // 最新提名在前
   assert.ok(gal.entries.every(e => e.ownerLdap.includes('*') && e.ownerOpenid === undefined && e.initialVotes === undefined));
 
+  console.log('Testing Google sign-in: cross-device identity and linking...');
+  // 开启 Google 登录的后台实例（同一个数据库）；假校验器：credential 形如 g:<sub>:<email>
+  const googleApp = createApp({
+    config: { ...CONFIG, googleClientId: 'client.apps.googleusercontent.com' }, db, storage, wx,
+    google: { verify: async (c) => {
+      const [tag, sub, email] = String(c).split(':');
+      if (tag !== 'g') throw new UserError('Google 登录已失效，请重新登录', 401);
+      return { sub, email };
+    } }
+  });
+  const gcall = async (pathname, body, token) => {
+    const headers = { 'content-type': 'application/json' };
+    if (token) headers.authorization = `Bearer ${token}`;
+    let status = 200;
+    let json = null;
+    const res = { status(x) { status = x; return res; }, json(b) { json = b; return res; }, set() { return res; }, send() { return res; } };
+    await googleApp({ method: 'POST', path: pathname, body, rawBody: Buffer.from(JSON.stringify(body)), headers, get: (n) => headers[n.toLowerCase()] }, res);
+    return { status, ...json };
+  };
+  // 匿名网页登录停用
+  await fails(gcall('/login/web', { inviteCode: 'PAW-TEST-2026' }), /请使用 Google 账号登录/, 410);
+  // 新 Google 账号必须有邀请码
+  await fails(gcall('/login/google', { credential: 'g:111:amy@gmail.com' }), /邀请码/, 401);
+  await fails(gcall('/login/google', { credential: 'bad' }), /已失效/, 401);
+  const amyPhone = await ok(gcall('/login/google', { credential: 'g:111:amy@gmail.com', inviteCode: 'PAW-TEST-2026' }));
+  assert.strictEqual(amyPhone.googleEmail, 'amy@gmail.com');
+  await ok(call('/bind', { token: amyPhone.token, body: { ldap: 'amy' } }));
+  // 换一台设备：同一个 Google 账号，不用邀请码，认出是同一个人
+  const amyLaptop = await ok(gcall('/login/google', { credential: 'g:111:amy@gmail.com' }));
+  assert.deepStrictEqual((await ok(call('/bootstrap', { token: amyLaptop.token }))).user, { ldap: 'AMY' });
+  // 已有的网页匿名身份（web1）在原浏览器关联 Google：保留原身份
+  await ok(call('/bind', { token: web1, body: { ldap: 'webuser' } }));
+  const linked = await ok(gcall('/login/google', { credential: 'g:222:bo@gmail.com' }, web1));
+  assert.deepStrictEqual(linked.user, { ldap: 'WEBUSER' });
+  assert.deepStrictEqual((await ok(gcall('/login/google', { credential: 'g:222:bo@gmail.com' }))).user, { ldap: 'WEBUSER' });
+  // 一个身份只能关联一个 Google 账号
+  await fails(gcall('/login/google', { credential: 'g:333:eve@gmail.com' }, web1), /另一个 Google 账号/);
+  // 已关联过的 Google 账号即使带着别的令牌，也回到自己的身份
+  assert.deepStrictEqual((await ok(gcall('/login/google', { credential: 'g:111:amy@gmail.com' }, web2))).user, { ldap: 'AMY' });
+  await ok(call('/admin/unbindUser', { token: admin, body: { ldap: 'amy' } }));
+  await ok(call('/admin/unbindUser', { token: admin, body: { ldap: 'webuser' } }));
+
   console.log('Testing admin config updates...');
   await fails(call('/admin/updateConfig', { token: admin, body: { hostAvatar: 'https://evil.example/a.png' } }), /上传主持人头像/);
   await ok(call('/admin/updateConfig', { token: admin, body: { hostAvatar: hostUrl, title: '新标题', adminOpenids: ['o_u1'] } }));
