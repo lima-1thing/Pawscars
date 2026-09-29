@@ -11,6 +11,7 @@ rmSync('dist', { recursive: true, force: true });
 mkdirSync('dist', { recursive: true });
 cpSync('index.html', 'dist/index.html');
 cpSync('styles.css', 'dist/styles.css');
+cpSync('images', 'dist/images', { recursive: true });
 
 const options = {
   entryPoints: ['src/main.js'],

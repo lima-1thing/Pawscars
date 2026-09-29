@@ -4,7 +4,7 @@
     <view class="cat-dog-row">
       <!-- 左：猫头装饰圈 (52px, powder blue背景) -->
       <view class="avatar-circle">
-        <text class="pet-deco-emoji">🐱</text>
+        <image class="pet-deco-img" src="/images/banner-cat.jpg" mode="aspectFill" />
       </view>
 
       <!-- 中：活动主标题 -->
@@ -15,7 +15,7 @@
 
       <!-- 右：狗头装饰圈 (52px, powder blue背景) -->
       <view class="avatar-circle">
-        <text class="pet-deco-emoji">🐶</text>
+        <image class="pet-deco-img" src="/images/banner-dog.jpg" mode="aspectFill" />
       </view>
     </view>
 

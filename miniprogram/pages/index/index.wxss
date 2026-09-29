@@ -34,10 +34,13 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 10px rgba(12, 68, 124, 0.08);
+  overflow: hidden;
 }
 
-.pet-deco-emoji {
-  font-size: 26px;
+/* 猫狗装饰头像：活动主视觉照片 */
+.pet-deco-img {
+  width: 100%;
+  height: 100%;
 }
 
 .title-wrap {

@@ -51,9 +51,9 @@ export default {
     <div class="home">
       <section class="banner">
         <div class="banner-row">
-          <div class="avatar-circle">🐱</div>
+          <div class="avatar-circle"><img src="images/banner-cat.jpg" alt="粉色猫咪"></div>
           <div class="brand"><div class="brand-title">Pawscars</div><div class="brand-sub">{{ config.title }}</div></div>
-          <div class="avatar-circle">🐶</div>
+          <div class="avatar-circle"><img src="images/banner-dog.jpg" alt="蓝色贵宾犬"></div>
         </div>
         <div class="mini-icons"><span class="mi yellow">🐾</span><span class="mi green">🏆</span><span class="mi purple">❤️</span></div>
       </section>

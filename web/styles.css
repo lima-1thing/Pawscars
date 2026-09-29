@@ -101,7 +101,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 /* 首页 */
 .banner { background: var(--bg-banner); padding: 16px 20px 14px; }
 .banner-row { display: flex; align-items: center; justify-content: space-between; }
-.avatar-circle { width: 52px; height: 52px; border-radius: 50%; background: var(--powder); border: 3px solid #FFFFFF; display: grid; place-items: center; font-size: 26px; }
+.avatar-circle { width: 52px; height: 52px; border-radius: 50%; background: var(--powder); border: 3px solid #FFFFFF; overflow: hidden; flex: none; box-shadow: 0 4px 10px rgba(12, 68, 124, 0.08); }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
 .brand { text-align: center; line-height: 1.2; }
 .brand-title { font-size: 20px; font-weight: 700; color: #38242A; }
 .brand-sub { font-size: 16px; font-weight: 600; color: #38242A; }
