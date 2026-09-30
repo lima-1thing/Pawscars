@@ -2,4 +2,4 @@
 export const API_BASE_URL = 'https://pawscars-api-6c35zzyigq-uk.a.run.app';
 
 // Google 账号登录的 OAuth 客户端 ID（公开值，可以写在前端）；留空时退回"仅邀请码"的匿名登录
-export const GOOGLE_CLIENT_ID = '';
+export const GOOGLE_CLIENT_ID = '63196560117-h3j3ots5tpiodped86knkjibv5ieg138.apps.googleusercontent.com';
