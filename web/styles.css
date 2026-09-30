@@ -315,8 +315,10 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .gallery-link { display: block; margin: 8px auto 0; }
 .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px 16px; }
 .gallery-tile { width: 100%; height: auto; aspect-ratio: 1; padding: 0; border: none; cursor: zoom-in; }
-.viewer { background: rgba(10, 8, 8, 0.92); padding: 16px; }
-.viewer-figure { margin: 0; max-width: min(92vw, 440px); text-align: center; color: #FFFFFF; }
+.viewer { background: rgba(10, 8, 8, 0.92); padding: 16px; touch-action: none; user-select: none; }
+.viewer-figure { margin: 0; max-width: min(92vw, 440px); text-align: center; color: #FFFFFF; transition: transform .2s ease; }
+.viewer-figure.dragging { transition: none; }
+.viewer-figure img { -webkit-user-drag: none; }
 .viewer-figure img { width: 100%; border-radius: 16px; }
 .viewer-figure figcaption { margin-top: 10px; font-size: 14px; }
 .viewer-figure .muted { color: rgba(255, 255, 255, 0.6); }

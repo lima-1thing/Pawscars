@@ -28,7 +28,7 @@
     <text class="empty-text">这个门类还没有毛孩报名</text>
   </view>
 
-  <view class="hint">点击照片可放大查看 · 主人ID已打码</view>
+  <view class="hint">点击照片可放大，左右滑动翻看 · 主人ID已打码</view>
   <view wx:if="{{canNominate}}" class="bottom-bar">
     <button class="paw-btn paw-btn-primary cta" bindtap="onGoNominate">我也要提名</button>
   </view>
