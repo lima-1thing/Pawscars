@@ -16,6 +16,7 @@
     "@google-cloud/firestore": "^9.2.0",
     "@google-cloud/functions-framework": "^5.0.5",
     "@google-cloud/storage": "^8.2.0",
-    "busboy": "^1.6.0"
+    "busboy": "^1.6.0",
+    "google-auth-library": "^11.1.0"
   }
 }

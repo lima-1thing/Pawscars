@@ -11,7 +11,8 @@ const COL = {
   BRACKET: 'Bracket',               // 每门类的决赛名单
   FINAL_PAIRS: 'FinalAssignment',   // 每位投票人每门类的决赛对局（openid_categoryId）
   FINAL_VOTE: 'FinalVote',          // 决赛投票（openid_categoryId_index）
-  CONGRATS: 'CongratsMessage'
+  CONGRATS: 'CongratsMessage',
+  GOOGLE: 'GoogleLink'              // google_<sub> → 对应的活动身份（openid），跨设备识别同一个人
 };
 
 const CONFIG_ID = 'main_config';

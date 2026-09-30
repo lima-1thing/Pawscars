@@ -31,6 +31,7 @@ Cloud Scheduler ──每 10 分钟──▶ /cron/advance-phase：到截止时�
 | 路径 | 请求体 | 说明 |
 |---|---|---|
 | `/login` | `{ code }` | `wx.login` 的 code 换 openid，返回 `token` 与启动数据 |
+| `/login/google` | `{ credential, inviteCode? }`，可带旧令牌 | 网页版 Google 账号登录：已关联的账号回到原身份（跨设备同一人）；新账号需邀请码；带着旧的匿名令牌则关联到该身份 |
 | `/bootstrap` | – | 活动配置、门类、本人绑定的活动ID、是否管理员 |
 | `/bind` | `{ ldap }` | 绑定活动ID（字母开头、字母和数字、全局唯一、一个微信只能绑一个） |
 | `/upload` | multipart：`file`，`folder=entries\|host` | 上传照片（JPG/PNG ≤5MB，按文件头校验），返回 `url`；`host` 仅管理员 |
@@ -188,6 +189,19 @@ gcloud scheduler jobs create http pawscars-advance-phase \
 | request 合法域名 | `https://pawscars-api-6c35zzyigq-uk.a.run.app`（或自有域名） |
 | uploadFile 合法域名 | `https://pawscars-api-6c35zzyigq-uk.a.run.app`（或自有域名） |
 | downloadFile 合法域名 | `https://storage.googleapis.com`（证书绘制需要下载照片） |
+
+## 网页版 Google 账号登录（可选）
+
+开启后网页版用 Google 账号识别身份：同一个 Google 账号在任何设备上都是同一个人；匿名的 `/login/web` 停用。
+
+1. Cloud Console → Google Auth Platform（OAuth 同意屏幕）：
+   - 品牌：应用名称 `Pawscars`、支持邮箱；
+   - 目标对象：选择**外部**，并**发布应用**（只用到基本的登录信息，不需要 Google 审核）。
+2. 客户端 → 创建客户端 → 类型选 **Web 应用**，"已获授权的 JavaScript 来源"填写 `https://lima-1thing.github.io` 和 `http://localhost:5173`（无需重定向 URI）。
+3. 复制客户端 ID：
+   - 后台：部署时在 `--set-env-vars` 中加入 `GOOGLE_CLIENT_ID=<客户端 ID>`；
+   - 网页：写入 `web/src/config.js` 的 `GOOGLE_CLIENT_ID` 并重新发布。
+4. 已有的网页用户在原来的浏览器里点首页的"关联 Google 账号"，即可保留原来的活动ID、报名与管理员权限。
 
 ## 接入小程序
 

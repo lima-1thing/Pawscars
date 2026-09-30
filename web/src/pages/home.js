@@ -3,6 +3,8 @@ import { go } from '../router';
 import { toast } from '../ui';
 import { formatCountdown } from '../shared';
 import RulesModal from '../components/rules-modal';
+import GoogleButton from '../components/google-button';
+import { GOOGLE_CLIENT_ID } from '../config';
 
 const VOTE_PHASES = {
   vote_initial: { step: '第一轮', name: '初选打投' },
@@ -11,14 +13,16 @@ const VOTE_PHASES = {
 
 export default {
   name: 'HomePage',
-  components: { RulesModal },
+  components: { RulesModal, GoogleButton },
   data() {
-    return { config: {}, categories: [], user: null, isAdmin: false, phaseOpen: true, countdown: '', rules: false };
+    return { config: {}, categories: [], user: null, isAdmin: false, googleEmail: null, phaseOpen: true, countdown: '', rules: false, linking: false };
   },
   computed: {
     phase() { return this.config.currentPhase; },
     phaseKind() { return this.phase === 'nominate' ? 'nominate' : (VOTE_PHASES[this.phase] ? 'vote' : 'awards'); },
     voteInfo() { return VOTE_PHASES[this.phase] || {}; },
+    // 旧的匿名网页身份：提示关联 Google 账号，以便在其他设备认出同一个人
+    needsLink() { return !!GOOGLE_CLIENT_ID && !this.googleEmail; },
     year() { return new Date().getFullYear(); }
   },
   async created() {
@@ -45,6 +49,13 @@ export default {
     },
     my() { if (this.requireUser()) go('/my'); },
     congrats() { if (this.requireUser()) go('/awards?focus=congrats'); },
+    async onLink(credential) {
+      try {
+        await api.loginWithGoogle(credential);
+        Object.assign(this, api.getState());
+        toast('已关联 Google 账号，换设备也能用它登录');
+      } catch (e) { toast(e.message); }
+    },
     go
   },
   template: `
@@ -56,6 +67,11 @@ export default {
           <div class="avatar-circle"><img src="images/banner-dog.jpg" alt="蓝色贵宾犬"></div>
         </div>
         <div class="mini-icons"><span class="mi yellow">🐾</span><span class="mi green">🏆</span><span class="mi purple">❤️</span></div>
+      </section>
+
+      <section v-if="needsLink" class="link-banner">
+        <div><b>关联 Google 账号</b><div class="small">关联后换手机、换电脑都能用同一个身份，活动ID和报名都保留</div></div>
+        <GoogleButton text="continue_with" @credential="onLink" />
       </section>
 
       <section class="content">
