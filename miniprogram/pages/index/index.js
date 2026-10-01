@@ -61,6 +61,8 @@ Page({
 
     this.setData({
       config,
+      // 主标题已显示 Pawscars，副标题去掉重复的前缀
+      brandSub: (config.title || '').replace(/^\s*Pawscars\s*/i, '') || '毛孩奥斯卡',
       categories,
       phaseKind,
       votePhaseInfo: VOTE_PHASES[phase] || null,

@@ -10,7 +10,7 @@
       <!-- 中：活动主标题 -->
       <view class="title-wrap" bindtap="onTitleClick">
         <text class="brand-title">Pawscars</text>
-        <text class="brand-subtitle">{{config.title || '毛孩奥斯卡'}}</text>
+        <text class="brand-subtitle">{{brandSub}}</text>
       </view>
 
       <!-- 右：狗头装饰圈 (52px, powder blue背景) -->

@@ -51,7 +51,7 @@ const DEFAULT_CONFIG = {
       <path d="M 16 52 C 16 42 22 38 30 38 C 38 38 44 42 44 52 Z" fill="#F77F00"/>
     </svg>
   `),
-  hostIntro: '为庆祝纽约🐶群活跃七周年，宫师姐决定邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
+  hostIntro: '让我们庆祝纽约🐶群活跃七周年，邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
   rulesSummary: '赛制：报名 → 初选（8强）→ 决赛（冠亚季军）',
   callToActionText: '准备好让全体🐶友欣赏你家毛孩了吗？',
   rulesDetail: `

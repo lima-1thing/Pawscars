@@ -99,34 +99,34 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .avatar-ring { width: 24px; height: 24px; border-radius: 50%; background: var(--host); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #612D3A; }
 
 /* 首页 */
-.banner { background: var(--bg-banner); padding: 16px 20px 14px; }
+.banner { background: var(--bg-banner); padding: 24px 18px 22px; }
 .banner-row { display: flex; align-items: center; justify-content: space-between; }
-.avatar-circle { width: 52px; height: 52px; border-radius: 50%; background: var(--powder); border: 3px solid #FFFFFF; overflow: hidden; flex: none; box-shadow: 0 4px 10px rgba(12, 68, 124, 0.08); }
+.avatar-circle { width: 64px; height: 64px; border-radius: 50%; background: var(--powder); border: 3px solid #FFFFFF; overflow: hidden; flex: none; box-shadow: 0 4px 10px rgba(12, 68, 124, 0.08); }
 .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-.brand { text-align: center; line-height: 1.2; }
-.brand-title { font-size: 20px; font-weight: 700; color: #38242A; }
+.brand { flex: 1; min-width: 0; text-align: center; line-height: 1.25; }
+.brand-title { font-size: 22px; font-weight: 700; color: #38242A; }
 .brand-sub { font-size: 16px; font-weight: 600; color: #38242A; }
-.mini-icons { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+.mini-icons { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
 .mi { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
 .mi.yellow { background: #FAC775; } .mi.green { background: #9FE1CB; } .mi.purple { background: #CECBF6; }
-.content { padding: 16px 20px 10px; }
-.speaker-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.content { padding: 24px 20px 12px; }
+.speaker-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .host-dot { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--host); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #612D3A; }
 .host-name { font-weight: 600; font-size: 13px; }
 .user-chip { margin-left: auto; border: none; background: var(--capsule); border-radius: 12px; padding: 3px 10px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
 .user-chip.unbound { background: var(--bg-banner); color: var(--coral-dark); }
 .admin-tag { background: var(--cta-bg); color: var(--cta-text); font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 8px; }
-.story { margin: 0 0 10px; font-size: 13px; color: #3B3433; }
-.phase-strip { font-size: 12px; font-weight: 600; color: #7A2E4A; background: var(--bg-banner); border-radius: 12px; padding: 6px 12px; margin-bottom: 10px; text-align: center; }
+.story { margin: 0 0 18px; font-size: 13px; line-height: 1.75; color: #3B3433; }
+.phase-strip { font-size: 12px; font-weight: 600; color: #7A2E4A; background: var(--bg-banner); border-radius: 12px; padding: 8px 12px; margin-bottom: 16px; text-align: center; }
 .phase-strip.closed { color: var(--text-2); background: var(--capsule); }
-.rule-capsule { border: none; background: var(--capsule); border-radius: 18px; padding: 6px 14px; font-size: 11px; font-weight: 500; color: var(--text-2); margin-bottom: 12px; }
-.section-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-.cat-cards { display: flex; gap: 10px; margin-bottom: 12px; }
+.rule-capsule { border: none; background: var(--capsule); border-radius: 18px; padding: 6px 14px; font-size: 11px; font-weight: 500; color: var(--text-2); margin-bottom: 24px; }
+.section-label { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.cat-cards { display: flex; gap: 10px; margin-bottom: 24px; }
 .cat-card { flex: 1; border-radius: 16px; padding: 12px 6px; text-align: center; line-height: 1.25; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); }
 .cat-icon { font-size: 20px; margin-bottom: 4px; }
 .cat-tag { font-size: 14px; font-weight: 700; }
 .cat-suffix { font-size: 11px; font-weight: 500; }
-.callout { text-align: center; font-size: 13px; font-weight: 500; margin: 0 0 12px; }
+.callout { text-align: center; font-size: 13px; font-weight: 500; margin: 0 0 16px; }
 .speech { background: var(--good-bg); border-radius: 4px 18px 18px 18px; padding: 14px 16px; margin-bottom: 14px; }
 .speech.gold { background: #FFF8E7; border: 1.5px solid #FAC775; text-align: center; }
 .speech-tag { font-size: 11px; font-weight: 600; color: var(--good); }
@@ -138,7 +138,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .stepper span { padding: 6px 14px; border-radius: 16px; background: var(--capsule); font-size: 11px; color: var(--muted); }
 .stepper span.on { background: #9FE1CB; color: #04342C; font-weight: 700; }
 .admin-link { padding: 8px 0; }
-.web-note { text-align: center; font-size: 11px; color: var(--muted); padding: 8px 0 24px; margin: 0; }
+.web-note { text-align: center; font-size: 11px; color: var(--muted); padding: 20px 0 32px; margin: 0; }
 
 /* 邀请码 / 绑定 */
 .auth-screen { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg-banner); }
@@ -312,7 +312,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 }
 
 /* 已提名的毛孩 */
-.gallery-link { display: block; margin: 8px auto 0; }
+.gallery-link { display: block; margin: 16px auto 0; }
 .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px 16px; }
 .gallery-tile { width: 100%; height: auto; aspect-ratio: 1; padding: 0; border: none; cursor: zoom-in; }
 .viewer { background: rgba(10, 8, 8, 0.92); padding: 16px; touch-action: none; user-select: none; }
@@ -330,4 +330,4 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 /* Google 登录 */
 .google-btn-wrap { display: flex; flex-direction: column; align-items: center; min-height: 44px; }
 .google-login { margin: 14px 0 4px; }
-.link-banner { margin: 12px 16px 0; padding: 12px 14px; border-radius: 16px; background: #EAF2FE; color: #1F3A5F; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; font-size: 13px; }
+.link-banner { margin: 20px 20px 0; display: flex; justify-content: center; }

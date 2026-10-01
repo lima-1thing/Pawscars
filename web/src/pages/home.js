@@ -23,7 +23,9 @@ export default {
     voteInfo() { return VOTE_PHASES[this.phase] || {}; },
     // 旧的匿名网页身份：提示关联 Google 账号，以便在其他设备认出同一个人
     needsLink() { return !!GOOGLE_CLIENT_ID && !this.googleEmail; },
-    year() { return new Date().getFullYear(); }
+    year() { return new Date().getFullYear(); },
+    // 主标题已显示 Pawscars，副标题去掉重复的前缀
+    brandSub() { return (this.config.title || '').replace(/^\s*Pawscars\s*/i, '') || '毛孩奥斯卡'; }
   },
   async created() {
     try { await api.refresh(); } catch (e) { toast(e.message); }
@@ -63,15 +65,16 @@ export default {
       <section class="banner">
         <div class="banner-row">
           <div class="avatar-circle"><img src="images/banner-cat.jpg" alt="粉色猫咪"></div>
-          <div class="brand"><div class="brand-title">Pawscars</div><div class="brand-sub">{{ config.title }}</div></div>
+          <div class="brand">
+            <div class="brand-title">Pawscars</div><div class="brand-sub">{{ brandSub }}</div>
+            <div class="mini-icons"><span class="mi yellow">🐾</span><span class="mi green">🏆</span><span class="mi purple">❤️</span></div>
+          </div>
           <div class="avatar-circle"><img src="images/banner-dog.jpg" alt="蓝色贵宾犬"></div>
         </div>
-        <div class="mini-icons"><span class="mi yellow">🐾</span><span class="mi green">🏆</span><span class="mi purple">❤️</span></div>
       </section>
 
       <section v-if="needsLink" class="link-banner">
-        <div><b>关联 Google 账号</b><div class="small">关联后换手机、换电脑都能用同一个身份，活动ID和报名都保留</div></div>
-        <GoogleButton text="continue_with" @credential="onLink" />
+        <GoogleButton locale="en" @credential="onLink" />
       </section>
 
       <section class="content">

@@ -14,7 +14,7 @@ function whenGoogleReady(cb, tries = 0) {
 
 export default {
   name: 'GoogleButton',
-  props: { text: { type: String, default: 'signin_with' } },
+  props: { text: { type: String, default: 'signin_with' }, locale: { type: String, default: 'zh_CN' } },
   emits: ['credential'],
   data() { return { failed: false }; },
   mounted() {
@@ -30,7 +30,7 @@ export default {
       }
       currentHandler = (credential) => this.$emit('credential', credential);
       window.google.accounts.id.renderButton(this.$refs.slot, {
-        type: 'standard', theme: 'outline', size: 'large', shape: 'pill', text: this.text, locale: 'zh_CN', width: 280
+        type: 'standard', theme: 'outline', size: 'large', shape: 'pill', text: this.text, locale: this.locale, width: 280
       });
     });
     setTimeout(() => { if (!this.$refs.slot || !this.$refs.slot.children.length) this.failed = true; }, 10000);
