@@ -2,7 +2,7 @@
   <!-- 顶部 Banner 区 (浅粉背景 #FBEAF0) -->
   <view class="banner-area">
     <view class="cat-dog-row">
-      <!-- 左：猫头装饰圈 (52px, powder blue背景) -->
+      <!-- 左：猫咪照片 -->
       <view class="avatar-circle">
         <image class="pet-deco-img" src="/images/banner-cat.jpg" mode="aspectFill" />
       </view>
@@ -11,20 +11,20 @@
       <view class="title-wrap" bindtap="onTitleClick">
         <text class="brand-title">Pawscars</text>
         <text class="brand-subtitle">{{brandSub}}</text>
+        <!-- 三个小图标圈（黄/绿/紫：爪子/奖杯/爱心），与标题一起和两侧照片上下居中 -->
+        <view class="deco-icons-row">
+          <view class="mini-icon-circle icon-yellow">🐾</view>
+          <view class="mini-icon-circle icon-green">🏆</view>
+          <view class="mini-icon-circle icon-purple">❤️</view>
+        </view>
       </view>
 
-      <!-- 右：狗头装饰圈 (52px, powder blue背景) -->
+      <!-- 右：贵宾犬照片 -->
       <view class="avatar-circle">
         <image class="pet-deco-img" src="/images/banner-dog.jpg" mode="aspectFill" />
       </view>
     </view>
 
-    <!-- 下方：三个小图标圈 (30px，黄/绿/紫三色，爪子/奖杯/爱心) -->
-    <view class="deco-icons-row">
-      <view class="mini-icon-circle icon-yellow">🐾</view>
-      <view class="mini-icon-circle icon-green">🏆</view>
-      <view class="mini-icon-circle icon-purple">❤️</view>
-    </view>
   </view>
 
   <!-- 正文内容区（严格适配一屏自适应排版要求） -->

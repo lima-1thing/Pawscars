@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 104" width="120" height="104">
+  <!-- 二次元风小相机：马卡龙配色、圆润描边、镜头大眼睛 + 腮红 + 小爪印 -->
+  <g stroke="#5A3A44" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <!-- 快门键与闪光灯 -->
+    <rect x="22" y="14" width="18" height="12" rx="5" fill="#F9E27A"/>
+    <rect x="72" y="10" width="30" height="16" rx="7" fill="#C7E4F5"/>
+    <!-- 机身 -->
+    <rect x="8" y="22" width="104" height="72" rx="22" fill="#F4C0D1"/>
+    <!-- 镜头 -->
+    <circle cx="60" cy="58" r="27" fill="#FFFFFF"/>
+    <circle cx="60" cy="58" r="18" fill="#9B8CE8"/>
+  </g>
+  <!-- 机身上的白色条纹 -->
+  <path d="M10 44 H33 M87 44 H110" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+  <!-- 镜头高光（大眼睛） -->
+  <circle cx="60" cy="58" r="10" fill="#5B4BB7"/>
+  <circle cx="53" cy="50" r="6" fill="#FFFFFF"/>
+  <circle cx="66" cy="64" r="2.6" fill="#FFFFFF"/>
+  <!-- 腮红 -->
+  <ellipse cx="22" cy="72" rx="7" ry="4.5" fill="#F28FAE" opacity="0.8"/>
+  <ellipse cx="98" cy="72" rx="7" ry="4.5" fill="#F28FAE" opacity="0.8"/>
+  <!-- 小爪印 -->
+  <g fill="#FFFFFF" opacity="0.9">
+    <ellipse cx="96" cy="36" rx="4" ry="3.4"/>
+    <circle cx="91" cy="31" r="1.7"/><circle cx="95" cy="29.4" r="1.7"/><circle cx="99.4" cy="30" r="1.7"/><circle cx="102" cy="33.4" r="1.6"/>
+  </g>
+  <!-- 闪光小星星 -->
+  <path d="M112 6 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#F9E27A" stroke="#5A3A44" stroke-width="1.6" stroke-linejoin="round"/>
+</svg>

@@ -10,7 +10,7 @@
 /* 顶部Banner区 (浅粉背景 #FBEAF0) */
 .banner-area {
   background-color: #FBEAF0;
-  padding: 16px 20px 14px;
+  padding: 24px 18px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,10 +23,11 @@
   justify-content: space-between;
 }
 
-/* 52px 直径，粉蓝底，白色 3px 描边 */
+/* 64px 直径，粉蓝底，白色 3px 描边 */
 .avatar-circle {
-  width: 52px;
-  height: 52px;
+  flex: none;
+  width: 64px;
+  height: 64px;
   background-color: #C7E4F5;
   border: 3px solid #FFFFFF;
   border-radius: 50%;
@@ -44,6 +45,8 @@
 }
 
 .title-wrap {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,7 +54,7 @@
 }
 
 .brand-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #38242A;
   line-height: 1.1;
@@ -68,8 +71,8 @@
 /* 三个小图标圈 (30px，黄/绿/紫) */
 .deco-icons-row {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .mini-icon-circle {
@@ -90,7 +93,7 @@
 /* 正文内容区 */
 .content-body {
   flex: 1;
-  padding: 16px 20px 10px;
+  padding: 24px 20px 12px;
   display: flex;
   flex-direction: column;
 }
@@ -99,7 +102,7 @@
 .spokesperson-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
 .gong-avatar {
@@ -163,16 +166,16 @@
 
 .story-desc {
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.75;
   color: #3B3433;
-  margin-bottom: 10px;
+  margin-bottom: 18px;
 }
 
 /* 居中赛制胶囊条 */
 .rule-capsule-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .rule-capsule {
@@ -188,14 +191,14 @@
   font-size: 13px;
   font-weight: 600;
   color: #332827;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 /* 三门类横排卡片 */
 .category-cards-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
 }
 
 .cat-card {
@@ -232,7 +235,7 @@
   font-size: 13px;
   font-weight: 500;
   color: #38242A;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   text-align: center;
 }
 
@@ -344,8 +347,8 @@
   color: #7A2E4A;
   background: #FBEAF0;
   border-radius: 12px;
-  padding: 6px 12px;
-  margin-bottom: 10px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
   text-align: center;
 }
 
@@ -378,5 +381,5 @@
   font-size: 13px;
   font-weight: 600;
   color: #993C1D;
-  padding: 10px 0 2px;
+  padding: 18px 0 4px;
 }

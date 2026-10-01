@@ -105,18 +105,18 @@ export default {
     <div>
       <NavBar title="我要提名" subtitle="提交参赛毛孩" :show-rules="false" />
       <div class="page">
-        <div class="right"><button class="link-btn small" @click="go('/gallery')">👀 看看大家都提名了哪些毛孩 ›</button></div>
+        <div class="center"><button class="link-btn small" @click="go('/gallery')">👀 看看大家都提名了哪些毛孩 ›</button></div>
         <div v-if="!phaseOpen" class="card closed-note"><b>报名已截止</b><span class="muted">下方为你已提交的提名，现已锁定为只读。</span></div>
         <div v-else class="card">
           <div class="field-label">毛孩照片 <span class="muted small">（单张，可拖动缩放裁剪为正方形）</span></div>
           <div class="upload-box" @click="pickFile({ type: 'new' })">
             <img v-if="photoUrl" :src="photoUrl" alt="已选照片"><span v-if="photoUrl" class="change-badge">点击更换</span>
-            <div v-else class="upload-placeholder"><div class="big-emoji">📷</div><div>点击上传爱宠靓照</div><div class="muted small">猫猫/狗狗/虚拟AI生成均可</div></div>
+            <div v-else class="upload-placeholder"><img class="upload-camera" src="images/camera.svg" alt=""><div>点击上传爱宠靓照</div><div class="muted small">实拍照/虚拟AI生成均可</div></div>
           </div>
           <div v-if="photoUrl" class="center"><button class="link-btn" @click="recrop">✂️ 重新裁剪</button></div>
 
           <div class="field-label">毛孩名字 <span class="req">*</span></div>
-          <input class="text-input" v-model="petName" maxlength="20" placeholder="给毛孩起个闪亮的名字 (1-20字)">
+          <input class="text-input" v-model="petName" maxlength="20" placeholder="1-20字">
 
           <div class="field-label">参赛门类 <span class="muted small">（可同时勾选多个门类）</span></div>
           <div class="chips">

@@ -23,9 +23,9 @@
           </block>
           <block wx:else>
             <view class="upload-placeholder">
-              <text class="camera-icon">📷</text>
+              <image class="camera-icon" src="/images/camera.png" mode="widthFix" />
               <text class="upload-tip">点击拍照或上传爱宠靓照</text>
-              <text class="upload-sub">猫猫/狗狗/虚拟AI生成均可</text>
+              <text class="upload-sub">实拍照/虚拟AI生成均可</text>
             </view>
           </block>
         </view>
@@ -40,7 +40,7 @@
         </view>
         <input 
           class="name-input" 
-          placeholder="给毛孩起个闪亮的名字 (1-20字)" 
+          placeholder="1-20字" 
           value="{{petName}}"
           bindinput="onInputPetName"
           maxlength="20"

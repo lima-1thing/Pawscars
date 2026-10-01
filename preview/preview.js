@@ -452,14 +452,14 @@ const Router = {
               <div id="photoBox" style="width:100%;height:180px;background:#FAF8F2;border:2px dashed #E0DACD;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;">
                 <div style="font-size:32px;margin-bottom:4px;">📷</div>
                 <div style="font-size:13px;font-weight:600;color:#554845;">点击生成/上传爱宠靓照</div>
-                <div style="font-size:11px;color:#9C9391;">猫猫/狗狗/虚拟AI生成均可</div>
+                <div style="font-size:11px;color:#9C9391;">实拍照/虚拟AI生成均可</div>
               </div>
             </div>
 
             <!-- 名字 -->
             <div style="margin-bottom:16px;">
               <div style="font-size:13px;font-weight:700;color:#332827;margin-bottom:6px;">毛孩名字 <span style="color:#E56B6F;">*</span></div>
-              <input id="petNameInput" style="width:100%;height:44px;background:#F7F5F0;border:1.5px solid #EBE6DC;border-radius:14px;padding:0 12px;font-size:13px;" placeholder="给毛孩起个闪亮的名字 (1-20字)" maxlength="20" value="团子" />
+              <input id="petNameInput" style="width:100%;height:44px;background:#F7F5F0;border:1.5px solid #EBE6DC;border-radius:14px;padding:0 12px;font-size:13px;" placeholder="1-20字" maxlength="20" value="团子" />
             </div>
 
             <!-- 门类多选 chips -->
