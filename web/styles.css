@@ -108,7 +108,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .brand-title { font-size: 22px; font-weight: 700; color: #38242A; }
 .brand-sub { font-size: 16px; font-weight: 600; color: #38242A; }
 .mini-icons { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
-.mi { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
+.mi { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
+.mi img { width: 18px; height: 18px; }
 .mi.yellow { background: #FAC775; } .mi.green { background: #9FE1CB; } .mi.purple { background: #CECBF6; }
 .content { padding: 24px 20px 12px; }
 .speaker-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }

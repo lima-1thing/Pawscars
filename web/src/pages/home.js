@@ -67,7 +67,7 @@ export default {
           <div class="avatar-circle"><img src="images/banner-cat.jpg" alt="粉色猫咪"></div>
           <div class="brand">
             <div class="brand-title">Pawscars</div><div class="brand-sub">{{ brandSub }}</div>
-            <div class="mini-icons"><span class="mi yellow">🐾</span><span class="mi green">🏆</span><span class="mi purple">❤️</span></div>
+            <div class="mini-icons"><span class="mi yellow"><img src="images/icon-paw.svg" alt=""></span><span class="mi green"><img src="images/icon-trophy.svg" alt=""></span><span class="mi purple"><img src="images/icon-heart.svg" alt=""></span></div>
           </div>
           <div class="avatar-circle"><img src="images/banner-dog.jpg" alt="蓝色贵宾犬"></div>
         </div>
@@ -86,9 +86,9 @@ export default {
             <template v-else>未绑定 · 去绑定 ›</template>
           </button>
         </div>
+        <p class="story">{{ config.hostIntro }}</p>
 
         <template v-if="phaseKind === 'nominate'">
-          <p class="story">{{ config.hostIntro }}</p>
           <div class="phase-strip" :class="{ closed: !phaseOpen }">
             <template v-if="phaseOpen && countdown">报名中 · 距截止还剩 {{ countdown }}</template>
             <template v-else-if="phaseOpen">报名进行中</template>

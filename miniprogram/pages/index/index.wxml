@@ -13,9 +13,9 @@
         <text class="brand-subtitle">{{brandSub}}</text>
         <!-- 三个小图标圈（黄/绿/紫：爪子/奖杯/爱心），与标题一起和两侧照片上下居中 -->
         <view class="deco-icons-row">
-          <view class="mini-icon-circle icon-yellow">🐾</view>
-          <view class="mini-icon-circle icon-green">🏆</view>
-          <view class="mini-icon-circle icon-purple">❤️</view>
+          <view class="mini-icon-circle icon-yellow"><image class="mini-icon-img" src="/images/icon-paw.png" /></view>
+          <view class="mini-icon-circle icon-green"><image class="mini-icon-img" src="/images/icon-trophy.png" /></view>
+          <view class="mini-icon-circle icon-purple"><image class="mini-icon-img" src="/images/icon-heart.png" /></view>
         </view>
       </view>
 
@@ -46,10 +46,11 @@
         <text wx:else>未绑定 · 去绑定 ›</text>
       </view>
     </view>
+    <!-- 开场白：各阶段都显示 -->
+    <view class="story-desc">{{config.hostIntro}}</view>
 
     <!-- 阶段A：报名期 -->
     <block wx:if="{{phaseKind === 'nominate'}}">
-      <view class="story-desc">{{config.hostIntro}}</view>
 
       <view class="phase-strip {{phaseOpen ? '' : 'phase-strip-closed'}}">
         <text wx:if="{{phaseOpen && countdownText}}">报名中 · 距截止还剩 {{countdownText}}</text>

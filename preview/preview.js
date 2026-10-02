@@ -46,7 +46,7 @@ const INITIAL_STATE = {
   config: {
     title: 'Pawscars 毛孩奥斯卡',
     hostName: '宫师姐',
-    hostIntro: '让我们庆祝纽约🐶群活跃七周年，邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
+    hostIntro: '庆祝纽约🐶群活跃七周年，让我们邀请毛孩子们集体亮相，首届 Pawscars 毛孩奥斯卡评选，现在开始！',
     rulesSummary: '赛制：报名 → 8强投票 → 8进4淘汰赛 → 4强巅峰德比',
     callToActionText: '准备好让全体🐶友欣赏你家毛孩了吗？',
     currentPhase: 'nominate'
