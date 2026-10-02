@@ -83,7 +83,7 @@ export default {
           <span v-else class="muted small">已选 <b>{{ row.picks.length }}</b>/8</span>
         </div>
         <div v-if="!row.needsVote" class="skip-note" :style="{ background: row.bg, color: row.textColor }">
-          本项角逐提名毛孩不足8名，全员晋级淘汰赛。恭喜各位毛孩晋级！
+          {{ row.entries.length === 8 ? '角逐提名毛孩正好8名' : '本项角逐提名毛孩不足8名' }}，全员晋级淘汰赛。恭喜各位毛孩晋级！
         </div>
         <template v-if="row.entries.length">
           <div class="swipe" @scroll.passive="onScroll(row, $event)">

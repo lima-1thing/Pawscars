@@ -25,7 +25,7 @@
 
       <!-- 报名不足 9 只：全员直接晋级，无需初选（照片照常展示，只是不能选择） -->
       <view wx:if="{{!cat.needsVote}}" class="skip-note" style="background-color: {{cat.bg}}; color: {{cat.textColor}};">
-        本项角逐提名毛孩不足8名，全员晋级淘汰赛。恭喜各位毛孩晋级！
+        {{cat.entries.length === 8 ? '角逐提名毛孩正好8名' : '本项角逐提名毛孩不足8名'}}，全员晋级淘汰赛。恭喜各位毛孩晋级！
       </view>
 
       <!-- 横向滑动区：中间当前照片，左右露出前后照片边缘 -->
