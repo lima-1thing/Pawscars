@@ -74,7 +74,7 @@
   <view wx:elif="{{viewState === 'noMatches'}}" class="no-matches-box">
     <text class="no-match-icon">🕊️</text>
     <text class="no-match-title">本门类本轮无需投票</text>
-    <text class="no-match-desc">本门类决赛选手不足 2 只，无需 PK，可以去其他门类看看。</text>
+    <text class="no-match-desc">本门类决赛选手不足 2 位，无需 PK，可以去其他门类看看。</text>
     <button class="paw-btn paw-btn-primary comp-btn" bindtap="onNextCategory">去其他门类</button>
   </view>
 

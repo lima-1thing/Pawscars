@@ -74,7 +74,7 @@ Page({
       return;
     }
 
-    // 按门类分组展示（同一门类下可能有多只不同的宠物）
+    // 按门类分组展示（同一门类下可能有多位不同的毛孩）
     const entryGroups = api.getState().categories
       .map(cat => ({
         ...cat,

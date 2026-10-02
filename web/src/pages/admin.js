@@ -117,7 +117,7 @@ export default {
             <div><b>{{ stats.totalEntries }}</b><span>有效报名</span></div><div><b>{{ stats.totalVoters }}</b><span>投票人数</span></div>
             <div><b>{{ stats.totalFinalVotes }}</b><span>决赛票数</span></div><div><b>{{ stats.totalCongrats }}</b><span>贺词</span></div>
           </div>
-          <div v-for="c in stats.perCategory" :key="c.id" class="stat-row"><b>{{ c.name }}</b><span>{{ c.entryCount }} 只参赛 · 初选 {{ c.initialVoterCount }} 人 · 决赛 {{ c.finalVoterCount }} 人</span></div>
+          <div v-for="c in stats.perCategory" :key="c.id" class="stat-row"><b>{{ c.name }}</b><span>{{ c.entryCount }} 位参赛 · 初选 {{ c.initialVoterCount }} 人 · 决赛 {{ c.finalVoterCount }} 人</span></div>
         </div>
         <div class="card">
           <div class="card-title">📝 活动信息与文案</div>

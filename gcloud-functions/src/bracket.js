@@ -82,9 +82,9 @@ function randomCycle(ids, rng) {
 /**
  * 为一位投票人生成决赛对局（每门类最多 8 场）
  * 公平性：
- * 1. 单人：把决赛选手排成一圈、相邻两只配成一场 —— 每只毛孩恰好出场 2 次（选手 ≥ 3 时），上下位置随机；
+ * 1. 单人：把决赛选手排成一圈、相邻两位配成一场 —— 每位毛孩恰好出场 2 次（选手 ≥ 3 时），上下位置随机；
  * 2. 全体：从多套随机排法中选出"最少被分配过"的组合（参考已有投票人的覆盖次数），
- *    使全部两两组合被均匀覆盖，每只毛孩遇到各个对手的机会大致相同。
+ *    使全部两两组合被均匀覆盖，每位毛孩遇到各个对手的机会大致相同。
  * @param {string[]} finalistIds
  * @param {object} [options]
  * @param {() => number} [options.rng] 随机数函数，默认 Math.random（测试可注入）
@@ -114,7 +114,7 @@ function generateFinalPairs(finalistIds, options = {}) {
   }
 
   const pairs = edges.map(([x, y]) => (rng() < 0.5 ? { a: x, b: y } : { a: y, b: x }));
-  // 对局顺序打乱，避免相邻两场总是同一只毛孩
+  // 对局顺序打乱，避免相邻两场总是同一位毛孩
   for (let i = pairs.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
@@ -174,7 +174,7 @@ function computeEntryProgress({ entry, phase, needsInitialRound, finalists, fina
 
   if (phaseIdx === 1) {
     if (!needsInitialRound) {
-      return { title: '直接晋级', detail: `本门类报名不足 ${FINALIST_COUNT + 1} 只，免初选直接进入决赛`, tone: 'good' };
+      return { title: '直接晋级', detail: `本门类报名不足 ${FINALIST_COUNT + 1} 位，免初选直接进入决赛`, tone: 'good' };
     }
     return { title: '初选投票中', detail: `当前已被选中 ${initialVotes} 次（前 ${FINALIST_COUNT} 名晋级决赛）`, tone: 'neutral' };
   }

@@ -49,6 +49,6 @@ Page({
   },
 
   onShareAppMessage() {
-    return { title: `Pawscars 已有 ${this.data.total} 只毛孩报名，快来看看！`, path: '/pages/gallery/gallery' };
+    return { title: `Pawscars 已有 ${this.data.total} 位毛孩报名，快来看看！`, path: '/pages/gallery/gallery' };
   }
 });

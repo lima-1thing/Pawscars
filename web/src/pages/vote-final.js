@@ -140,7 +140,7 @@ export default {
       </div>
       <div v-else-if="view === 'noMatches'" class="empty">
         <div class="big-emoji">🕊️</div><b>本门类无需投票</b>
-        <p class="muted">本门类决赛选手不足 2 只，无需 PK，可以去其他门类看看。</p>
+        <p class="muted">本门类决赛选手不足 2 位，无需 PK，可以去其他门类看看。</p>
         <button class="btn btn-primary" @click="nextCategory">去其他门类</button>
       </div>
       <div v-else-if="view === 'closed'" class="empty">

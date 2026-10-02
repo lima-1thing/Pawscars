@@ -63,7 +63,7 @@
       <view class="cat-stat-list">
         <view wx:for="{{stats.perCategory}}" wx:key="id" class="cat-stat-item">
           <text class="cat-stat-name">{{item.name}}</text>
-          <text class="cat-stat-detail">{{item.entryCount}} 只参赛 · 初选 {{item.initialVoterCount}} 人 · 决赛 {{item.finalVoterCount}} 人</text>
+          <text class="cat-stat-detail">{{item.entryCount}} 位参赛 · 初选 {{item.initialVoterCount}} 人 · 决赛 {{item.finalVoterCount}} 人</text>
         </view>
       </view>
     </view>

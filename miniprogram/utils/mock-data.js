@@ -56,12 +56,12 @@ const DEFAULT_CONFIG = {
   callToActionText: '准备好让全体🐶友欣赏你家毛孩了吗？',
   rulesDetail: `
 一、活动概述与赛制：
-本届 Pawscars 有三大门类，进行两轮投票评选，每个阶段 3 天。
+本届 Pawscars 有三大门类，进行两轮投票评选：报名期 5 天，初选、决赛各 3 天。
 
 二、比赛流程：
-1. 报名期（3天）：提交毛孩照片，选择参赛门类（支持多选参赛门类、支持提名多个毛孩）。
-2. 初选（3天）：三门类分别投票（所有 Xooglers/Googlers 都可以参与投票），每个门类最多选 8 只，按被选总次数取前 8 强。
-3. 决赛（3天）：每个门类的 8 强两两 PK。每位投票人在每个门类会随机分到最多 8 场对决，每只毛孩出场次数相同，点选你更喜欢的一方；按胜率决出冠亚季军。
+1. 报名期（5天）：提交毛孩照片，选择参赛门类（支持多选参赛门类、支持提名多位毛孩）。
+2. 初选（3天）：三门类分别投票（所有 Xooglers/Googlers 都可以参与投票），每个门类最多选 8 位，按被选总次数取前 8 强。
+3. 决赛（3天）：每个门类的 8 强两两 PK。每位投票人在每个门类会随机分到最多 8 场对决，每位毛孩出场次数相同，点选你更喜欢的一方；按胜率决出冠亚季军。
 4. 颁奖盛典：公布冠亚季军领奖台，生成专属获奖证书，开启全员贺词墙。
 
 三、打平裁定原则：
@@ -71,9 +71,9 @@ const DEFAULT_CONFIG = {
   currentPhase: 'nominate',
   // 各阶段截止时间（毫秒时间戳），管理员可在后台调整；每阶段默认 3 天
   phaseDeadlines: {
-    nominate: DAY_START + 3 * DAY_MS,
-    vote_initial: DAY_START + 6 * DAY_MS,
-    vote_final: DAY_START + 9 * DAY_MS,
+    nominate: DAY_START + 5 * DAY_MS,
+    vote_initial: DAY_START + 8 * DAY_MS,
+    vote_final: DAY_START + 11 * DAY_MS,
     awards: 0
   },
 
