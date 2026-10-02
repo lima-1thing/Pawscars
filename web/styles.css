@@ -84,16 +84,15 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 
 /* 导航栏 */
 .nav-bar {
-  position: sticky; top: 0; z-index: 50; height: 52px; padding: 0 12px;
-  /* 左右两栏等宽，标题始终在正中；左侧按钮较宽时标题自动缩略，不会重叠 */
-  display: grid; grid-template-columns: 1fr minmax(0, max-content) 1fr; align-items: center; background: var(--bg-banner);
+  /* 两行：上行放按钮，下行标题居中，顶栏更舒展 */
+  position: sticky; top: 0; z-index: 50; padding: 0 12px 12px; background: var(--bg-banner);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
+.nav-row { height: 48px; display: flex; align-items: center; justify-content: space-between; }
 .nav-left, .nav-right { display: flex; align-items: center; gap: 6px; }
-.nav-right { justify-content: flex-end; }
-.nav-center { min-width: 0; padding: 0 8px; text-align: center; line-height: 1.25; }
-.nav-title { font-size: 14px; font-weight: 600; color: #38242A; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.nav-subtitle { font-size: 11px; font-weight: 500; color: var(--coral-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.nav-center { min-height: 40px; padding: 0 8px; display: flex; flex-direction: column; justify-content: center; text-align: center; line-height: 1.25; }
+.nav-title { font-size: 17px; font-weight: 700; color: #38242A; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.nav-subtitle { margin-top: 3px; font-size: 12px; font-weight: 500; color: var(--coral-dark); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .icon-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--surface); font-size: 20px; line-height: 1; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
 .pill-btn { border: none; background: var(--surface); border-radius: 14px; padding: 5px 10px; font-size: 11px; font-weight: 500; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
 .rules-bubble { width: 36px; height: 32px; border: none; background: var(--surface); border-radius: 16px 16px 16px 4px; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
@@ -193,7 +192,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .vote-row { margin: 16px 0 22px; }
 .row-head { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 8px; }
 .row-name { font-size: 15px; font-weight: 700; }
-.skip-note { margin: 0 16px; padding: 14px 16px; border-radius: 16px; font-size: 12px; font-weight: 500; }
+.skip-note { margin: 0 16px 12px; padding: 14px 16px; border-radius: 16px; font-size: 12px; font-weight: 500; }
 /* 左右留白 = (容器宽 - 卡片宽) / 2，首尾卡片也能居中 */
 .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px calc(50% - min(32vw, 140px)) 10px; scrollbar-width: none; }
 .swipe::-webkit-scrollbar { display: none; }
@@ -334,3 +333,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .google-btn-wrap { display: flex; flex-direction: column; align-items: center; min-height: 44px; }
 .google-login { margin: 14px 0 4px; }
 .link-banner { margin: 20px 20px 0; display: flex; justify-content: center; }
+
+/* 平面风庆祝图标 */
+.dialog-icon, .done-icon { width: 64px; height: 64px; margin: 0 auto; }
+.pet-square.readonly { cursor: default; }
+.dialog-icon + .modal-title, .dialog-icon ~ .dialog-content { text-align: center; }

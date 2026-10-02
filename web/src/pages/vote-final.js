@@ -133,7 +133,7 @@ export default {
       </template>
 
       <div v-else-if="view === 'completed'" class="empty">
-        <div class="big-emoji">🎉</div><b>本门类决赛投票已完成</b>
+        <img class="done-icon" src="images/icon-party.svg" alt=""><b>本门类决赛投票已完成</b>
         <p class="muted">你的每一票都已记录，冠亚季军将在决赛截止后揭晓。</p>
         <button class="btn btn-primary" @click="nextCategory">再投下一个门类</button>
         <button class="btn btn-outline" @click="go('/')">返回首页</button>

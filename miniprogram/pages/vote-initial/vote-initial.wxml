@@ -23,13 +23,13 @@
         </view>
       </view>
 
-      <!-- 报名不足 9 只：全员直接晋级，无需初选 -->
+      <!-- 报名不足 9 只：全员直接晋级，无需初选（照片照常展示，只是不能选择） -->
       <view wx:if="{{!cat.needsVote}}" class="skip-note" style="background-color: {{cat.bg}}; color: {{cat.textColor}};">
-        本门类共 {{cat.entries.length}} 只报名，全员直接晋级淘汰赛，无需初选投票
+        本项角逐提名毛孩不足8名，全员晋级淘汰赛。恭喜各位毛孩晋级！
       </view>
 
       <!-- 横向滑动区：中间当前照片，左右露出前后照片边缘 -->
-      <block wx:else>
+      <block wx:if="{{cat.entries.length}}">
         <swiper
           class="pet-swiper"
           current="{{cat.currentIndex}}"
@@ -42,7 +42,7 @@
             <view class="card-outer-wrap">
               <view class="pet-name-top">{{pet.petName}}</view>
               <view
-                class="main-pet-card {{cat.selectedMap[pet.id] ? 'card-selected' : ''}} {{index === cat.currentIndex ? '' : 'card-side'}}"
+                class="main-pet-card {{cat.selectedMap[pet.id] ? 'card-selected' : ''}} {{index === cat.currentIndex ? '' : 'card-side'}} {{cat.needsVote ? '' : 'card-readonly'}}"
                 style="background-color: {{cat.bg}};"
                 bindtap="onToggleSelect"
                 data-catid="{{cat.id}}"
@@ -50,7 +50,7 @@
               >
                 <image class="card-pet-img" src="{{pet.photoUrl}}" mode="aspectFill" lazy-load />
                 <!-- 右上角心形：空心=未选，实心红=已选 -->
-                <view class="heart-badge-btn">
+                <view wx:if="{{cat.needsVote}}" class="heart-badge-btn">
                   <text class="heart-icon">{{cat.selectedMap[pet.id] ? '❤️' : '🤍'}}</text>
                 </view>
                 <view class="watermark-overlay">主人 {{pet.maskedLdap}}</view>
@@ -58,7 +58,7 @@
             </view>
           </swiper-item>
         </swiper>
-        <view class="position-hint">第 {{cat.currentIndex + 1}} / {{cat.entries.length}} 位 · 左右滑动浏览，点击照片选择</view>
+        <view class="position-hint">第 {{cat.currentIndex + 1}} / {{cat.entries.length}} 位 · 左右滑动浏览{{cat.needsVote ? '，点击照片选择' : ''}}</view>
       </block>
     </view>
   </view>
@@ -91,6 +91,19 @@
       <view class="confirm-actions">
         <button class="paw-btn paw-btn-outline confirm-btn" bindtap="onCloseConfirm">返回修改</button>
         <button class="paw-btn paw-btn-primary confirm-btn" bindtap="onSubmitInitialVotes" loading="{{submitting}}">确认提交</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 投票成功弹窗（自定义，可显示平面风庆祝图标） -->
+  <view wx:if="{{successVisible}}" class="success-mask" catchtouchmove="noop">
+    <view class="success-card">
+      <image class="success-icon" src="/images/icon-party.png" mode="aspectFit" />
+      <view class="success-title">投票成功！</view>
+      <view class="success-desc">已提交 {{successCount}} 个门类的初选投票，初选截止后将按票数产生 8 强。</view>
+      <view class="confirm-actions">
+        <button class="paw-btn paw-btn-outline confirm-btn" bindtap="onCloseSuccess">留在本页</button>
+        <button class="paw-btn paw-btn-primary confirm-btn" bindtap="onSuccessGoMine">我的提名</button>
       </view>
     </view>
   </view>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96">
+  <!-- 平面风礼花筒：马卡龙配色，无描边 -->
+  <polygon points="5,43 15,17 31,33" fill="#F4A6BE"/>
+  <polygon points="8.4,34.2 11.6,25.8 22.4,36.6 14,39.8" fill="#E07A9C"/>
+  <polygon points="5,43 6.6,38.8 9.6,41.8" fill="#E07A9C"/>
+  <circle cx="31" cy="9" r="2.6" fill="#FAC775"/>
+  <circle cx="41" cy="19" r="2.2" fill="#9B8CE8"/>
+  <circle cx="19" cy="9" r="1.8" fill="#F28FAE"/>
+  <circle cx="40" cy="38" r="1.8" fill="#6CCBAE"/>
+  <rect x="24" y="3" width="3.6" height="3.6" rx="0.8" fill="#6CCBAE"/>
+  <rect x="36" y="27" width="3.6" height="3.6" rx="0.8" fill="#FAC775"/>
+  <rect x="42" y="9" width="3" height="3" rx="0.7" fill="#F28FAE"/>
+  <polygon points="35,12 36.4,15.6 40,17 36.4,18.4 35,22 33.6,18.4 30,17 33.6,15.6" fill="#FAC775"/>
+  <polygon points="27,16 27.8,18.2 30,19 27.8,19.8 27,22 26.2,19.8 24,19 26.2,18.2" fill="#9B8CE8"/>
+</svg>

@@ -183,7 +183,7 @@ Page({
     this.sendingCongrats = true;
     try {
       await api.submitCongrats(this.data.myCongratsText);
-      wx.showToast({ title: '祝福已上墙！🎉', icon: 'success' });
+      wx.showToast({ title: '祝福已上墙！', icon: 'success' });
       this.setData({ sendModalVisible: false });
       this.refreshCongrats();
     } catch (e) {

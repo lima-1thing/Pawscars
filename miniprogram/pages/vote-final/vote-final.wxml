@@ -61,7 +61,7 @@
 
   <!-- 本门类已全部投完 -->
   <view wx:elif="{{viewState === 'completed'}}" class="completed-box">
-    <view class="congrats-trophy">🎉</view>
+    <image class="congrats-icon" src="/images/icon-party.png" mode="aspectFit" />
     <view class="completed-title">本门类决赛投票已完成</view>
     <view class="completed-desc">你的每一票都已记录，冠亚季军将在决赛截止后揭晓。</view>
     <view class="completed-btns">

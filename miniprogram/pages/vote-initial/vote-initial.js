@@ -11,6 +11,8 @@ Page({
     confirmVisible: false,
     pendingGroups: [],
     submitting: false,
+    successVisible: false,
+    successCount: 0,
     rulesModalVisible: false
   },
 
@@ -68,6 +70,7 @@ Page({
   onToggleSelect(e) {
     const { catid, petid } = e.currentTarget.dataset;
     this.updateCategory(catid, cat => {
+      if (!cat.needsVote) return null; // 免初选门类只展示照片
       if (cat.isLocked) {
         wx.showToast({ title: '该门类已提交锁定', icon: 'none' });
         return null;
@@ -159,15 +162,16 @@ Page({
       return;
     }
 
-    wx.showModal({
-      title: '投票成功！🎉',
-      content: `已提交 ${submittedCount} 个门类的初选投票，初选截止后将按票数产生 8 强。`,
-      confirmText: '我的提名',
-      cancelText: '留在本页',
-      success: (res) => {
-        if (res.confirm) wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });
-      }
-    });
+    this.setData({ successVisible: true, successCount: submittedCount });
+  },
+
+  onCloseSuccess() {
+    this.setData({ successVisible: false });
+  },
+
+  onSuccessGoMine() {
+    this.setData({ successVisible: false });
+    wx.navigateTo({ url: '/pages/my-nominations/my-nominations' });
   },
 
   onGoMyNominations() {

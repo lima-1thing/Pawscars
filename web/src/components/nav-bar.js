@@ -16,18 +16,20 @@ export default {
   methods: { back, go },
   template: `
     <header class="nav-bar">
-      <div class="nav-left">
-        <button class="icon-btn" aria-label="返回" @click="back">‹</button>
-        <button v-if="showMy" class="pill-btn" @click="go('/my')">📋 我的提名</button>
+      <div class="nav-row">
+        <div class="nav-left">
+          <button class="icon-btn" aria-label="返回" @click="back">‹</button>
+          <button v-if="showMy" class="pill-btn" @click="go('/my')">📋 我的提名</button>
+        </div>
+        <div class="nav-right">
+          <button v-if="showRules" class="rules-bubble" aria-label="比赛规则" @click="$emit('rules')">
+            <span class="avatar-ring">{{ hostInitial }}</span>
+          </button>
+        </div>
       </div>
       <div class="nav-center">
         <div class="nav-title">{{ title }}</div>
         <div v-if="subtitle" class="nav-subtitle">{{ subtitle }}</div>
-      </div>
-      <div class="nav-right">
-        <button v-if="showRules" class="rules-bubble" aria-label="比赛规则" @click="$emit('rules')">
-          <span class="avatar-ring">{{ hostInitial }}</span>
-        </button>
       </div>
     </header>`
 };

@@ -13,14 +13,14 @@ export function toast(text, ms = 2000) {
   toastTimer = setTimeout(() => { toastState.visible = false; }, ms);
 }
 
-export const dialogState = reactive({ visible: false, title: '', content: '', confirmText: '确定', cancelText: '', danger: false, resolve: null });
+export const dialogState = reactive({ visible: false, icon: '', title: '', content: '', confirmText: '确定', cancelText: '', danger: false, resolve: null });
 
 /**
  * @returns {Promise<boolean>} 点确定为 true
  */
-export function dialog({ title = '', content = '', confirmText = '确定', cancelText = '', danger = false }) {
+export function dialog({ icon = '', title = '', content = '', confirmText = '确定', cancelText = '', danger = false }) {
   return new Promise(resolve => {
-    Object.assign(dialogState, { visible: true, title, content, confirmText, cancelText, danger, resolve });
+    Object.assign(dialogState, { visible: true, icon, title, content, confirmText, cancelText, danger, resolve });
   });
 }
 

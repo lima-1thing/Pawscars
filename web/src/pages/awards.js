@@ -78,7 +78,7 @@ export default {
       this.posting = true;
       try {
         await api.submitCongrats(this.text);
-        toast('祝福已上墙！🎉');
+        toast('祝福已上墙！');
         this.sending = false;
         this.text = '';
         this.loadWall();

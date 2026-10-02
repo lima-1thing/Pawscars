@@ -31,6 +31,7 @@ export default {
       } catch (e) { toast(e.message); }
     },
     toggle(row, id) {
+      if (!row.needsVote) return; // 免初选门类只展示照片
       if (row.locked) { toast('该门类已提交锁定'); return; }
       const i = row.picks.indexOf(id);
       if (i >= 0) row.picks.splice(i, 1);
@@ -64,7 +65,7 @@ export default {
       if (failures.length) {
         dialog({ title: count ? '部分门类提交失败' : '提交失败', content: `${failures.join('\n')}\n\n未成功的门类已保留你的选择，可稍后重试。`, confirmText: '知道了' });
       } else {
-        const toMine = await dialog({ title: '投票成功！🎉', content: `已提交 ${count} 个门类的初选投票，初选截止后将按票数产生 8 强。`, confirmText: '我的提名', cancelText: '留在本页' });
+        const toMine = await dialog({ icon: 'images/icon-party.svg', title: '投票成功！', content: `已提交 ${count} 个门类的初选投票，初选截止后将按票数产生 8 强。`, confirmText: '我的提名', cancelText: '留在本页' });
         if (toMine) go('/my');
       }
     },
@@ -82,20 +83,20 @@ export default {
           <span v-else class="muted small">已选 <b>{{ row.picks.length }}</b>/8</span>
         </div>
         <div v-if="!row.needsVote" class="skip-note" :style="{ background: row.bg, color: row.textColor }">
-          本门类共 {{ row.entries.length }} 只报名，全员直接晋级淘汰赛，无需初选投票
+          本项角逐提名毛孩不足8名，全员晋级淘汰赛。恭喜各位毛孩晋级！
         </div>
-        <template v-else>
+        <template v-if="row.entries.length">
           <div class="swipe" @scroll.passive="onScroll(row, $event)">
             <div v-for="e in row.entries" :key="e.id" class="swipe-card">
               <div class="swipe-name">{{ e.petName }}</div>
-              <button class="pet-square" :class="{ picked: row.picks.includes(e.id) }" :style="{ background: row.bg }" @click="toggle(row, e.id)">
+              <button class="pet-square" :class="{ picked: row.picks.includes(e.id), readonly: !row.needsVote }" :style="{ background: row.bg }" @click="toggle(row, e.id)">
                 <img :src="e.photoUrl" :alt="e.petName" loading="lazy">
-                <span class="heart">{{ row.picks.includes(e.id) ? '❤️' : '🤍' }}</span>
+                <span v-if="row.needsVote" class="heart">{{ row.picks.includes(e.id) ? '❤️' : '🤍' }}</span>
                 <span class="mask-tag">主人 {{ e.masked }}</span>
               </button>
             </div>
           </div>
-          <div class="muted small center">第 {{ Math.min(row.index + 1, row.entries.length) }} / {{ row.entries.length }} 位 · 左右滑动浏览，点击照片选择</div>
+          <div class="muted small center">第 {{ Math.min(row.index + 1, row.entries.length) }} / {{ row.entries.length }} 位 · 左右滑动浏览{{ row.needsVote ? '，点击照片选择' : '' }}</div>
         </template>
       </div>
 

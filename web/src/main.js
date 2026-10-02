@@ -62,6 +62,7 @@ createApp({
       <div v-if="loading.text" class="overlay loading-overlay"><div class="loading-box">{{ loading.text }}…</div></div>
       <div v-if="dialog.visible" class="overlay">
         <div class="modal-card dialog">
+          <img v-if="dialog.icon" class="dialog-icon" :src="dialog.icon" alt="">
           <div v-if="dialog.title" class="modal-title">{{ dialog.title }}</div>
           <div class="dialog-content">{{ dialog.content }}</div>
           <div class="row-gap">
