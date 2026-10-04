@@ -126,7 +126,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .cat-card { flex: 1; border-radius: 16px; padding: 12px 6px; text-align: center; line-height: 1.25; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); }
 .cat-icon { font-size: 20px; margin-bottom: 4px; }
 .cat-tag { font-size: 14px; font-weight: 700; }
-.cat-suffix { font-size: 11px; font-weight: 500; }
+.cat-suffix { font-size: 14px; font-weight: 700; }
 .callout { text-align: center; font-size: 13px; font-weight: 500; margin: 0 0 16px; }
 .speech { background: var(--good-bg); border-radius: 4px 18px 18px 18px; padding: 14px 16px; margin-bottom: 14px; }
 .speech.gold { background: #FFF8E7; border: 1.5px solid #FAC775; text-align: center; }

@@ -95,7 +95,7 @@
     <!-- 5. 门类名称 -->
     <view class="admin-section-card">
       <view class="section-title">🏷️ 三大门类名称</view>
-      <view class="desc-text">门类固定为三个，任何阶段都可以改名（已报名和投票不受影响）。建议 4 个字：首页卡片上两字大、下两字小。</view>
+      <view class="desc-text">门类固定为三个，任何阶段都可以改名（已报名和投票不受影响）。建议 4 个字：首页卡片分两行显示，每行两个字。</view>
       <view wx:for="{{categories}}" wx:key="id" class="cat-edit-row">
         <text class="cat-edit-icon">{{item.icon}}</text>
         <input class="cat-edit-input" value="{{item.name}}" data-id="{{item.id}}" bindblur="onEditCategoryName" maxlength="10" />

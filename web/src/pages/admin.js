@@ -130,7 +130,7 @@ export default {
         </div>
         <div class="card">
           <div class="card-title">🏷️ 三大门类名称</div>
-          <p class="muted small">门类固定为三个，任何阶段都可以改名（已报名和投票不受影响）。建议 4 个字：首页卡片上两字大、下两字小。</p>
+          <p class="muted small">门类固定为三个，任何阶段都可以改名（已报名和投票不受影响）。建议 4 个字：首页卡片分两行显示，每行两个字。</p>
           <div v-for="c in categories" :key="c.id" class="cat-edit"><span>{{ c.icon }}</span><input class="text-input" v-model="c.draft" maxlength="10" @blur="rename(c)"></div>
         </div>
         <div class="card">
