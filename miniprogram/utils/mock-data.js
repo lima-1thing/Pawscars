@@ -97,9 +97,9 @@ const DEFAULT_CATEGORIES = [
   },
   {
     id: 'abstract',
-    name: '脸蛋天才',
-    tag: '脸蛋',
-    suffix: '天才',
+    name: '颜值担当',
+    tag: '颜值',
+    suffix: '担当',
     theme: 'green',
     bg: '#9FE1CB',
     textColor: '#04342C',
@@ -215,7 +215,7 @@ const DEFAULT_ENTRIES = [
     createdAt: Date.now() - 3600000 * 34
   },
 
-  // 脸蛋天才 (abstract)
+  // 颜值担当 (abstract)
   {
     id: 'entry_a1',
     categoryId: 'abstract',

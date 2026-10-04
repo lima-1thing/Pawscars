@@ -20,7 +20,7 @@ const MAX_INITIAL_PICKS = 8;
 
 const DEFAULT_CATEGORIES = [
   { id: 'food', name: '干饭王者' },
-  { id: 'abstract', name: '脸蛋天才' },
+  { id: 'abstract', name: '颜值担当' },
   { id: 'beauty', name: '万圣顶流' }
 ];
 
