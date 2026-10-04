@@ -16,9 +16,6 @@ export default {
   name: 'AdminPage',
   components: { NavBar },
   data() { return { allowed: false, phases: PHASES, config: {}, form: {}, deadlines: {}, categories: [], stats: null, entries: [], congrats: [], unbind: '' }; },
-  computed: {
-    locked() { return this.config.currentPhase !== 'nominate'; }
-  },
   created() {
     this.allowed = api.getState().isAdmin;
     if (this.allowed) this.load();
@@ -133,8 +130,8 @@ export default {
         </div>
         <div class="card">
           <div class="card-title">🏷️ 三大门类名称</div>
-          <p v-if="locked" class="muted small">投票已开始，门类名称已锁定。</p>
-          <div v-for="c in categories" :key="c.id" class="cat-edit"><span>{{ c.icon }}</span><input class="text-input" v-model="c.draft" :disabled="locked" maxlength="10" @blur="rename(c)"></div>
+          <p class="muted small">门类固定为三个，任何阶段都可以改名（已报名和投票不受影响）。建议 4 个字：首页卡片上两字大、下两字小。</p>
+          <div v-for="c in categories" :key="c.id" class="cat-edit"><span>{{ c.icon }}</span><input class="text-input" v-model="c.draft" maxlength="10" @blur="rename(c)"></div>
         </div>
         <div class="card">
           <div class="card-title">🆔 活动ID 申诉处理</div>

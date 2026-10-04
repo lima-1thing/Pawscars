@@ -20,8 +20,8 @@ const MAX_INITIAL_PICKS = 8;
 
 const DEFAULT_CATEGORIES = [
   { id: 'food', name: '干饭王者' },
-  { id: 'abstract', name: '抽象王者' },
-  { id: 'beauty', name: '颜值王者' }
+  { id: 'abstract', name: '脸蛋天才' },
+  { id: 'beauty', name: '万圣顶流' }
 ];
 
 // 下发给小程序的配置字段（不含管理员白名单）

@@ -22,8 +22,9 @@ const actions = {
     return { message: '活动配置已保存' };
   },
 
+  // 门类固定为三个（id 不变，报名与投票都按 id 记录），任何阶段都可以改名
   async renameCategory(ctx, { categoryId, name }) {
-    if (ctx.activity.currentPhase !== 'nominate') throw new UserError('投票开始后门类名称已锁定，不可修改');
+    if (!ctx.activity.categories.some(c => c.id === categoryId)) throw new UserError('门类不存在');
     const clean = typeof name === 'string' ? name.trim() : '';
     if (!clean || clean.length > 10) throw new UserError('门类名称需在 1-10 字之间');
     const categories = ctx.activity.categories.map(c => (c.id === categoryId ? { ...c, name: clean } : c));

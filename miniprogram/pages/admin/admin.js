@@ -24,7 +24,6 @@ Page({
     form: {},
     deadlineRows: [],
     categories: [],
-    categoryLocked: true,
     stats: null,
     moderationGroups: [],
     congratsItems: [],
@@ -70,7 +69,6 @@ Page({
       hostAvatar: config.hostAvatar || '',
       deadlineRows,
       categories,
-      categoryLocked: config.currentPhase !== 'nominate',
       stats: overview.stats,
       moderationGroups: categories.map(cat => ({
         id: cat.id,

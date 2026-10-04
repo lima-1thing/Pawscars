@@ -243,7 +243,8 @@ async function login(openid) {
   console.log('Testing initial round...');
   await fails(call('/vote', { token: u1, body: { voteType: 'initial', categoryId: 'food', selectedEntryIds: [myEntryId] } }), /初选投票已截止/);
   await ok(call('/admin/setPhase', { token: admin, body: { targetPhase: 'vote_initial' } }));
-  await fails(call('/admin/renameCategory', { token: admin, body: { categoryId: 'food', name: '改名' } }), /已锁定/);
+  await ok(call('/admin/renameCategory', { token: admin, body: { categoryId: 'food', name: '干饭之王' } })); // 投票期也可改名
+  await fails(call('/admin/renameCategory', { token: admin, body: { categoryId: 'extra', name: '新门类' } }), /门类不存在/);
   const initial = await ok(call('/data/initialState', { token: u2 }));
   const food = initial.categories.find(c => c.id === 'food');
   assert.strictEqual(food.needsVote, false);

@@ -124,11 +124,11 @@ const StorageService = {
     return cats;
   },
   /**
-   * 门类改名：仅报名期开放，投票期锁定，避免中途改名造成混淆
+   * 门类改名：门类固定为三个，任何阶段都可以改名（报名与投票按门类 id 记录，不受影响）
    */
   renameCategory(categoryId, newName) {
-    if (this.getPhase() !== 'nominate') {
-      throw new Error('投票开始后门类名称已锁定，不可修改');
+    if (!this.getCategories().some(c => c.id === categoryId)) {
+      throw new Error('门类不存在');
     }
     const name = (newName || '').trim();
     if (!name || name.length > 10) {

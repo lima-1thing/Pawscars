@@ -63,7 +63,8 @@ Page({
       config,
       // 主标题已显示 Pawscars，副标题去掉重复的前缀
       brandSub: (config.title || '').replace(/^\s*Pawscars\s*/i, '') || '毛孩奥斯卡',
-      categories,
+      // 门类卡片：上两字大、其余小，跟随后台修改的名称
+      categories: categories.map(c => ({ ...c, tag: c.name.slice(0, 2), suffix: c.name.slice(2) })),
       phaseKind,
       votePhaseInfo: VOTE_PHASES[phase] || null,
       hostAvatar: config.hostAvatar || '',

@@ -97,26 +97,26 @@ const DEFAULT_CATEGORIES = [
   },
   {
     id: 'abstract',
-    name: '抽象王者',
-    tag: '抽象',
-    suffix: '王者',
+    name: '脸蛋天才',
+    tag: '脸蛋',
+    suffix: '天才',
     theme: 'green',
     bg: '#9FE1CB',
     textColor: '#04342C',
     accentColor: '#085041',
-    icon: '🎭',
+    icon: '✨',
     desc: '行为无法用语言形容的选手'
   },
   {
     id: 'beauty',
-    name: '颜值王者',
-    tag: '颜值',
-    suffix: '王者',
+    name: '万圣顶流',
+    tag: '万圣',
+    suffix: '顶流',
     theme: 'purple',
     bg: '#CECBF6',
     textColor: '#26215C',
     accentColor: '#3C3489',
-    icon: '✨',
+    icon: '🎃',
     desc: '单纯靠脸吃饭的选手'
   }
 ];
@@ -215,7 +215,7 @@ const DEFAULT_ENTRIES = [
     createdAt: Date.now() - 3600000 * 34
   },
 
-  // 抽象王者 (abstract)
+  // 脸蛋天才 (abstract)
   {
     id: 'entry_a1',
     categoryId: 'abstract',
@@ -297,7 +297,7 @@ const DEFAULT_ENTRIES = [
     createdAt: Date.now() - 3600000 * 35
   },
 
-  // 颜值王者 (beauty)
+  // 万圣顶流 (beauty)
   {
     id: 'entry_b1',
     categoryId: 'beauty',

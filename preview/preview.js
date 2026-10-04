@@ -54,8 +54,8 @@ const INITIAL_STATE = {
   currentUserLdap: 'JENNIFER',
   categories: [
     { id: 'food', name: '干饭王者', tag: '干饭', suffix: '王者', theme: 'yellow', bg: '#FAC775', textColor: '#412402', accentColor: '#633806', icon: '🍖' },
-    { id: 'abstract', name: '抽象王者', tag: '抽象', suffix: '王者', theme: 'green', bg: '#9FE1CB', textColor: '#04342C', accentColor: '#085041', icon: '🎭' },
-    { id: 'beauty', name: '颜值王者', tag: '颜值', suffix: '王者', theme: 'purple', bg: '#CECBF6', textColor: '#26215C', accentColor: '#3C3489', icon: '✨' }
+    { id: 'abstract', name: '脸蛋天才', tag: '脸蛋', suffix: '天才', theme: 'green', bg: '#9FE1CB', textColor: '#04342C', accentColor: '#085041', icon: '🎭' },
+    { id: 'beauty', name: '万圣顶流', tag: '万圣', suffix: '顶流', theme: 'purple', bg: '#CECBF6', textColor: '#26215C', accentColor: '#3C3489', icon: '✨' }
   ],
   entries: [
     { id: 'f1', categoryId: 'food', petName: '团子', ownerLdap: 'JENNIFER', photoUrl: createPetSvg('#FFF3CD', 'cat', '团子'), initialVotes: 15, status: 'active', createdAt: Date.now() - 500000 },
