@@ -81,7 +81,8 @@ Page({
     const phase = config.currentPhase;
     this.setData({
       phaseOpen: api.isPhaseOpen(phase),
-      schedule: buildSchedule(config),
+      // 只显示当前赛段这一行
+      schedule: buildSchedule(config).filter(s => s.state === 'active'),
       countdownText: formatCountdown((config.phaseDeadlines || {})[phase])
     });
   },

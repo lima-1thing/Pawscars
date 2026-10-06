@@ -38,7 +38,8 @@ export default {
     tick() {
       this.phaseOpen = api.isPhaseOpen(this.phase);
       this.countdown = formatCountdown((this.config.phaseDeadlines || {})[this.phase]);
-      this.schedule = buildSchedule(this.config);
+      // 只显示当前赛段这一行
+      this.schedule = buildSchedule(this.config).filter(s => s.state === 'active');
     },
     requireUser() {
       if (this.user) return true;
