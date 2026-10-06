@@ -1,5 +1,5 @@
 <view class="gallery-page">
-  <nav-bar title="已提名的毛孩" subtitle="共 {{total}} 条提名" showRules="{{false}}" />
+  <nav-bar title="已提名的毛孩" subtitle="共 {{total}} 条提名" />
 
   <!-- 门类切换标签（显示各门类数量） -->
   <view class="tabs-bar">
@@ -29,6 +29,8 @@
   </view>
 
   <view class="hint">点击照片可放大，左右滑动翻看 · 主人ID已打码</view>
+  <!-- 底部快捷入口：我的提名 -->
+  <page-footer showRules="{{false}}" />
   <view wx:if="{{canNominate}}" class="bottom-bar">
     <button class="paw-btn paw-btn-primary cta" bindtap="onGoNominate">我也要提名</button>
   </view>

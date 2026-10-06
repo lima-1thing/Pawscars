@@ -1,7 +1,7 @@
 import { api } from '../api';
 import { go } from '../router';
 import { toast } from '../ui';
-import { formatCountdown } from '../shared';
+import { formatCountdown, buildSchedule } from '../shared';
 import RulesModal from '../components/rules-modal';
 import GoogleButton from '../components/google-button';
 import { GOOGLE_CLIENT_ID } from '../config';
@@ -15,7 +15,7 @@ export default {
   name: 'HomePage',
   components: { RulesModal, GoogleButton },
   data() {
-    return { config: {}, categories: [], user: null, isAdmin: false, googleEmail: null, phaseOpen: true, countdown: '', rules: false, linking: false };
+    return { config: {}, categories: [], user: null, isAdmin: false, googleEmail: null, phaseOpen: true, countdown: '', schedule: [], rules: false, linking: false };
   },
   computed: {
     phase() { return this.config.currentPhase; },
@@ -38,6 +38,7 @@ export default {
     tick() {
       this.phaseOpen = api.isPhaseOpen(this.phase);
       this.countdown = formatCountdown((this.config.phaseDeadlines || {})[this.phase]);
+      this.schedule = buildSchedule(this.config);
     },
     requireUser() {
       if (this.user) return true;
@@ -103,7 +104,7 @@ export default {
           </div>
           <p class="callout">{{ config.callToActionText }}</p>
           <button v-if="phaseOpen" class="btn btn-primary block" @click="nominate">我要提名</button>
-          <button v-else class="btn btn-primary block" @click="my">📋 查看我的提名</button>
+          <button v-else class="btn btn-primary block" @click="my"><img class="btn-icon" src="images/icon-paw.svg" alt="">查看我的提名</button>
           <button class="link-btn gallery-link" @click="go('/gallery')">👀 看看已提名的毛孩 ›</button>
         </template>
 
@@ -117,13 +118,14 @@ export default {
               <template v-else>快来为喜欢的毛孩投上一票！</template>
             </div>
           </div>
-          <div class="stepper">
-            <span :class="{ on: phase === 'vote_initial' }">初选</span>
-            <span :class="{ on: phase === 'vote_final' }">决赛</span>
+          <div class="schedule">
+            <div v-for="s in schedule" :key="s.key" class="schedule-row" :class="s.state">
+              <span class="schedule-label">{{ s.label }}</span><span class="schedule-dates">{{ s.dates }}</span><span class="schedule-status">{{ s.status }}</span>
+            </div>
           </div>
           <div class="stack">
-            <button class="btn btn-primary block" :class="{ dim: !phaseOpen }" @click="vote">{{ phaseOpen ? '我要投票' : '投票已截止' }}</button>
-            <button class="btn btn-outline block" @click="my">📋 我的提名</button>
+            <button class="btn btn-primary block" :class="{ dim: !phaseOpen }" @click="vote"><img class="btn-icon" src="images/icon-heart.svg" alt="">{{ phaseOpen ? '我要投票' : '投票已截止' }}</button>
+            <button class="btn btn-outline block" @click="my"><img class="btn-icon" src="images/icon-paw.svg" alt="">我的提名</button>
           </div>
         </template>
 
@@ -135,8 +137,8 @@ export default {
           </div>
           <div class="stack">
             <button class="btn btn-primary block" @click="congrats">发送贺词</button>
-            <button class="btn btn-outline block" @click="go('/awards')">🏆 查看颁奖结果</button>
-            <button class="btn btn-outline block" @click="my">📋 我的提名</button>
+            <button class="btn btn-outline block" @click="go('/awards')"><img class="btn-icon" src="images/icon-trophy.svg" alt="">查看颁奖结果</button>
+            <button class="btn btn-outline block" @click="my"><img class="btn-icon" src="images/icon-paw.svg" alt="">我的提名</button>
           </div>
         </template>
       </section>

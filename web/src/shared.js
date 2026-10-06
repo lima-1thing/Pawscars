@@ -6,5 +6,5 @@ export { isPhaseOpen } from '../../miniprogram/utils/bracket';
 export * as crop from '../../miniprogram/utils/crop';
 export { maskLdap } from '../../miniprogram/utils/mask';
 export { validateLdap, validatePetName, validateCongrats } from '../../miniprogram/utils/validator';
-export { formatCountdown, formatDateTime } from '../../miniprogram/utils/time';
+export { formatCountdown, formatDateTime, buildSchedule } from '../../miniprogram/utils/time';
 export { DEFAULT_CATEGORIES, DEFAULT_CONFIG } from '../../miniprogram/utils/mock-data';

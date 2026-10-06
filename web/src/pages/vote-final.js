@@ -3,11 +3,12 @@ import { go, route } from '../router';
 import { toast, dialog } from '../ui';
 import { maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
+import PageFooter from '../components/page-footer';
 import RulesModal from '../components/rules-modal';
 
 export default {
   name: 'VoteFinalPage',
-  components: { NavBar, RulesModal },
+  components: { NavBar, PageFooter, RulesModal },
   data() {
     return { inFinal: true, phaseOpen: true, tabs: [], current: route.query.cat || '', pairs: [], idx: 0, pair: null,
       chosen: '', submitting: false, view: 'loading', rules: false };
@@ -106,7 +107,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar :subtitle="subtitle" @rules="rules = true" />
+      <NavBar :subtitle="subtitle" />
       <div class="tabs">
         <button v-for="t in tabs" :key="t.id" class="tab" :class="{ on: t.id === current }"
           :style="t.id === current ? { background: t.bg, color: t.textColor } : {}" @click="pickTab(t.id)">
@@ -154,6 +155,7 @@ export default {
         <button class="btn btn-primary" @click="go('/')">返回首页</button>
       </div>
       <div v-else class="empty"><p class="muted">对局加载中…</p></div>
+      <PageFooter @rules="rules = true" />
       <RulesModal :visible="rules" @close="rules = false" />
     </div>`
 };

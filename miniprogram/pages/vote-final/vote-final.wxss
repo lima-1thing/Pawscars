@@ -9,21 +9,22 @@
 /* 门类切换胶囊栏 */
 .category-tabs-bar {
   display: flex;
-  padding: 10px 20px;
-  gap: 8px;
+  padding: 16px 20px 18px;
+  gap: 10px;
   overflow-x: auto;
   background: #FFFFFF;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .cat-tab-pill {
-  padding: 6px 14px;
-  border-radius: 16px;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 20px;
   background: #F4F2EC;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -34,9 +35,9 @@
 
 .tab-status {
   margin-left: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.7);
 }
@@ -56,8 +57,8 @@
   font-size: 13px;
   font-weight: 600;
   color: #554A49;
-  margin-top: 10px;
-  margin-bottom: 6px;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 /* 对决卡片区：上下堆叠，正方形照片 */

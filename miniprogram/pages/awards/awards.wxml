@@ -3,9 +3,6 @@
   <nav-bar
     title="Pawscars毛孩奥斯卡"
     subtitle="颁奖结果"
-    showMyNomination="{{true}}"
-    showRules="{{true}}"
-    bind:openRules="onOpenRules"
   />
 
   <!-- 颁奖前：普通用户看不到结果 -->
@@ -145,6 +142,9 @@
       </view>
     </view>
   </view>
+
+  <!-- 底部快捷入口：我的提名 / 活动规则 -->
+  <page-footer bind:openRules="onOpenRules" />
 
   <rules-modal visible="{{rulesModalVisible}}" bind:close="onCloseRules" />
 </view>

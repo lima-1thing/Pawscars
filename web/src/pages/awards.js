@@ -3,6 +3,7 @@ import { route } from '../router';
 import { toast } from '../ui';
 import { maskLdap, validateCongrats, formatDateTime } from '../shared';
 import NavBar from '../components/nav-bar';
+import PageFooter from '../components/page-footer';
 import RulesModal from '../components/rules-modal';
 import CertModal from '../components/cert-modal';
 
@@ -11,7 +12,7 @@ const fmt = (e) => e && { ...e, masked: maskLdap(e.ownerLdap), score: e.games ? 
 
 export default {
   name: 'AwardsPage',
-  components: { NavBar, RulesModal, CertModal },
+  components: { NavBar, PageFooter, RulesModal, CertModal },
   data() {
     return { isAwards: false, isAdmin: false, categories: [], current: null, result: null, state: 'loading',
       wall: [], hasSent: false, cert: null, certRank: '冠军', sending: false, text: '', posting: false, rules: false, pickRank: false };
@@ -87,7 +88,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar subtitle="颁奖结果" @rules="rules = true" />
+      <NavBar subtitle="颁奖结果" />
       <div v-if="!isAwards && !isAdmin" class="empty">
         <div class="big-emoji">🎬</div><b>颁奖典礼尚未开始</b>
         <p class="muted">所有投票结束后将在这里揭晓各门类冠亚季军，敬请期待！</p>
@@ -151,6 +152,7 @@ export default {
         </div>
       </div>
       <CertModal :visible="!!cert" :entry="cert" :category-name="current && current.name" :rank-text="certRank" @close="cert = null" />
+      <PageFooter @rules="rules = true" />
       <RulesModal :visible="rules" @close="rules = false" />
     </div>`
 };

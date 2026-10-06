@@ -270,27 +270,55 @@
   color: #0F6B58;
 }
 
-/* 投票阶段步骤胶囊 */
-.stage-stepper-row {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.step-pill {
-  padding: 6px 14px;
+/* 赛程：赛段 · 日期 · 状态 */
+.schedule-card {
+  background: #FFFFFF;
+  border: 1.5px solid #ECE7DE;
   border-radius: 16px;
-  background: #F1EFE8;
-  font-size: 11px;
-  color: #7A7270;
-  font-weight: 500;
+  padding: 6px 16px;
+  margin-bottom: 18px;
 }
 
-.pill-active {
-  background: #9FE1CB;
-  color: #04342C;
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 13px;
+  color: #7A7270;
+}
+
+.schedule-row + .schedule-row {
+  border-top: 1px dashed #ECE7DE;
+}
+
+.schedule-label {
+  width: 36px;
   font-weight: 700;
+}
+
+.schedule-dates {
+  flex: 1;
+}
+
+.schedule-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #F1EFE8;
+}
+
+.schedule-active {
+  color: #04342C;
+}
+
+.schedule-active .schedule-status {
+  background: #9FE1CB;
+}
+
+.schedule-done {
+  color: #A39B98;
 }
 
 /* 投票/颁奖动作组 */
@@ -307,8 +335,11 @@
   font-size: 14px;
 }
 
-.btn-icon {
-  margin-right: 4px;
+.btn-icon-img {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: -3px;
 }
 
 

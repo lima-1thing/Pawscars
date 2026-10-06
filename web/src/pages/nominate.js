@@ -3,13 +3,14 @@ import { toast, dialog, withLoading } from '../ui';
 import { go } from '../router';
 import { validatePetName, formatDateTime, maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
+import PageFooter from '../components/page-footer';
 import ImageCropper from '../components/image-cropper';
 
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 
 export default {
   name: 'NominatePage',
-  components: { NavBar, ImageCropper },
+  components: { NavBar, PageFooter, ImageCropper },
   data() {
     return {
       phaseOpen: true, categories: [], selected: {}, petName: '', pledge: false,
@@ -103,7 +104,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar title="我要提名" subtitle="提交参赛毛孩" :show-rules="false" />
+      <NavBar title="我要提名" subtitle="提交参赛毛孩" />
       <div class="page">
         <div class="center"><button class="link-btn small" @click="go('/gallery')">👀 看看大家都提名了哪些毛孩 ›</button></div>
         <div v-if="!phaseOpen" class="card closed-note"><b>报名已截止</b><span class="muted">下方为你已提交的提名，现已锁定为只读。</span></div>
@@ -145,6 +146,7 @@ export default {
         </div>
       </div>
       <input ref="file" type="file" accept="image/*" hidden @change="onFile">
+      <PageFooter :show-rules="false" />
       <ImageCropper :visible="cropping" :src="cropSrc" @confirm="onCropped" @cancel="cropping = false" />
     </div>`
 };

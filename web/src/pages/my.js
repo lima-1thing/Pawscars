@@ -29,7 +29,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar title="我的提名" subtitle="参赛毛孩状态追踪" :show-my="false" :show-rules="false" />
+      <NavBar title="我的提名" subtitle="参赛毛孩状态追踪" />
       <div class="page">
         <div class="card user-card"><span class="big-emoji">🐾</span><div class="grow"><b>活动ID: {{ ldap }}</b><div class="muted small">（私密页面，仅你本人可见实时票数与晋级状态）</div>
           <div v-if="googleEmail" class="muted small">Google 账号：{{ googleEmail }}</div></div>

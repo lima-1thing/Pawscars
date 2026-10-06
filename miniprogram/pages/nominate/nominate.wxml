@@ -1,5 +1,5 @@
 <view class="nominate-container">
-  <nav-bar title="我要提名" subtitle="提交参赛毛孩" showMyNomination="{{true}}" showRules="{{false}}" />
+  <nav-bar title="我要提名" subtitle="提交参赛毛孩" />
 
   <scroll-view scroll-y class="form-scroll">
     <view class="gallery-link" bindtap="onTapGallery">👀 看看大家都提名了哪些毛孩 ›</view>
@@ -113,6 +113,9 @@
         </view>
       </view>
     </view>
+
+    <!-- 底部快捷入口：我的提名 -->
+    <page-footer showRules="{{false}}" />
   </scroll-view>
 
   <!-- 照片裁剪（正方形） -->

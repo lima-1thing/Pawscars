@@ -1,6 +1,7 @@
 /**
  * Pawscars 时间展示工具
  */
+const { PHASE_ORDER, isPhaseOpen } = require('./bracket');
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
@@ -54,7 +55,50 @@ function fromPickerValues(date, time) {
   return new Date(y, m - 1, d, hh, mm).getTime();
 }
 
+const shortDate = (ts) => {
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+};
+
+const SCHEDULE = [
+  { key: 'nominate', label: '提名', active: '提名进行中', done: '提名已结束' },
+  { key: 'vote_initial', label: '初选', active: '投票进行中', done: '投票已结束' },
+  { key: 'vote_final', label: '决赛', active: '投票进行中', done: '投票已结束' }
+];
+
+/**
+ * 首页赛程：每个赛段的日期与状态，如 { label: '初选', dates: '10/21-10/23', status: '投票进行中', state: 'active' }
+ * 赛段开始 = 上一赛段截止（提名取 nominateStart）；截止在 0 点时结束日显示前一天
+ * @param {object} config 活动配置（currentPhase、phaseDeadlines、nominateStart）
+ * @returns {Array<{ key, label, dates, status, state: 'done'|'active'|'upcoming' }>}
+ */
+function buildSchedule(config, now = Date.now()) {
+  const deadlines = (config && config.phaseDeadlines) || {};
+  const current = PHASE_ORDER.indexOf(config && config.currentPhase);
+  return SCHEDULE.map((s, i) => {
+    const start = i === 0 ? (config && config.nominateStart) || 0 : deadlines[SCHEDULE[i - 1].key] || 0;
+    const end = deadlines[s.key] || 0;
+    let dates = '时间待定';
+    if (start && end) dates = `${shortDate(start)}-${shortDate(end - 1)}`;
+    else if (end) dates = `截至 ${shortDate(end - 1)}`;
+    else if (start) dates = `${shortDate(start)} 起`;
+
+    const idx = PHASE_ORDER.indexOf(s.key);
+    let state = 'upcoming';
+    let status = '赛段未开始';
+    if (idx < current) {
+      state = 'done';
+      status = s.done;
+    } else if (idx === current) {
+      state = 'active';
+      status = isPhaseOpen(config, s.key, now) ? s.active : '已截止，等待结算';
+    }
+    return { key: s.key, label: s.label, dates, status, state };
+  });
+}
+
 module.exports = {
+  buildSchedule,
   formatCountdown,
   formatDateTime,
   toPickerValues,

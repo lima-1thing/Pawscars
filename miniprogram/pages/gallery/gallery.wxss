@@ -7,8 +7,8 @@
 
 .tabs-bar {
   display: flex;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 16px 20px 18px;
   background: #FFFFFF;
   overflow-x: auto;
   white-space: nowrap;
@@ -16,11 +16,11 @@
 
 .tab-pill {
   flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 10px 16px;
+  border-radius: 20px;
   background: #F4F2EC;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 

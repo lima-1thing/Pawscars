@@ -1,0 +1,10 @@
+<view wx:if="{{showMyNomination || showRules}}" class="page-footer">
+  <view wx:if="{{showMyNomination}}" class="footer-link" bindtap="onTapMyNomination">
+    <image class="footer-icon" src="/images/icon-paw.png" />
+    <text>我的提名</text>
+  </view>
+  <view wx:if="{{showRules}}" class="footer-link" bindtap="onTapRules">
+    <image class="footer-icon" src="/images/icon-rules.png" />
+    <text>活动规则</text>
+  </view>
+</view>

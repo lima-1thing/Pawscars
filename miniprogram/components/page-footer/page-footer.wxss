@@ -1,0 +1,27 @@
+.page-footer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 20px 28px;
+}
+
+.footer-link {
+  flex: 1;
+  max-width: 160px;
+  height: 40px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1.5px solid #ECE7DE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4A3E3D;
+}
+
+.footer-icon {
+  width: 16px;
+  height: 16px;
+}

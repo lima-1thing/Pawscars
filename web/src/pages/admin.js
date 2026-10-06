@@ -8,6 +8,7 @@ const PHASES = [
   { key: 'nominate', label: '1. 报名期' }, { key: 'vote_initial', label: '2. 初选（选出8强）' },
   { key: 'vote_final', label: '3. 决赛（8强PK）' }, { key: 'awards', label: '4. 颁奖盛典' }
 ];
+const DEADLINE_LABELS = { nominate: '报名截止', vote_initial: '初选截止', vote_final: '决赛截止' };
 const EDITABLE = ['title', 'hostName', 'hostIntro', 'rulesSummary', 'callToActionText', 'rulesDetail'];
 const pad = (n) => String(n).padStart(2, '0');
 const toLocalInput = (ts) => { if (!ts) return ''; const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
@@ -15,7 +16,7 @@ const toLocalInput = (ts) => { if (!ts) return ''; const d = new Date(ts); retur
 export default {
   name: 'AdminPage',
   components: { NavBar },
-  data() { return { allowed: false, phases: PHASES, config: {}, form: {}, deadlines: {}, categories: [], stats: null, entries: [], congrats: [], unbind: '' }; },
+  data() { return { allowed: false, phases: PHASES, labels: DEADLINE_LABELS, config: {}, form: {}, deadlines: {}, nominateStart: '', categories: [], stats: null, entries: [], congrats: [], unbind: '' }; },
   created() {
     this.allowed = api.getState().isAdmin;
     if (this.allowed) this.load();
@@ -30,6 +31,7 @@ export default {
         this.categories = s.categories.map(c => ({ ...c, draft: c.name }));
         this.form = Object.fromEntries(EDITABLE.map(k => [k, s.config[k] || '']));
         this.deadlines = Object.fromEntries(PHASES.slice(0, 3).map(p => [p.key, toLocalInput((s.config.phaseDeadlines || {})[p.key])]));
+        this.nominateStart = toLocalInput(s.config.nominateStart);
         this.stats = o.stats;
         this.entries = o.entries;
         this.congrats = o.congrats;
@@ -58,6 +60,11 @@ export default {
       const value = this.deadlines[key];
       const phaseDeadlines = { ...(this.config.phaseDeadlines || {}), [key]: value ? new Date(value).getTime() : 0 };
       this.run('updateConfig', { phaseDeadlines }, value ? '截止时间已保存' : '已清除截止时间');
+    },
+    // 报名开始时间只用于首页赛程展示
+    saveNominateStart() {
+      const value = this.nominateStart;
+      this.run('updateConfig', { nominateStart: value ? new Date(value).getTime() : 0 }, value ? '报名开始时间已保存' : '已清除报名开始时间');
     },
     saveConfig() {
       if (!this.form.title.trim() || !this.form.hostName.trim()) { toast('活动标题和主持人昵称不能为空'); return; }
@@ -92,7 +99,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar title="Pawscars 管理后台" subtitle="赛程控制与运维" :show-my="false" :show-rules="false" />
+      <NavBar title="Pawscars 管理后台" subtitle="赛程控制与运维" />
       <div v-if="!allowed" class="empty"><div class="big-emoji">🔒</div><b>仅限活动管理员访问</b><button class="btn btn-primary" @click="go('/')">返回首页</button></div>
       <div v-else class="page">
         <div class="card">
@@ -101,10 +108,14 @@ export default {
           <p class="muted small">推进阶段会自动结算上一阶段并生成固定对阵表；回退会清除之后阶段的对阵与投票。</p>
         </div>
         <div class="card">
-          <div class="card-title">⏰ 各阶段截止时间</div>
+          <div class="card-title">⏰ 赛程时间</div>
           <p class="muted small">过了截止时间将拒绝报名/投票，定时任务每 10 分钟检查一次并自动推进到下一阶段。</p>
+          <div class="deadline-row">
+            <span class="grow small"><b>报名开始</b></span>
+            <input class="text-input dt" type="datetime-local" v-model="nominateStart" @change="saveNominateStart">
+          </div>
           <div v-for="p in phases.slice(0, 3)" :key="p.key" class="deadline-row">
-            <span class="grow small"><b>{{ p.label }}</b></span>
+            <span class="grow small"><b>{{ labels[p.key] }}</b></span>
             <input class="text-input dt" type="datetime-local" v-model="deadlines[p.key]" @change="saveDeadline(p.key)">
           </div>
         </div>

@@ -29,7 +29,7 @@ export default {
   },
   template: `
     <div>
-      <NavBar title="身份验证" subtitle="绑定活动ID" :show-my="false" :show-rules="false" />
+      <NavBar title="身份验证" subtitle="绑定活动ID" />
       <div class="page">
         <div class="card">
           <div class="auth-icon">🐾</div>

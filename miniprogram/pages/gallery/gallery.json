@@ -3,7 +3,8 @@
   "navigationBarBackgroundColor": "#FBEAF0",
   "usingComponents": {
     "nav-bar": "/components/nav-bar/nav-bar",
-    "watermark-image": "/components/watermark-image/watermark-image"
+    "watermark-image": "/components/watermark-image/watermark-image",
+    "page-footer": "/components/page-footer/page-footer"
   },
   "navigationStyle": "custom"
 }

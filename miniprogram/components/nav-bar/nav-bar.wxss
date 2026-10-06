@@ -16,16 +16,12 @@
   box-sizing: border-box;
 }
 
-.nav-left, .nav-right {
+.nav-left {
   display: flex;
   align-items: center;
   gap: 6px;
   position: relative;
   z-index: 1;
-}
-
-.nav-right {
-  justify-content: flex-end;
 }
 
 .icon-btn {
@@ -42,26 +38,6 @@
 .icon-btn-text {
   font-size: 18px;
   line-height: 1;
-  color: #4A3E3D;
-}
-
-.my-nomination-btn {
-  background: #FFFFFF;
-  border-radius: 14px;
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.my-nomination-btn .icon {
-  font-size: 11px;
-  margin-right: 4px;
-}
-
-.my-nomination-btn .text {
-  font-size: 11px;
-  font-weight: 500;
   color: #4A3E3D;
 }
 
@@ -92,41 +68,4 @@
   color: #993C1D;
   margin-top: 3px;
   line-height: 1.2;
-}
-
-/* 宫师姐规则气泡按钮：圆角 16px 16px 16px 4px，左下角尖角指向内容区 */
-.rules-bubble-btn {
-  width: 34px;
-  height: 30px;
-  background-color: #FFFFFF;
-  border-radius: 16px 16px 16px 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-.avatar-ring {
-  width: 24px;
-  height: 24px;
-  background-color: #F4C0D1;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-text {
-  font-size: 11px;
-  font-weight: bold;
-  color: #612D3A;
-}
-
-.avatar-ring {
-  overflow: hidden;
-}
-
-.avatar-img {
-  width: 24px;
-  height: 24px;
 }

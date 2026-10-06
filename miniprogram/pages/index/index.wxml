@@ -76,7 +76,7 @@
       <!-- 报名截止后主按钮改为查看我的提名 -->
       <button wx:if="{{phaseOpen}}" class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapNominate">我要提名</button>
       <button wx:else class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapMyNomination">
-        <text class="btn-icon">📋</text> 查看我的提名
+        <image class="btn-icon-img" src="/images/icon-paw.png" /> 查看我的提名
       </button>
       <view class="gallery-link" bindtap="onTapGallery">👀 看看已提名的毛孩 ›</view>
     </block>
@@ -93,17 +93,21 @@
         </view>
       </view>
 
-      <view class="stage-stepper-row">
-        <view class="step-pill {{config.currentPhase === 'vote_initial' ? 'pill-active' : ''}}">初选</view>
-        <view class="step-pill {{config.currentPhase === 'vote_final' ? 'pill-active' : ''}}">决赛</view>
+      <!-- 赛程：赛段 · 日期 · 状态 -->
+      <view class="schedule-card">
+        <view wx:for="{{schedule}}" wx:key="key" class="schedule-row schedule-{{item.state}}">
+          <text class="schedule-label">{{item.label}}</text>
+          <text class="schedule-dates">{{item.dates}}</text>
+          <text class="schedule-status">{{item.status}}</text>
+        </view>
       </view>
 
       <view class="voting-action-group">
         <button class="paw-btn paw-btn-primary full-cta-btn {{phaseOpen ? '' : 'btn-disabled'}}" bindtap="onTapVote">
-          {{phaseOpen ? '我要投票' : '投票已截止'}}
+          <image class="btn-icon-img" src="/images/icon-heart.png" /> {{phaseOpen ? '我要投票' : '投票已截止'}}
         </button>
         <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
-          <text class="btn-icon">📋</text> 我的提名
+          <image class="btn-icon-img" src="/images/icon-paw.png" /> 我的提名
         </button>
       </view>
     </block>
@@ -119,10 +123,10 @@
       <view class="voting-action-group">
         <button class="paw-btn paw-btn-primary full-cta-btn" bindtap="onTapSendCongrats">发送贺词</button>
         <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapAwards">
-          <text class="btn-icon">🏆</text> 查看颁奖结果
+          <image class="btn-icon-img" src="/images/icon-trophy.png" /> 查看颁奖结果
         </button>
         <button class="paw-btn paw-btn-outline full-cta-btn sec-btn" bindtap="onTapMyNomination">
-          <text class="btn-icon">📋</text> 我的提名
+          <image class="btn-icon-img" src="/images/icon-paw.png" /> 我的提名
         </button>
       </view>
     </block>

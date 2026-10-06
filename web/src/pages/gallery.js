@@ -3,10 +3,11 @@ import { go } from '../router';
 import { toast } from '../ui';
 import { maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
+import PageFooter from '../components/page-footer';
 
 export default {
   name: 'GalleryPage',
-  components: { NavBar },
+  components: { NavBar, PageFooter },
   data() { return { loaded: false, tabs: [], current: '', byCat: {}, viewer: -1, canNominate: false, dragX: 0 }; },
   computed: {
     entries() { return this.byCat[this.current] || []; },
@@ -67,7 +68,7 @@ export default {
   },
   template: `
     <div class="with-bottom-bar">
-      <NavBar title="已提名的毛孩" :subtitle="'共 ' + total + ' 条提名'" :show-rules="false" />
+      <NavBar title="已提名的毛孩" :subtitle="'共 ' + total + ' 条提名'" />
       <div class="tabs">
         <button v-for="t in tabs" :key="t.id" class="tab" :class="{ on: t.id === current }"
           :style="t.id === current ? { background: t.bg, color: t.textColor } : {}" @click="current = t.id">{{ t.icon }} {{ t.name }} · {{ t.count }}</button>
@@ -80,6 +81,7 @@ export default {
       </div>
       <div v-else-if="loaded" class="empty"><div class="big-emoji">🐾</div><span class="muted">这个门类还没有毛孩报名</span></div>
       <p class="muted small center">点击照片可放大，左右滑动或按 ← → 翻看 · 主人ID已打码</p>
+      <PageFooter :show-rules="false" />
 
       <div v-if="canNominate" class="bottom-bar"><button class="btn btn-primary block" @click="nominate">我也要提名</button></div>
 

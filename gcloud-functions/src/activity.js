@@ -27,13 +27,13 @@ const DEFAULT_CATEGORIES = [
 // 下发给小程序的配置字段（不含管理员白名单）
 const PUBLIC_CONFIG_FIELDS = [
   'title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText',
-  'rulesDetail', 'currentPhase', 'phaseDeadlines'
+  'rulesDetail', 'currentPhase', 'phaseDeadlines', 'nominateStart'
 ];
 
 // 管理员可在后台修改的字段
 const EDITABLE_CONFIG_FIELDS = [
   'title', 'hostName', 'hostAvatar', 'hostIntro', 'rulesSummary', 'callToActionText',
-  'rulesDetail', 'phaseDeadlines'
+  'rulesDetail', 'phaseDeadlines', 'nominateStart'
 ];
 
 async function loadConfig(db) {

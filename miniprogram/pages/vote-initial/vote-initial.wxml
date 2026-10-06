@@ -3,9 +3,6 @@
   <nav-bar
     title="Pawscars毛孩奥斯卡"
     subtitle="初选投票"
-    showMyNomination="{{true}}"
-    showRules="{{true}}"
-    bind:openRules="onOpenRules"
   />
 
   <view wx:if="{{!phaseOpen}}" class="closed-banner">初选投票已截止，已提交的选择仍可在下方查看</view>
@@ -62,6 +59,10 @@
       </block>
     </view>
   </view>
+
+
+  <!-- 底部快捷入口：我的提名 / 活动规则 -->
+  <page-footer bind:openRules="onOpenRules" />
 
   <!-- 底部吸底提交按钮 -->
   <view wx:if="{{phaseOpen}}" class="bottom-bar">

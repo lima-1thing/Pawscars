@@ -2,8 +2,6 @@
   <nav-bar 
     title="我的提名" 
     subtitle="参赛毛孩状态追踪" 
-    showMyNomination="{{false}}" 
-    showRules="{{false}}" 
   />
 
   <scroll-view scroll-y class="nom-scroll">

@@ -3,13 +3,14 @@ import { go } from '../router';
 import { toast, dialog } from '../ui';
 import { maskLdap } from '../shared';
 import NavBar from '../components/nav-bar';
+import PageFooter from '../components/page-footer';
 import RulesModal from '../components/rules-modal';
 
 const MAX_PICKS = 8;
 
 export default {
   name: 'VoteInitialPage',
-  components: { NavBar, RulesModal },
+  components: { NavBar, PageFooter, RulesModal },
   data() { return { phaseOpen: true, rows: [], confirm: false, pending: [], submitting: false, rules: false }; },
   computed: {
     allSubmitted() { return this.rows.length > 0 && this.rows.every(r => !r.needsVote || r.locked); }
@@ -73,7 +74,7 @@ export default {
   },
   template: `
     <div class="with-bottom-bar">
-      <NavBar subtitle="初选投票" @rules="rules = true" />
+      <NavBar subtitle="初选投票" />
       <div v-if="!phaseOpen" class="closed-banner">初选投票已截止，已提交的选择仍可在下方查看</div>
       <div v-for="row in rows" :key="row.id" class="vote-row">
         <div class="row-head">
@@ -99,6 +100,8 @@ export default {
           <div class="muted small center">第 {{ Math.min(row.index + 1, row.entries.length) }} / {{ row.entries.length }} 位 · 左右滑动浏览{{ row.needsVote ? '，点击照片选择' : '' }}</div>
         </template>
       </div>
+
+      <PageFooter @rules="rules = true" />
 
       <div v-if="phaseOpen" class="bottom-bar">
         <template v-if="allSubmitted">
