@@ -1,5 +1,5 @@
 const api = require('../../utils/api');
-const { formatCountdown, buildSchedule } = require('../../utils/time');
+const { formatCountdown } = require('../../utils/time');
 
 const VOTE_PHASES = {
   vote_initial: { step: '第一轮', name: '初选打投' },
@@ -81,8 +81,6 @@ Page({
     const phase = config.currentPhase;
     this.setData({
       phaseOpen: api.isPhaseOpen(phase),
-      // 只显示当前赛段这一行
-      schedule: buildSchedule(config).filter(s => s.state === 'active'),
       countdownText: formatCountdown((config.phaseDeadlines || {})[phase])
     });
   },

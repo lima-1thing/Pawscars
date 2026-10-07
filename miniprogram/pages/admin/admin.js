@@ -59,13 +59,10 @@ Page({
     const form = {};
     EDITABLE_FIELDS.forEach(key => { form[key] = config[key] || ''; });
 
-    // 第一行是报名开始时间（只用于首页赛程展示），其余为各阶段截止时间
-    const startTs = config.nominateStart || 0;
-    const deadlineRows = [{ key: 'nominateStart', label: '报名开始', ...toPickerValues(startTs), display: startTs ? formatDateTime(startTs) : '未设置' }]
-      .concat(PHASES.filter(p => p.key !== 'awards').map(p => {
-        const ts = (config.phaseDeadlines || {})[p.key] || 0;
-        return { key: p.key, label: DEADLINE_LABELS[p.key], ...toPickerValues(ts), display: ts ? formatDateTime(ts) : '未设置' };
-      }));
+    const deadlineRows = PHASES.filter(p => p.key !== 'awards').map(p => {
+      const ts = (config.phaseDeadlines || {})[p.key] || 0;
+      return { key: p.key, label: DEADLINE_LABELS[p.key], ...toPickerValues(ts), display: ts ? formatDateTime(ts) : '未设置' };
+    });
 
     this.setData({
       config,
@@ -127,12 +124,7 @@ Page({
     const row = this.data.deadlineRows.find(r => r.key === phase);
     const date = part === 'date' ? e.detail.value : row.date;
     const time = part === 'time' ? e.detail.value : row.time;
-    const ts = fromPickerValues(date, time);
-    if (phase === 'nominateStart') {
-      this.runAdmin('updateConfig', { nominateStart: ts }, '报名开始时间已保存');
-      return;
-    }
-    const deadlines = { ...(this.data.config.phaseDeadlines || {}), [phase]: ts };
+    const deadlines = { ...(this.data.config.phaseDeadlines || {}), [phase]: fromPickerValues(date, time) };
     this.runAdmin('updateConfig', { phaseDeadlines: deadlines }, '截止时间已保存');
   },
 

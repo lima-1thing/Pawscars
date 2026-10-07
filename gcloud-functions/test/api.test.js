@@ -238,8 +238,6 @@ async function login(openid) {
   await fails(call('/admin/updateConfig', { token: admin, body: { hostAvatar: 'https://evil.example/a.png' } }), /上传主持人头像/);
   await ok(call('/admin/updateConfig', { token: admin, body: { hostAvatar: hostUrl, title: '新标题', adminOpenids: ['o_u1'] } }));
   assert.deepStrictEqual((await get('Activity', 'main_config')).adminOpenids, ['o_admin']); // 白名单不能通过接口修改
-  await ok(call('/admin/updateConfig', { token: admin, body: { nominateStart: 1792123200000 } }));
-  assert.strictEqual((await ok(call('/bootstrap', { token: u1 }))).config.nominateStart, 1792123200000); // 首页赛程需要的报名开始时间
   await ok(call('/admin/renameCategory', { token: admin, body: { categoryId: 'food', name: '干饭之王' } }));
 
   console.log('Testing initial round...');

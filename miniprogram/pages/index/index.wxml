@@ -93,15 +93,6 @@
         </view>
       </view>
 
-      <!-- 赛程：赛段 · 日期 · 状态 -->
-      <view class="schedule-card">
-        <view wx:for="{{schedule}}" wx:key="key" class="schedule-row schedule-{{item.state}}">
-          <text class="schedule-label">{{item.label}}</text>
-          <text class="schedule-dates">{{item.dates}}</text>
-          <text class="schedule-status">{{item.status}}</text>
-        </view>
-      </view>
-
       <view class="voting-action-group">
         <button class="paw-btn paw-btn-primary full-cta-btn {{phaseOpen ? '' : 'btn-disabled'}}" bindtap="onTapVote">
           <image class="btn-icon-img" src="/images/icon-heart.png" /> {{phaseOpen ? '我要投票' : '投票已截止'}}

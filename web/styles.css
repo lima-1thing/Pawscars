@@ -131,15 +131,6 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .speech.gold .speech-title { color: var(--cta-text); }
 .speech-sub { font-size: 12px; color: #0F6B58; }
 .speech.gold .speech-sub { color: #786414; }
-.schedule { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 4px 16px; margin-bottom: 18px; }
-.schedule-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; color: #7A7270; }
-.schedule-row + .schedule-row { border-top: 1px dashed var(--border); }
-.schedule-label { width: 36px; font-weight: 700; }
-.schedule-dates { flex: 1; }
-.schedule-status { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; background: var(--capsule); }
-.schedule-row.active { color: #04342C; }
-.schedule-row.active .schedule-status { background: #9FE1CB; }
-.schedule-row.done { color: #A39B98; }
 .btn-icon { width: 18px; height: 18px; margin-right: 2px; }
 .admin-link { padding: 8px 0; }
 .web-note { text-align: center; font-size: 11px; color: var(--muted); padding: 20px 0 32px; margin: 0; }

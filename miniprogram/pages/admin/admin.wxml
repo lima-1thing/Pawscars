@@ -26,7 +26,7 @@
 
     <!-- 2. 阶段截止时间 -->
     <view class="admin-section-card">
-      <view class="section-title">⏰ 赛程时间</view>
+      <view class="section-title">⏰ 各阶段截止时间</view>
       <view class="desc-text">过了截止时间用户将无法继续报名/投票，但阶段需要由你手动推进。</view>
       <view wx:for="{{deadlineRows}}" wx:key="key" class="deadline-row">
         <text class="deadline-label">{{item.label}}</text>

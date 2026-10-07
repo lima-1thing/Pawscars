@@ -16,7 +16,7 @@ const toLocalInput = (ts) => { if (!ts) return ''; const d = new Date(ts); retur
 export default {
   name: 'AdminPage',
   components: { NavBar },
-  data() { return { allowed: false, phases: PHASES, labels: DEADLINE_LABELS, config: {}, form: {}, deadlines: {}, nominateStart: '', categories: [], stats: null, entries: [], congrats: [], unbind: '' }; },
+  data() { return { allowed: false, phases: PHASES, labels: DEADLINE_LABELS, config: {}, form: {}, deadlines: {}, categories: [], stats: null, entries: [], congrats: [], unbind: '' }; },
   created() {
     this.allowed = api.getState().isAdmin;
     if (this.allowed) this.load();
@@ -31,7 +31,6 @@ export default {
         this.categories = s.categories.map(c => ({ ...c, draft: c.name }));
         this.form = Object.fromEntries(EDITABLE.map(k => [k, s.config[k] || '']));
         this.deadlines = Object.fromEntries(PHASES.slice(0, 3).map(p => [p.key, toLocalInput((s.config.phaseDeadlines || {})[p.key])]));
-        this.nominateStart = toLocalInput(s.config.nominateStart);
         this.stats = o.stats;
         this.entries = o.entries;
         this.congrats = o.congrats;
@@ -60,11 +59,6 @@ export default {
       const value = this.deadlines[key];
       const phaseDeadlines = { ...(this.config.phaseDeadlines || {}), [key]: value ? new Date(value).getTime() : 0 };
       this.run('updateConfig', { phaseDeadlines }, value ? '截止时间已保存' : '已清除截止时间');
-    },
-    // 报名开始时间只用于首页赛程展示
-    saveNominateStart() {
-      const value = this.nominateStart;
-      this.run('updateConfig', { nominateStart: value ? new Date(value).getTime() : 0 }, value ? '报名开始时间已保存' : '已清除报名开始时间');
     },
     saveConfig() {
       if (!this.form.title.trim() || !this.form.hostName.trim()) { toast('活动标题和主持人昵称不能为空'); return; }
@@ -108,12 +102,8 @@ export default {
           <p class="muted small">推进阶段会自动结算上一阶段并生成固定对阵表；回退会清除之后阶段的对阵与投票。</p>
         </div>
         <div class="card">
-          <div class="card-title">⏰ 赛程时间</div>
+          <div class="card-title">⏰ 各阶段截止时间</div>
           <p class="muted small">过了截止时间将拒绝报名/投票，定时任务每 10 分钟检查一次并自动推进到下一阶段。</p>
-          <div class="deadline-row">
-            <span class="grow small"><b>报名开始</b></span>
-            <input class="text-input dt" type="datetime-local" v-model="nominateStart" @change="saveNominateStart">
-          </div>
           <div v-for="p in phases.slice(0, 3)" :key="p.key" class="deadline-row">
             <span class="grow small"><b>{{ labels[p.key] }}</b></span>
             <input class="text-input dt" type="datetime-local" v-model="deadlines[p.key]" @change="saveDeadline(p.key)">

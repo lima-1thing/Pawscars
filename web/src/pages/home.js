@@ -1,7 +1,7 @@
 import { api } from '../api';
 import { go } from '../router';
 import { toast } from '../ui';
-import { formatCountdown, buildSchedule } from '../shared';
+import { formatCountdown } from '../shared';
 import RulesModal from '../components/rules-modal';
 import GoogleButton from '../components/google-button';
 import { GOOGLE_CLIENT_ID } from '../config';
@@ -15,7 +15,7 @@ export default {
   name: 'HomePage',
   components: { RulesModal, GoogleButton },
   data() {
-    return { config: {}, categories: [], user: null, isAdmin: false, googleEmail: null, phaseOpen: true, countdown: '', schedule: [], rules: false, linking: false };
+    return { config: {}, categories: [], user: null, isAdmin: false, googleEmail: null, phaseOpen: true, countdown: '', rules: false, linking: false };
   },
   computed: {
     phase() { return this.config.currentPhase; },
@@ -38,8 +38,6 @@ export default {
     tick() {
       this.phaseOpen = api.isPhaseOpen(this.phase);
       this.countdown = formatCountdown((this.config.phaseDeadlines || {})[this.phase]);
-      // 只显示当前赛段这一行
-      this.schedule = buildSchedule(this.config).filter(s => s.state === 'active');
     },
     requireUser() {
       if (this.user) return true;
@@ -117,11 +115,6 @@ export default {
               <template v-if="!phaseOpen">本阶段投票已截止，结果即将公布</template>
               <template v-else-if="countdown">距离本阶段投票截止还有 {{ countdown }}</template>
               <template v-else>快来为喜欢的毛孩投上一票！</template>
-            </div>
-          </div>
-          <div class="schedule">
-            <div v-for="s in schedule" :key="s.key" class="schedule-row" :class="s.state">
-              <span class="schedule-label">{{ s.label }}</span><span class="schedule-dates">{{ s.dates }}</span><span class="schedule-status">{{ s.status }}</span>
             </div>
           </div>
           <div class="stack">
